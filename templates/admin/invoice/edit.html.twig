@@ -1,0 +1,281 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Fatura Düzenle{% endblock %}
+
+{% block page_title %}Fatura Düzenle - {{ invoice.invoiceNumber }}{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">
+        <a href="{{ path('admin_invoices') }}" class="text-muted text-hover-primary">Faturalar</a>
+    </li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">{{ invoice.invoiceNumber }}</li>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        <div class="row g-5">
+            <div class="col-xl-9">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Fatura Bilgileri</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label">Fatura Numarası</label>
+                                <input type="text" class="form-control" value="{{ invoice.invoiceNumber }}" disabled />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Kullanıcı</label>
+                                <input type="text" class="form-control" value="{{ invoice.user.fullName }}" disabled />
+                            </div>
+                        </div>
+
+                        <div class="row mb-5">
+                            <div class="col-md-4">
+                                <label class="form-label required">Fatura Tarihi</label>
+                                <input type="date" name="invoice_date" class="form-control" value="{{ invoice.invoiceDate|date('Y-m-d') }}" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label required">Vade Tarihi</label>
+                                <input type="date" name="due_date" class="form-control" value="{{ invoice.dueDate|date('Y-m-d') }}" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label required">Durum</label>
+                                <select name="status" class="form-select" required>
+                                    <option value="pending" {{ invoice.status == 'pending' ? 'selected' : '' }}>Bekliyor</option>
+                                    <option value="paid" {{ invoice.status == 'paid' ? 'selected' : '' }}>Ödendi</option>
+                                    <option value="overdue" {{ invoice.status == 'overdue' ? 'selected' : '' }}>Gecikmiş</option>
+                                    <option value="cancelled" {{ invoice.status == 'cancelled' ? 'selected' : '' }}>İptal</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="separator separator-dashed my-8"></div>
+
+                        <h4 class="mb-5">Fatura Kalemleri</h4>
+                        <div class="table-responsive mb-5">
+                            <table class="table table-row-bordered">
+                                <thead>
+                                    <tr class="fw-bold fs-6 text-gray-800">
+                                        <th>Açıklama</th>
+                                        <th class="text-end" width="100px">Miktar</th>
+                                        <th class="text-end" width="120px">Birim Fiyat</th>
+                                        <th class="text-end" width="120px">Toplam</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in invoice.items %}
+                                    <tr>
+                                        <td>{{ item.description }}</td>
+                                        <td class="text-end">{{ item.quantity }}</td>
+                                        <td class="text-end">{{ item.unit_price|number_format(2, '.', ',') }}</td>
+                                        <td class="text-end fw-bold">{{ item.amount|number_format(2, '.', ',') }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-semibold">Ara Toplam:</td>
+                                        <td class="text-end">{{ invoice.subtotal }} {{ invoice.currency }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-semibold">KDV (%{{ invoice.taxRate }}):</td>
+                                        <td class="text-end">{{ invoice.taxAmount }} {{ invoice.currency }}</td>
+                                    </tr>
+                                    <tr class="fw-bold">
+                                        <td colspan="3" class="text-end fs-4">Genel Toplam:</td>
+                                        <td class="text-end fs-4 text-primary">{{ invoice.total }} {{ invoice.currency }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <div class="separator separator-dashed my-8"></div>
+
+                        <h4 class="mb-5">Ödeme Bilgileri</h4>
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label">Ödeme Yöntemi</label>
+                                <select name="payment_method" class="form-select">
+                                    <option value="">Seçiniz</option>
+                                    <option value="credit_card" {{ invoice.paymentMethod == 'credit_card' ? 'selected' : '' }}>Kredi Kartı</option>
+                                    <option value="bank_transfer" {{ invoice.paymentMethod == 'bank_transfer' ? 'selected' : '' }}>Banka Havalesi</option>
+                                    <option value="paypal" {{ invoice.paymentMethod == 'paypal' ? 'selected' : '' }}>PayPal</option>
+                                    <option value="cash" {{ invoice.paymentMethod == 'cash' ? 'selected' : '' }}>Nakit</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">İşlem ID</label>
+                                <input type="text" name="payment_transaction_id" class="form-control" value="{{ invoice.paymentTransactionId }}" />
+                            </div>
+                        </div>
+
+                        {% if invoice.paidAt %}
+                        <div class="alert alert-success d-flex align-items-center">
+                            <i class="ki-duotone ki-check-circle fs-2x me-3">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <div>
+                                <strong>Ödeme Alındı</strong>
+                                <div class="text-muted fs-7">{{ invoice.paidAt|date('d.m.Y H:i') }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="separator separator-dashed my-8"></div>
+
+                        <h4 class="mb-5">Fatura Adresi</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-5">
+                                <label class="form-label">Fatura Adı</label>
+                                <input type="text" name="billing_name" class="form-control" value="{{ invoice.billingName }}" />
+                            </div>
+                            <div class="col-md-6 mb-5">
+                                <label class="form-label">Vergi Numarası</label>
+                                <input type="text" name="tax_number" class="form-control" value="{{ invoice.taxNumber }}" />
+                            </div>
+                            <div class="col-md-12 mb-5">
+                                <label class="form-label">Adres</label>
+                                <textarea name="billing_address" class="form-control" rows="2">{{ invoice.billingAddress }}</textarea>
+                            </div>
+                            <div class="col-md-4 mb-5">
+                                <label class="form-label">Şehir</label>
+                                <input type="text" name="billing_city" class="form-control" value="{{ invoice.billingCity }}" />
+                            </div>
+                            <div class="col-md-4 mb-5">
+                                <label class="form-label">Ülke</label>
+                                <input type="text" name="billing_country" class="form-control" value="{{ invoice.billingCountry }}" />
+                            </div>
+                            <div class="col-md-4 mb-5">
+                                <label class="form-label">Posta Kodu</label>
+                                <input type="text" name="billing_zip" class="form-control" value="{{ invoice.billingZip }}" />
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label">Not</label>
+                            <textarea name="notes" class="form-control" rows="3">{{ invoice.notes }}</textarea>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ki-duotone ki-check fs-2"></i>
+                            Kaydet
+                        </button>
+                        <a href="{{ path('admin_invoice_detail', {id: invoice.id}) }}" class="btn btn-light">İptal</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3">
+                <div class="card card-flush mb-5">
+                    <div class="card-header">
+                        <h3 class="card-title">Hızlı İşlemler</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if invoice.status != 'paid' %}
+                        <button type="button" class="btn btn-success w-100 mb-3" onclick="markAsPaid()">
+                            <i class="ki-duotone ki-check fs-2"></i>
+                            Ödendi İşaretle
+                        </button>
+                        {% endif %}
+
+                        <a href="{{ path('admin_invoice_pdf', {id: invoice.id}) }}" target="_blank" class="btn btn-light-primary w-100 mb-3">
+                            <i class="ki-duotone ki-file-down fs-2"></i>
+                            PDF İndir
+                        </a>
+
+                        <button type="button" class="btn btn-light-info w-100 mb-3" onclick="sendEmail()">
+                            <i class="ki-duotone ki-sms fs-2"></i>
+                            Email Gönder
+                        </button>
+
+                        {% if invoice.status != 'paid' %}
+                        <div class="separator my-5"></div>
+                        <button type="button" class="btn btn-light-danger w-100" onclick="cancelInvoice()">
+                            <i class="ki-duotone ki-cross fs-2"></i>
+                            Faturayı İptal Et
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card card-flush">
+                    <div class="card-body">
+                        <div class="mb-5">
+                            <label class="text-gray-600 fs-7">Oluşturulma</label>
+                            <div class="fw-bold">{{ invoice.createdAt|date('d.m.Y H:i') }}</div>
+                        </div>
+                        {% if invoice.updatedAt %}
+                        <div class="mb-5">
+                            <label class="text-gray-600 fs-7">Son Güncelleme</label>
+                            <div class="fw-bold">{{ invoice.updatedAt|date('d.m.Y H:i') }}</div>
+                        </div>
+                        {% endif %}
+                        {% if invoice.emailSent %}
+                        <div>
+                            <label class="text-gray-600 fs-7">Email Gönderildi</label>
+                            <div class="fw-bold text-success">
+                                <i class="ki-duotone ki-check-circle fs-5"></i>
+                                {{ invoice.emailSentAt|date('d.m.Y H:i') }}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function markAsPaid() {
+            if (confirm('Faturayı ödendi olarak işaretlemek istediğinizden emin misiniz?')) {
+                fetch('{{ path('admin_invoices_mark_paid', {id: invoice.id}) }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({})
+                })
+                .then(r => r.json())
+                .then(data => {
+                    toastr.success(data.message);
+                    setTimeout(() => location.reload(), 1000);
+                });
+            }
+        }
+
+        function sendEmail() {
+            fetch('{{ path('admin_invoices_send_email', {id: invoice.id}) }}', {
+                method: 'POST'
+            })
+            .then(r => r.json())
+            .then(data => {
+                toastr.success(data.message);
+                setTimeout(() => location.reload(), 1000);
+            });
+        }
+
+        function cancelInvoice() {
+            if (confirm('Faturayı iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+                fetch('{{ path('admin_invoices_cancel', {id: invoice.id}) }}', {
+                    method: 'POST'
+                })
+                .then(r => r.json())
+                .then(data => {
+                    toastr.success(data.message);
+                    setTimeout(() => location.href = '{{ path('admin_invoices') }}', 1000);
+                });
+            }
+        }
+    </script>
+{% endblock %}

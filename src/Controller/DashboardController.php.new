@@ -1,0 +1,71 @@
+<?php
+
+namespace App\Controller;
+
+use App\Controller\Bootstrap\DefaultLayoutController;
+use App\Repository\UserRepository;
+use App\Repository\UserSubscriptionRepository;
+use App\Repository\ShopRepository;
+use App\Repository\OrderRepository;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+class DashboardController extends DefaultLayoutController
+{
+    public function __construct(
+        private UserRepository $userRepository,
+        private UserSubscriptionRepository $subscriptionRepository,
+        private ShopRepository $shopRepository,
+        private OrderRepository $orderRepository
+    ) {
+    }
+
+    /**
+     * Main dashboard - redirects based on role
+     */
+    public function index(): Response
+    {
+        $user = $this->getUser();
+        
+        // Check if user is super admin
+        if ($this->isGranted('ROLE_SUPER_ADMIN')) {
+            // System-wide statistics
+            $totalUsers = $this->userRepository->count([]);
+            $activeSubscriptions = $this->subscriptionRepository->count(['status' => 'active']);
+            $totalShops = $this->shopRepository->count([]);
+            $totalOrders = $this->orderRepository->count([]);
+            $recentUsers = $this->userRepository->findBy([], ['createdAt' => 'DESC'], 10);
+            $monthlyRevenue = $this->subscriptionRepository->getMonthlyRevenue();
+
+            return $this->render('pages/dashboards/super-admin.html.twig', [
+                'totalUsers' => $totalUsers,
+                'activeSubscriptions' => $activeSubscriptions,
+                'totalShops' => $totalShops,
+                'totalOrders' => $totalOrders,
+                'recentUsers' => $recentUsers,
+                'monthlyRevenue' => $monthlyRevenue,
+            ]);
+        }
+
+        // Regular user dashboard
+        $myShops = $this->shopRepository->findBy(['user' => $user]);
+        
+        // Get orders only if user has shops
+        $myOrders = [];
+        if (!empty($myShops)) {
+            $myOrders = $this->orderRepository->findBy(
+                ['shop' => $myShops],
+                ['createdAt' => 'DESC'],
+                10
+            );
+        }
+        
+        $subscription = $this->subscriptionRepository->findOneBy(['user' => $user]);
+
+        return $this->render('pages/dashboards/user.html.twig', [
+            'shops' => $myShops,
+            'recentOrders' => $myOrders,
+            'subscription' => $subscription,
+        ]);
+    }
+}

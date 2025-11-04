@@ -1,0 +1,123 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Genel Ayarlar{% endblock %}
+
+{% block page_title %}Genel Ayarlar{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Ayarlar</li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Genel</li>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        <div class="row g-5">
+            <div class="col-xl-9">
+                <div class="card mb-5">
+                    <div class="card-header">
+                        <h3 class="card-title">Site Bilgileri</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-5">
+                            <label class="form-label required">Site Adı</label>
+                            <input type="text" name="site_name" class="form-control" 
+                                   value="{{ settings.site_name ?? 'Kargo Entegrasyon' }}" required />
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label">Site Logo URL</label>
+                            <input type="url" name="site_logo" class="form-control" 
+                                   value="{{ settings.site_logo ?? '' }}" />
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label">Site Açıklaması</label>
+                            <textarea name="site_description" class="form-control" rows="3">{{ settings.site_description ?? '' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-5">
+                    <div class="card-header">
+                        <h3 class="card-title">Bölgesel Ayarlar</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-5">
+                                <label class="form-label">Zaman Dilimi</label>
+                                <select name="timezone" class="form-select">
+                                    <option value="Europe/Istanbul" {{ settings.timezone|default('Europe/Istanbul') == 'Europe/Istanbul' ? 'selected' : '' }}>Europe/Istanbul</option>
+                                    <option value="UTC" {{ settings.timezone == 'UTC' ? 'selected' : '' }}>UTC</option>
+                                    <option value="America/New_York" {{ settings.timezone == 'America/New_York' ? 'selected' : '' }}>America/New_York</option>
+                                    <option value="Europe/London" {{ settings.timezone == 'Europe/London' ? 'selected' : '' }}>Europe/London</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-5">
+                                <label class="form-label">Dil</label>
+                                <select name="language" class="form-select">
+                                    <option value="tr" {{ settings.language|default('tr') == 'tr' ? 'selected' : '' }}>Türkçe</option>
+                                    <option value="en" {{ settings.language == 'en' ? 'selected' : '' }}>English</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Bakım Modu</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-5">
+                            <div class="form-check form-switch form-check-custom form-check-solid">
+                                <input class="form-check-input" type="checkbox" name="maintenance_mode" value="1" 
+                                       id="maintenance-mode" {{ settings.maintenance_mode ?? false ? 'checked' : '' }} />
+                                <label class="form-check-label" for="maintenance-mode">
+                                    Bakım Modunu Etkinleştir
+                                </label>
+                            </div>
+                            <div class="form-text">Bakım modu aktifken sadece admin kullanıcılar sisteme erişebilir</div>
+                        </div>
+
+                        <div id="maintenance-message-group" class="{{ settings.maintenance_mode ?? false ? '' : 'd-none' }}">
+                            <label class="form-label">Bakım Modu Mesajı</label>
+                            <textarea name="maintenance_message" class="form-control" rows="3">{{ settings.maintenance_message ?? 'Site bakımda. Lütfen daha sonra tekrar deneyiniz.' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3">
+                <div class="card card-flush">
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="ki-duotone ki-check fs-2"></i>
+                            Ayarları Kaydet
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.getElementById('maintenance-mode')?.addEventListener('change', function() {
+            const messageGroup = document.getElementById('maintenance-message-group');
+            if (this.checked) {
+                messageGroup.classList.remove('d-none');
+            } else {
+                messageGroup.classList.add('d-none');
+            }
+        });
+    </script>
+{% endblock %}

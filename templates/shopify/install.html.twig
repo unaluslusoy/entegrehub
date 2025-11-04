@@ -1,0 +1,102 @@
+{% extends 'layout/_auth.html.twig' %}
+
+{% block title %}Shopify Mağaza Bağlantısı{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary">
+                    <h3 class="card-title text-white">Shopify Mağazanızı Bağlayın</h3>
+                </div>
+                
+                <div class="card-body">
+                    {% if error %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-5">
+                        <p class="text-gray-700">
+                            Shopify mağazanızı bağlayarak siparişlerinizi otomatik olarak senkronize edebilir 
+                            ve kargo entegrasyonlarından yararlanabilirsiniz.
+                        </p>
+                    </div>
+
+                    <form method="GET" action="{{ path('shopify_install') }}">
+                        <div class="mb-4">
+                            <label for="shop" class="form-label fw-bold">Mağaza Adresi</label>
+                            <div class="input-group">
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="shop" 
+                                    name="shop" 
+                                    placeholder="ornek-magaza"
+                                    required
+                                    pattern="[a-zA-Z0-9\-]+"
+                                >
+                                <span class="input-group-text">.myshopify.com</span>
+                            </div>
+                            <div class="form-text">
+                                Shopify yönetim panelinizdeki mağaza adresinizi girin
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <div class="alert alert-info">
+                                <strong>Not:</strong> Mağazanızı bağladıktan sonra aşağıdaki izinler talep edilecektir:
+                                <ul class="mt-2 mb-0">
+                                    <li>Siparişleri okuma ve güncelleme</li>
+                                    <li>Ürünleri okuma</li>
+                                    <li>Müşterileri okuma</li>
+                                    <li>Kargo bilgilerini güncelleme</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plug me-2"></i>
+                                Mağazayı Bağla
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Neden Shopify Entegrasyonu?</h5>
+                        <ul class="list-unstyled mt-4">
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Otomatik sipariş senkronizasyonu
+                            </li>
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Kargo takip numarası otomatik güncelleme
+                            </li>
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Toplu kargo etiketi oluşturma
+                            </li>
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                SMS ve e-posta bildirimleri
+                            </li>
+                            <li class="mb-0">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Tüm kargo firmaları tek panelden
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

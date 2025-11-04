@@ -1,0 +1,221 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Kargo Firması Yönetimi{% endblock %}
+
+{% block page_title %}Kargo Firması Yönetimi{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <a href="{{ path('admin_cargo_providers_create') }}" class="btn btn-sm btn-primary">
+            <i class="ki-duotone ki-plus fs-2">
+                <span class="path1"></span>
+                <span class="path2"></span>
+            </i>
+            Yeni Kargo Firması
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+
+    <!--begin::Row-->
+    <div class="row g-6 g-xl-9">
+        {% for provider in providers %}
+        <div class="col-md-6 col-xl-4">
+            <div class="card h-md-100">
+                <div class="card-body d-flex flex-center flex-column p-9">
+                        <!--begin::Logo-->
+                        <div class="symbol symbol-65px symbol-circle mb-5">
+                            {% if provider.logo and provider.logo starts with 'http' %}
+                                <img src="{{ provider.logo }}" alt="{{ provider.name }}" class="rounded" />
+                            {% elseif provider.logo %}
+                                <img src="{{ asset('uploads/cargo_providers/' ~ provider.logo) }}" alt="{{ provider.name }}" class="rounded" />
+                            {% else %}
+                                <div class="symbol-label fs-2 fw-semibold bg-light-primary text-primary">
+                                    {{ provider.name|slice(0, 2)|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <!--end::Logo-->
+
+                        <!--begin::Name-->
+                        <a href="{{ path('admin_cargo_providers_edit', {id: provider.id}) }}" 
+                           class="fs-4 text-gray-800 text-hover-primary fw-bold mb-0">
+                            {{ provider.name }}
+                        </a>
+                        <!--end::Name-->
+
+                        <!--begin::Info-->
+                        <div class="fw-semibold text-gray-500 mb-6">{{ provider.code }}</div>
+                        <!--end::Info-->
+
+                        <!--begin::Description-->
+                        {% if provider.description %}
+                        <div class="text-gray-600 text-center fs-7 mb-5">
+                            {{ provider.description|slice(0, 80) }}{% if provider.description|length > 80 %}...{% endif %}
+                        </div>
+                        {% endif %}
+                        <!--end::Description-->
+
+                        <!--begin::Stats-->
+                        <div class="d-flex flex-center flex-wrap gap-3 mb-5">
+                            <div class="border border-dashed border-gray-300 rounded min-w-80px py-3 px-4">
+                                <div class="fs-6 fw-bold text-gray-700">{{ provider.priority }}</div>
+                                <div class="fw-semibold text-gray-500 fs-8">Öncelik</div>
+                            </div>
+                            <div class="border border-dashed border-gray-300 rounded min-w-80px py-3 px-4">
+                                <div class="fs-6 fw-bold text-gray-700">
+                                    {{ provider.userConfigs|length }}
+                                </div>
+                                <div class="fw-semibold text-gray-500 fs-8">Kullanıcı</div>
+                            </div>
+                        </div>
+                        <!--end::Stats-->
+
+                        <!--begin::Features-->
+                        <div class="d-flex flex-wrap gap-2 mb-5">
+                            {% if provider.testModeAvailable %}
+                            <span class="badge badge-light-success">Test Modu</span>
+                            {% endif %}
+                            {% if provider.apiEndpoint %}
+                            <span class="badge badge-light-info">API</span>
+                            {% endif %}
+                            {% if provider.webhookUrl %}
+                            <span class="badge badge-light-warning">Webhook</span>
+                            {% endif %}
+                        </div>
+                        <!--end::Features-->
+
+                        <!--begin::Status-->
+                        <div class="mb-5">
+                            {% if provider.isActive %}
+                                <span class="badge badge-light-success fs-7 fw-semibold">Aktif</span>
+                            {% else %}
+                                <span class="badge badge-light-danger fs-7 fw-semibold">Pasif</span>
+                            {% endif %}
+                        </div>
+                        <!--end::Status-->
+                    </div>
+
+                    <!--begin::Card footer-->
+                    <div class="card-footer d-flex justify-content-center gap-2 py-5">
+                        <a href="{{ path('admin_cargo_providers_edit', {id: provider.id}) }}" 
+                           class="btn btn-sm btn-light-primary">
+                            <i class="ki-duotone ki-pencil fs-2"></i>
+                            Düzenle
+                        </a>
+                        <button type="button" 
+                                class="btn btn-sm btn-light-{{ provider.isActive ? 'danger' : 'success' }} provider-toggle-active"
+                                data-provider-id="{{ provider.id }}">
+                            <i class="ki-duotone ki-toggle-{{ provider.isActive ? 'off' : 'on' }} fs-2"></i>
+                            {{ provider.isActive ? 'Devre Dışı' : 'Aktif Et' }}
+                        </button>
+                        <button type="button" 
+                                class="btn btn-sm btn-light-danger provider-delete"
+                                data-provider-id="{{ provider.id }}"
+                                data-provider-name="{{ provider.name }}">
+                            <i class="ki-duotone ki-trash fs-2"></i>
+                            Sil
+                        </button>
+                    </div>
+                    <!--end::Card footer-->
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-15">
+                        <i class="ki-duotone ki-package fs-5x text-gray-400 mb-5">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                            <span class="path3"></span>
+                        </i>
+                        <h3 class="text-gray-800 fw-bold mb-3">Henüz kargo firması eklenmemiş</h3>
+                        <p class="text-gray-500 fw-semibold fs-6 mb-8">
+                            İlk kargo firmasını ekleyerek başlayın.
+                        </p>
+                        <a href="{{ path('admin_cargo_providers_create') }}" class="btn btn-primary">
+                            <i class="ki-duotone ki-plus fs-2"></i>
+                            İlk Kargo Firmasını Ekle
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <!--end::Content-->
+    </div>
+
+    {# Delete Confirmation Modal #}
+    <div class="modal fade" id="delete_provider_modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Kargo Firmasını Sil</h3>
+                    <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal">
+                        <i class="ki-duotone ki-cross fs-1"></i>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <p class="fs-6">
+                        <strong id="delete-provider-name"></strong> kargo firmasını silmek istediğinizden emin misiniz?
+                        Bu işlem tüm kullanıcı entegrasyonlarını da silecektir ve geri alınamaz.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+                    <form id="delete-provider-form" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">Sil</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Toggle provider active status
+        document.querySelectorAll('.provider-toggle-active').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const providerId = this.dataset.providerId;
+                
+                fetch(`/admin/cargo-providers/${providerId}/toggle-active`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        toastr.success(data.isActive ? 'Kargo firması aktif edildi' : 'Kargo firması devre dışı bırakıldı');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        toastr.error('İşlem başarısız oldu');
+                    }
+                })
+                .catch(error => {
+                    toastr.error('Bir hata oluştu');
+                });
+            });
+        });
+
+        // Delete provider functionality
+        const deleteModal = new bootstrap.Modal(document.getElementById('delete_provider_modal'));
+        
+        document.querySelectorAll('.provider-delete').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const providerId = this.dataset.providerId;
+                const providerName = this.dataset.providerName;
+                
+                document.getElementById('delete-provider-name').textContent = providerName;
+                document.getElementById('delete-provider-form').action = `/admin/cargo-providers/${providerId}/delete`;
+                
+                deleteModal.show();
+            });
+        });
+    </script>
+{% endblock %}

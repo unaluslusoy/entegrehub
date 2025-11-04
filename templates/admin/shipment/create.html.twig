@@ -1,0 +1,211 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Yeni Gönderi{% endblock %}
+
+{% block page_title %}Yeni Gönderi Oluştur{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">
+        <a href="{{ path('admin_shipments') }}" class="text-muted text-hover-primary">Gönderiler</a>
+    </li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Yeni Gönderi</li>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        <div class="row g-5">
+            <div class="col-xl-8">
+                <div class="card mb-5">
+                    <div class="card-header">
+                        <h3 class="card-title">Gönderi Bilgileri</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label required">Sipariş</label>
+                                <select name="order_id" id="order-select" class="form-select" required>
+                                    <option value="">Sipariş Seçin</option>
+                                    {% for order in orders %}
+                                    <option value="{{ order.id }}" 
+                                            data-customer="{{ order.user.fullName }}"
+                                            data-address="{{ order.shippingAddress }}">
+                                        {{ order.orderNumber }} - {{ order.user.fullName }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label required">Kargo Firması</label>
+                                <select name="cargo_company_id" class="form-select" required>
+                                    <option value="">Kargo Firması Seçin</option>
+                                    {% for cc in cargo_companies %}
+                                    <option value="{{ cc.id }}">{{ cc.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="order-info" class="alert alert-light-primary d-none mb-5">
+                            <div class="fw-bold mb-2">Müşteri: <span id="order-customer"></span></div>
+                            <div class="text-gray-700">Adres: <span id="order-address"></span></div>
+                        </div>
+
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label required">Takip Numarası</label>
+                                <input type="text" name="tracking_number" class="form-control" placeholder="Kargo takip numarası" required />
+                                <div class="form-text">Kargo firmasından alınan takip numarası</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Servis Tipi</label>
+                                <select name="service_type" class="form-select">
+                                    <option value="standard" selected>Standart</option>
+                                    <option value="express">Express</option>
+                                    <option value="same_day">Aynı Gün</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="separator separator-dashed my-8"></div>
+
+                        <h4 class="mb-5">Paket Detayları</h4>
+                        
+                        <div class="row mb-5">
+                            <div class="col-md-3">
+                                <label class="form-label">Paket Sayısı</label>
+                                <input type="number" name="package_count" class="form-control" value="1" min="1" step="1" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Ağırlık (kg)</label>
+                                <input type="number" name="weight" class="form-control" placeholder="0.00" min="0" step="0.01" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Desi</label>
+                                <input type="number" name="desi" class="form-control" placeholder="0.00" min="0" step="0.01" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Tahmini Maliyet (TRY)</label>
+                                <input type="number" name="estimated_cost" class="form-control" placeholder="0.00" min="0" step="0.01" />
+                            </div>
+                        </div>
+
+                        <div class="separator separator-dashed my-8"></div>
+
+                        <h4 class="mb-5">Ek Seçenekler</h4>
+
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch form-check-custom form-check-solid">
+                                    <input class="form-check-input" type="checkbox" name="requires_signature" value="1" id="requires-signature" />
+                                    <label class="form-check-label" for="requires-signature">
+                                        İmza Gerekli
+                                    </label>
+                                </div>
+                                <div class="form-text">Teslimatta alıcı imzası gerektirir</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch form-check-custom form-check-solid">
+                                    <input class="form-check-input" type="checkbox" name="is_cod" value="1" id="is-cod" />
+                                    <label class="form-check-label" for="is-cod">
+                                        Kapıda Ödeme (COD)
+                                    </label>
+                                </div>
+                                <div class="form-text">Ödeme teslimat sırasında alınacak</div>
+                            </div>
+                        </div>
+
+                        <div id="cod-amount-group" class="row mb-5 d-none">
+                            <div class="col-md-6">
+                                <label class="form-label required">Kapıda Ödeme Tutarı (TRY)</label>
+                                <input type="number" name="cod_amount" class="form-control" placeholder="0.00" min="0" step="0.01" />
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label">Notlar</label>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="Gönderi hakkında notlar..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="card card-flush">
+                    <div class="card-body">
+                        <div class="mb-7">
+                            <h5 class="mb-3 text-gray-700">Gönderi Bilgilendirme</h5>
+                            <div class="notice d-flex bg-light-primary rounded border-primary border border-dashed p-5">
+                                <i class="ki-duotone ki-information-5 fs-2tx text-primary me-4">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                </i>
+                                <div class="d-flex flex-stack flex-grow-1">
+                                    <div class="fw-semibold">
+                                        <div class="fs-6 text-gray-700">
+                                            Gönderiyi oluşturduktan sonra:
+                                            <ul class="mt-2 mb-0">
+                                                <li>Kargo takip numarası sisteme kaydedilecek</li>
+                                                <li>Sipariş durumu güncellenecek</li>
+                                                <li>Müşteriye bilgilendirme yapılabilecek</li>
+                                                <li>Kargo takibi yapılabilecek</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="ki-duotone ki-check fs-2"></i>
+                                Gönderiyi Oluştur
+                            </button>
+                            <a href="{{ path('admin_shipments') }}" class="btn btn-light">İptal</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Order selection handler
+        const orderSelect = document.getElementById('order-select');
+        const orderInfo = document.getElementById('order-info');
+        
+        orderSelect?.addEventListener('change', function() {
+            const selected = this.options[this.selectedIndex];
+            if (selected.value) {
+                document.getElementById('order-customer').textContent = selected.dataset.customer;
+                document.getElementById('order-address').textContent = selected.dataset.address;
+                orderInfo.classList.remove('d-none');
+            } else {
+                orderInfo.classList.add('d-none');
+            }
+        });
+
+        // COD toggle
+        const codCheckbox = document.getElementById('is-cod');
+        const codAmountGroup = document.getElementById('cod-amount-group');
+        
+        codCheckbox?.addEventListener('change', function() {
+            if (this.checked) {
+                codAmountGroup.classList.remove('d-none');
+                codAmountGroup.querySelector('input').required = true;
+            } else {
+                codAmountGroup.classList.add('d-none');
+                codAmountGroup.querySelector('input').required = false;
+            }
+        });
+    </script>
+{% endblock %}

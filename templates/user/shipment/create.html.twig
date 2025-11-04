@@ -1,0 +1,353 @@
+{% extends 'layout/_user.html.twig' %}
+
+{% block title %}Yeni Gönderi Oluştur{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+                    Yeni Gönderi Oluştur
+                </h1>
+                <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                    <li class="breadcrumb-item text-muted">
+                        <a href="{{ path('user_dashboard') }}" class="text-muted text-hover-primary">Anasayfa</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <span class="bullet bg-gray-400 w-5px h-2px"></span>
+                    </li>
+                    <li class="breadcrumb-item text-muted">
+                        <a href="{{ path('user_shipments') }}" class="text-muted text-hover-primary">Gönderiler</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <span class="bullet bg-gray-400 w-5px h-2px"></span>
+                    </li>
+                    <li class="breadcrumb-item text-muted">Yeni Gönderi</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-xxl">
+
+            <form id="shipment-form" class="form">
+                <div class="row g-5 g-xl-8">
+                    <!--begin::Col-->
+                    <div class="col-xl-8">
+                        <!--begin::Order Selection Card-->
+                        <div class="card mb-5">
+                            <div class="card-header">
+                                <h3 class="card-title">Sipariş Seçimi</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-7">
+                                    <label class="form-label required">Sipariş</label>
+                                    <select name="order_id" class="form-select form-select-solid" data-control="select2" data-placeholder="Sipariş seçin" required id="order-select">
+                                        <option></option>
+                                        {% for readyOrder in orders %}
+                                            <option value="{{ readyOrder.id }}"
+                                                    data-customer="{{ readyOrder.customerName }}"
+                                                    data-total="{{ readyOrder.totalPrice }}"
+                                                    data-items="{{ readyOrder.items|length }}"
+                                                    {% if order and readyOrder.id == order.id %}selected{% endif %}>
+                                                #{{ readyOrder.orderNumber }} - {{ readyOrder.customerName }} - {{ readyOrder.totalPrice|number_format(2) }} ₺
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">Hazırlanmış ve gönderi oluşturulmamış siparişler listelenir</div>
+                                </div>
+
+                                {% if order %}
+                                <div id="order-details" class="alert alert-primary d-flex align-items-center p-5">
+                                    <i class="ki-outline ki-information-4 fs-2hx text-primary me-4"></i>
+                                    <div class="d-flex flex-column">
+                                        <h5 class="mb-1">Sipariş Bilgileri</h5>
+                                        <span><strong>Müşteri:</strong> {{ order.customerName }}</span>
+                                        <span><strong>Toplam:</strong> {{ order.totalPrice|number_format(2) }} ₺</span>
+                                        <span><strong>Ürün Sayısı:</strong> {{ order.items|length }} adet</span>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div id="order-details" class="alert alert-primary d-flex align-items-center p-5" style="display:none!important;">
+                                    <i class="ki-outline ki-information-4 fs-2hx text-primary me-4"></i>
+                                    <div class="d-flex flex-column" id="order-info">
+                                        <h5 class="mb-1">Sipariş Bilgileri</h5>
+                                        <span id="order-customer"></span>
+                                        <span id="order-total"></span>
+                                        <span id="order-items"></span>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!--end::Order Selection Card-->
+
+                        <!--begin::Cargo Details Card-->
+                        <div class="card mb-5">
+                            <div class="card-header">
+                                <h3 class="card-title">Kargo Bilgileri</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-7">
+                                        <label class="form-label required">Kargo Firması</label>
+                                        <select name="cargo_company_id" class="form-select form-select-solid" data-control="select2" data-placeholder="Kargo firması seçin" required>
+                                            <option></option>
+                                            {% for company in cargo_companies %}
+                                                <option value="{{ company.id }}">{{ company.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6 mb-7">
+                                        <label class="form-label required">Hizmet Tipi</label>
+                                        <select name="service_type" class="form-select form-select-solid" required>
+                                            <option value="standard">Standart</option>
+                                            <option value="express">Ekspres</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-7">
+                                        <label class="form-label">Ağırlık (kg)</label>
+                                        <input type="number" name="weight" class="form-control form-control-solid" step="0.01" min="0" placeholder="0.00" />
+                                    </div>
+
+                                    <div class="col-md-4 mb-7">
+                                        <label class="form-label">Desi</label>
+                                        <input type="number" name="desi" class="form-control form-control-solid" step="0.01" min="0" placeholder="0.00" />
+                                        <div class="form-text">Desi = (En x Boy x Yükseklik) / 3000</div>
+                                    </div>
+
+                                    <div class="col-md-4 mb-7">
+                                        <label class="form-label">Paket Sayısı</label>
+                                        <input type="number" name="package_count" class="form-control form-control-solid" min="1" value="1" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-7">
+                                        <div class="form-check form-check-custom form-check-solid">
+                                            <input class="form-check-input" type="checkbox" name="requires_signature" id="requires_signature" />
+                                            <label class="form-check-label" for="requires_signature">
+                                                İmzalı Teslim Gerekli
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-7">
+                                        <div class="form-check form-check-custom form-check-solid">
+                                            <input class="form-check-input" type="checkbox" name="is_cod" id="is_cod" />
+                                            <label class="form-check-label" for="is_cod">
+                                                Kapıda Ödeme (Sipariş tutarı kadar)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-7">
+                                    <label class="form-label">Notlar</label>
+                                    <textarea name="notes" class="form-control form-control-solid" rows="3" placeholder="Gönderi ile ilgili özel notlar..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <!--end::Cargo Details Card-->
+                    </div>
+                    <!--end::Col-->
+
+                    <!--begin::Col-->
+                    <div class="col-xl-4">
+                        <!--begin::Summary Card-->
+                        <div class="card card-sticky" data-kt-sticky="true" data-kt-sticky-name="shipment-summary" data-kt-sticky-offset="{default: false, lg: '200px'}" data-kt-sticky-width="{lg: '250px', xl: '300px'}" data-kt-sticky-left="auto" data-kt-sticky-top="150px" data-kt-sticky-animation="false" data-kt-sticky-zindex="95">
+                            <div class="card-header">
+                                <h3 class="card-title">Gönderi Özeti</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-7">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span class="text-gray-600">Sipariş</span>
+                                        <span class="fw-bold" id="summary-order">-</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span class="text-gray-600">Kargo Firması</span>
+                                        <span class="fw-bold" id="summary-cargo">-</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span class="text-gray-600">Hizmet Tipi</span>
+                                        <span class="fw-bold" id="summary-service">Standart</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span class="text-gray-600">Ağırlık</span>
+                                        <span class="fw-bold" id="summary-weight">-</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span class="text-gray-600">Paket Sayısı</span>
+                                        <span class="fw-bold" id="summary-packages">1</span>
+                                    </div>
+                                </div>
+
+                                <div class="separator separator-dashed mb-7"></div>
+
+                                <div class="mb-7">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="ki-outline ki-check-circle text-success fs-2 me-2"></i>
+                                        <span class="text-gray-600">Otomatik takip numarası</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="ki-outline ki-check-circle text-success fs-2 me-2"></i>
+                                        <span class="text-gray-600">Etiket yazdırma</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="ki-outline ki-check-circle text-success fs-2 me-2"></i>
+                                        <span class="text-gray-600">Müşteri bildirimi</span>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary" id="btn-submit">
+                                        <i class="ki-outline ki-check fs-2"></i>
+                                        Gönderi Oluştur
+                                    </button>
+                                    <a href="{{ path('user_shipments') }}" class="btn btn-light">
+                                        İptal
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <!--end::Summary Card-->
+                    </div>
+                    <!--end::Col-->
+                </div>
+            </form>
+
+        </div>
+    </div>
+    <!--end::Content-->
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+"use strict";
+
+$(document).ready(function() {
+    initFormHandlers();
+    initSummaryUpdaters();
+});
+
+function initFormHandlers() {
+    // Order selection
+    $('#order-select').on('change', function() {
+        const selected = $(this).find(':selected');
+        if (selected.val()) {
+            $('#order-details').show();
+            $('#order-customer').html('<strong>Müşteri:</strong> ' + selected.data('customer'));
+            $('#order-total').html('<strong>Toplam:</strong> ' + parseFloat(selected.data('total')).toFixed(2) + ' ₺');
+            $('#order-items').html('<strong>Ürün Sayısı:</strong> ' + selected.data('items') + ' adet');
+            updateSummary('order', '#' + selected.text().split(' - ')[0]);
+        } else {
+            $('#order-details').hide();
+            updateSummary('order', '-');
+        }
+    });
+
+    // Form submission
+    $('#shipment-form').on('submit', function(e) {
+        e.preventDefault();
+        submitShipmentForm();
+    });
+}
+
+function initSummaryUpdaters() {
+    // Cargo company
+    $('select[name="cargo_company_id"]').on('change', function() {
+        const text = $(this).find(':selected').text() || '-';
+        updateSummary('cargo', text);
+    });
+
+    // Service type
+    $('select[name="service_type"]').on('change', function() {
+        const text = $(this).find(':selected').text() || 'Standart';
+        updateSummary('service', text);
+    });
+
+    // Weight
+    $('input[name="weight"]').on('input', function() {
+        const value = $(this).val();
+        updateSummary('weight', value ? value + ' kg' : '-');
+    });
+
+    // Package count
+    $('input[name="package_count"]').on('input', function() {
+        const value = $(this).val() || '1';
+        updateSummary('packages', value);
+    });
+}
+
+function updateSummary(field, value) {
+    $(`#summary-${field}`).text(value);
+}
+
+function submitShipmentForm() {
+    const form = $('#shipment-form');
+    const btn = $('#btn-submit');
+    const originalHtml = btn.html();
+
+    // Validation
+    if (!form[0].checkValidity()) {
+        form[0].reportValidity();
+        return;
+    }
+
+    // Disable button
+    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Oluşturuluyor...');
+
+    $.ajax({
+        url: '{{ path('user_shipment_create') }}',
+        type: 'POST',
+        data: form.serialize(),
+        success: function(response) {
+            if (response.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Başarılı!',
+                    text: response.message,
+                    confirmButtonText: 'Detayları Gör',
+                    showCancelButton: true,
+                    cancelButtonText: 'Listeye Dön'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = `/user/shipments/${response.shipment_id}`;
+                    } else {
+                        window.location.href = '{{ path('user_shipments') }}';
+                    }
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Hata',
+                    text: response.message
+                });
+                btn.prop('disabled', false).html(originalHtml);
+            }
+        },
+        error: function(xhr) {
+            const error = xhr.responseJSON || {};
+            Swal.fire({
+                icon: 'error',
+                title: 'Hata',
+                text: error.message || 'Gönderi oluşturulurken hata oluştu.'
+            });
+            btn.prop('disabled', false).html(originalHtml);
+        }
+    });
+}
+</script>
+{% endblock %}

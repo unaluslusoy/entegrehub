@@ -1,0 +1,26 @@
+login:
+  title: Sign In
+  subtitle: EntegreHub Cargo Management System
+  email: Email Address
+  password: Password
+  remember_me: Remember Me
+  forgot_password: Forgot Password
+  submit: Sign In
+  no_account: Don't have an account?
+  register_link: Sign Up
+  or_with_email: or with email
+  error_title: Login Failed
+  
+auth:
+  google: Google
+  apple: Apple
+  shopify: Shopify
+  
+general:
+  about: About
+  pricing: Pricing
+  contact: Contact
+  powered_by: Powered by
+  copyright: © 2025 EntegreHub
+  turkish: Turkish
+  english: English

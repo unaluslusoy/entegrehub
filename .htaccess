@@ -1,0 +1,23 @@
+# Redirect to public directory
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # If not already in public directory, redirect there
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L,QSA]
+</IfModule>
+
+# Prevent access to sensitive files and directories
+RedirectMatch 403 ^/\.
+RedirectMatch 403 ^/vendor/
+RedirectMatch 403 ^/src/
+RedirectMatch 403 ^/config/
+RedirectMatch 403 ^/var/
+RedirectMatch 403 ^/bin/
+RedirectMatch 403 ^/tests/
+RedirectMatch 403 composer\.(json|lock)$
+RedirectMatch 403 \.env$
+RedirectMatch 403 \.git
+
+# Disable directory listing
+Options -Indexes

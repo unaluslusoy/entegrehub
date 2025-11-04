@@ -1,0 +1,171 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Ödeme Ayarları{% endblock %}
+
+{% block page_title %}Ödeme Ayarları{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Ayarlar</li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Ödeme</li>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        <div class="row g-5">
+            <div class="col-xl-9">
+                {# Stripe #}
+                <div class="card mb-5">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h3>Stripe</h3>
+                        </div>
+                        <div class="card-toolbar">
+                            <div class="form-check form-switch form-check-custom form-check-solid">
+                                <input class="form-check-input" type="checkbox" name="stripe_enabled" value="1" 
+                                       id="stripe-enabled" {{ settings.stripe_enabled ?? false ? 'checked' : '' }} />
+                                <label class="form-check-label" for="stripe-enabled">
+                                    Etkinleştir
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label">Publishable Key</label>
+                                <input type="text" name="stripe_public_key" class="form-control" 
+                                       value="{{ settings.stripe_public_key ?? '' }}" placeholder="pk_..." />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Secret Key</label>
+                                <input type="password" name="stripe_secret_key" class="form-control" 
+                                       placeholder="sk_..." />
+                                {% if settings.stripe_secret_key %}
+                                <div class="form-text text-success">
+                                    <i class="ki-duotone ki-check-circle fs-6"></i>
+                                    Secret key ayarlanmış
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# PayPal #}
+                <div class="card mb-5">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h3>PayPal</h3>
+                        </div>
+                        <div class="card-toolbar">
+                            <div class="form-check form-switch form-check-custom form-check-solid">
+                                <input class="form-check-input" type="checkbox" name="paypal_enabled" value="1" 
+                                       id="paypal-enabled" {{ settings.paypal_enabled ?? false ? 'checked' : '' }} />
+                                <label class="form-check-label" for="paypal-enabled">
+                                    Etkinleştir
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label">Client ID</label>
+                                <input type="text" name="paypal_client_id" class="form-control" 
+                                       value="{{ settings.paypal_client_id ?? '' }}" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Client Secret</label>
+                                <input type="password" name="paypal_client_secret" class="form-control" 
+                                       placeholder="Değiştirmek için yeni secret girin" />
+                                {% if settings.paypal_client_secret %}
+                                <div class="form-text text-success">
+                                    <i class="ki-duotone ki-check-circle fs-6"></i>
+                                    Secret ayarlanmış
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label">Mode</label>
+                            <select name="paypal_mode" class="form-select">
+                                <option value="sandbox" {{ settings.paypal_mode|default('sandbox') == 'sandbox' ? 'selected' : '' }}>Sandbox (Test)</option>
+                                <option value="live" {{ settings.paypal_mode == 'live' ? 'selected' : '' }}>Live (Canlı)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {# Iyzico #}
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h3>Iyzico</h3>
+                        </div>
+                        <div class="card-toolbar">
+                            <div class="form-check form-switch form-check-custom form-check-solid">
+                                <input class="form-check-input" type="checkbox" name="iyzico_enabled" value="1" 
+                                       id="iyzico-enabled" {{ settings.iyzico_enabled ?? false ? 'checked' : '' }} />
+                                <label class="form-check-label" for="iyzico-enabled">
+                                    Etkinleştir
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label">API Key</label>
+                                <input type="text" name="iyzico_api_key" class="form-control" 
+                                       value="{{ settings.iyzico_api_key ?? '' }}" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Secret Key</label>
+                                <input type="password" name="iyzico_secret_key" class="form-control" 
+                                       placeholder="Değiştirmek için yeni secret girin" />
+                                {% if settings.iyzico_secret_key %}
+                                <div class="form-text text-success">
+                                    <i class="ki-duotone ki-check-circle fs-6"></i>
+                                    Secret key ayarlanmış
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3">
+                <div class="card card-flush">
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="ki-duotone ki-check fs-2"></i>
+                            Ayarları Kaydet
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card card-flush mt-5">
+                    <div class="card-header">
+                        <h3 class="card-title">Bilgi</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="notice bg-light-primary rounded border-primary border border-dashed p-4">
+                            <div class="fs-7 text-gray-700">
+                                Ödeme sağlayıcılarınızın API anahtarlarını buradan yönetebilirsiniz. 
+                                Test modunda işlem yapmadan önce mutlaka test anahtarlarını kullanın.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

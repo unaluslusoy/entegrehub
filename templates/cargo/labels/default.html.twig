@@ -1,0 +1,260 @@
+{# Default Cargo Label Template - 10x15cm #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Kargo Etiketi - {{ shipment.trackingNumber }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: 10cm 15cm;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 9pt;
+            width: 10cm;
+            height: 15cm;
+            padding: 8mm;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 3mm;
+            margin-bottom: 3mm;
+        }
+
+        .company-logo {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 2mm;
+        }
+
+        .cargo-company {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .tracking-section {
+            text-align: center;
+            margin: 3mm 0;
+            padding: 3mm;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+        }
+
+        .tracking-number {
+            font-size: 16pt;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        .qr-code {
+            text-align: center;
+            margin: 3mm 0;
+        }
+
+        .qr-code img {
+            width: 35mm;
+            height: 35mm;
+        }
+
+        .section {
+            margin: 3mm 0;
+            border: 1px solid #ddd;
+            padding: 2mm;
+        }
+
+        .section-title {
+            font-weight: bold;
+            font-size: 8pt;
+            text-transform: uppercase;
+            background: #000;
+            color: #fff;
+            padding: 1mm 2mm;
+            margin: -2mm -2mm 2mm -2mm;
+        }
+
+        .info-row {
+            margin: 1mm 0;
+            font-size: 8pt;
+        }
+
+        .info-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 25mm;
+        }
+
+        .info-value {
+            display: inline-block;
+        }
+
+        .address-box {
+            min-height: 20mm;
+        }
+
+        .service-badges {
+            text-align: center;
+            margin: 2mm 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 1mm 3mm;
+            margin: 0 1mm;
+            background: #000;
+            color: #fff;
+            font-size: 7pt;
+            font-weight: bold;
+            border-radius: 2mm;
+        }
+
+        .badge.cod {
+            background: #ff6b6b;
+        }
+
+        .badge.express {
+            background: #ffa500;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 5mm;
+            left: 8mm;
+            right: 8mm;
+            text-align: center;
+            font-size: 7pt;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 2mm;
+        }
+
+        .barcode-section {
+            text-align: center;
+            margin: 2mm 0;
+        }
+    </style>
+</head>
+<body>
+    {# Header #}
+    <div class="header">
+        <div class="company-logo">
+            {{ company.firstName }} {{ company.lastName }}
+        </div>
+        <div class="cargo-company">
+            {{ shipment.cargoCompany.name }}
+        </div>
+    </div>
+
+    {# Tracking Number #}
+    <div class="tracking-section">
+        <div style="font-size: 7pt; margin-bottom: 1mm;">TAKİP NO</div>
+        <div class="tracking-number">{{ shipment.trackingNumber }}</div>
+        <div style="font-size: 7pt; margin-top: 1mm;">Sipariş: #{{ order.orderNumber }}</div>
+    </div>
+
+    {# Service Badges #}
+    <div class="service-badges">
+        {% if shipment.serviceType == 'express' %}
+            <span class="badge express">EKSPRES</span>
+        {% else %}
+            <span class="badge">STANDART</span>
+        {% endif %}
+
+        {% if shipment.isCOD %}
+            <span class="badge cod">KAPİDA ÖDEME: {{ shipment.codAmount|number_format(2) }} ₺</span>
+        {% endif %}
+
+        {% if shipment.requiresSignature %}
+            <span class="badge">İMZA GEREKLİ</span>
+        {% endif %}
+    </div>
+
+    {# QR Code #}
+    <div class="qr-code">
+        <img src="{{ qrCode }}" alt="QR Code">
+    </div>
+
+    {# Receiver Address #}
+    <div class="section address-box">
+        <div class="section-title">Alıcı Bilgileri</div>
+        <div class="info-row">
+            <strong style="font-size: 10pt;">{{ address.firstName }} {{ address.lastName }}</strong>
+        </div>
+        {% if address.company %}
+        <div class="info-row">
+            {{ address.company }}
+        </div>
+        {% endif %}
+        <div class="info-row">
+            {{ address.address1 }}
+        </div>
+        {% if address.address2 %}
+        <div class="info-row">
+            {{ address.address2 }}
+        </div>
+        {% endif %}
+        <div class="info-row">
+            <strong>{{ address.city }}, {{ address.province }} {{ address.zip }}</strong>
+        </div>
+        <div class="info-row">
+            {{ address.country }}
+        </div>
+        <div class="info-row">
+            <span class="info-label">Tel:</span>
+            <span class="info-value">{{ address.phone }}</span>
+        </div>
+    </div>
+
+    {# Shipment Info #}
+    <div class="section">
+        <div class="section-title">Gönderi Bilgileri</div>
+        <div class="info-row">
+            <span class="info-label">Ağırlık:</span>
+            <span class="info-value">{{ shipment.weight ? shipment.weight ~ ' kg' : '-' }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Paket:</span>
+            <span class="info-value">{{ shipment.packageCount ?? 1 }} adet</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Tarih:</span>
+            <span class="info-value">{{ shipment.createdAt|date('d.m.Y H:i') }}</span>
+        </div>
+    </div>
+
+    {# Order Items Summary #}
+    <div class="section">
+        <div class="section-title">Ürünler ({{ items|length }} adet)</div>
+        {% for item in items|slice(0, 3) %}
+        <div class="info-row" style="font-size: 7pt;">
+            {{ item.quantity }}x {{ item.productName|slice(0, 35) }}
+        </div>
+        {% endfor %}
+        {% if items|length > 3 %}
+        <div class="info-row" style="font-size: 7pt; font-style: italic;">
+            ... ve {{ items|length - 3 }} ürün daha
+        </div>
+        {% endif %}
+    </div>
+
+    {# Footer #}
+    <div class="footer">
+        <div>{{ "now"|date('d.m.Y H:i') }} tarihinde oluşturulmuştur</div>
+        {% if shipment.notes %}
+        <div style="margin-top: 1mm; font-style: italic;">{{ shipment.notes|slice(0, 50) }}</div>
+        {% endif %}
+    </div>
+</body>
+</html>

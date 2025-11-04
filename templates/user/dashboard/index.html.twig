@@ -1,0 +1,228 @@
+{% extends 'layout/_user.html.twig' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+                    Dashboard
+                </h1>
+                <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                    <li class="breadcrumb-item text-muted">
+                        <a href="{{ path('user_dashboard') }}" class="text-muted text-hover-primary">Anasayfa</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <span class="bullet bg-gray-400 w-5px h-2px"></span>
+                    </li>
+                    <li class="breadcrumb-item text-muted">Dashboard</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-xxl">
+            
+            <!--begin::Statistics-->
+            <div class="row g-5 g-xl-8 mb-5">
+                <!--begin::Col-->
+                <div class="col-xl-3">
+                    <div class="card card-flush h-xl-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div class="d-flex flex-stack">
+                                <div class="text-gray-700 fw-semibold fs-6 me-2">Toplam Sipariş</div>
+                            </div>
+                            <div class="d-flex align-items-center pt-3">
+                                <span class="fs-2hx fw-bold text-dark me-2 lh-1">{{ order_stats.total_orders }}</span>
+                            </div>
+                            <div class="d-flex flex-stack pt-3">
+                                <div class="text-gray-600 fw-semibold fs-7">Son 30 gün: {{ order_stats.last_30_days }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end::Col-->
+
+                <!--begin::Col-->
+                <div class="col-xl-3">
+                    <div class="card card-flush h-xl-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div class="d-flex flex-stack">
+                                <div class="text-gray-700 fw-semibold fs-6 me-2">Toplam Ciro</div>
+                            </div>
+                            <div class="d-flex align-items-center pt-3">
+                                <span class="fs-2hx fw-bold text-dark me-2 lh-1">{{ order_stats.total_revenue|number_format(2) }} ₺</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end::Col-->
+
+                <!--begin::Col-->
+                <div class="col-xl-3">
+                    <div class="card card-flush h-xl-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div class="d-flex flex-stack">
+                                <div class="text-gray-700 fw-semibold fs-6 me-2">Aktif Gönderiler</div>
+                            </div>
+                            <div class="d-flex align-items-center pt-3">
+                                <span class="fs-2hx fw-bold text-primary me-2 lh-1">{{ shipment_stats.active_shipments }}</span>
+                            </div>
+                            <div class="d-flex flex-stack pt-3">
+                                <div class="text-gray-600 fw-semibold fs-7">Toplam: {{ shipment_stats.total_shipments }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end::Col-->
+
+                <!--begin::Col-->
+                <div class="col-xl-3">
+                    <div class="card card-flush h-xl-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div class="d-flex flex-stack">
+                                <div class="text-gray-700 fw-semibold fs-6 me-2">Mağazalarım</div>
+                            </div>
+                            <div class="d-flex align-items-center pt-3">
+                                <span class="fs-2hx fw-bold text-success me-2 lh-1">{{ shops|length }}</span>
+                            </div>
+                            <div class="d-flex flex-stack pt-3">
+                                <a href="{{ path('user_shopify_index') }}" class="text-primary fw-semibold fs-7">Yönet →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end::Col-->
+            </div>
+            <!--end::Statistics-->
+
+            <div class="row g-5 g-xl-8">
+                <!--begin::Recent Orders-->
+                <div class="col-xl-6">
+                    <div class="card card-flush h-xl-100">
+                        <div class="card-header pt-7">
+                            <h3 class="card-title align-items-start flex-column">
+                                <span class="card-label fw-bold text-gray-800">Son Siparişler</span>
+                                <span class="text-gray-500 mt-1 fw-semibold fs-6">Son 5 sipariş</span>
+                            </h3>
+                            <div class="card-toolbar">
+                                <a href="{{ path('user_orders') }}" class="btn btn-sm btn-light">Tümünü Gör</a>
+                            </div>
+                        </div>
+                        <div class="card-body pt-5">
+                            {% if recent_orders|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-row-dashed align-middle gs-0 gy-4 my-0">
+                                        <tbody>
+                                            {% for order in recent_orders %}
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex flex-column">
+                                                        <a href="{{ path('user_order_detail', {id: order.id}) }}" class="text-gray-800 text-hover-primary fw-bold">
+                                                            #{{ order.orderNumber }}
+                                                        </a>
+                                                        <span class="text-muted fs-7">{{ order.customerName }}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-end">
+                                                    <span class="fw-bold">{{ order.totalAmount|number_format(2) }} {{ order.currency }}</span>
+                                                </td>
+                                                <td class="text-end">
+                                                    {% set statusMap = {
+                                                        'pending': { label: 'Bekliyor', class: 'warning' },
+                                                        'processing': { label: 'İşleniyor', class: 'info' },
+                                                        'shipped': { label: 'Kargoda', class: 'primary' },
+                                                        'delivered': { label: 'Teslim', class: 'success' }
+                                                    } %}
+                                                    {% set status = statusMap[order.status] ?? { label: order.status, class: 'secondary' } %}
+                                                    <span class="badge badge-light-{{ status.class }}">{{ status.label }}</span>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-10">
+                                    <i class="ki-duotone ki-file-deleted fs-5x text-gray-400 mb-3">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                    <h3 class="text-gray-800 fs-4 fw-bold mb-2">Henüz sipariş yok</h3>
+                                    <p class="text-gray-500 fs-6">Shopify mağazanızı bağlayarak siparişleri otomatik senkronize edebilirsiniz.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <!--end::Recent Orders-->
+
+                <!--begin::Recent Shipments-->
+                <div class="col-xl-6">
+                    <div class="card card-flush h-xl-100">
+                        <div class="card-header pt-7">
+                            <h3 class="card-title align-items-start flex-column">
+                                <span class="card-label fw-bold text-gray-800">Son Gönderiler</span>
+                                <span class="text-gray-500 mt-1 fw-semibold fs-6">Son 5 gönderi</span>
+                            </h3>
+                            <div class="card-toolbar">
+                                <a href="{{ path('user_shipments') }}" class="btn btn-sm btn-light">Tümünü Gör</a>
+                            </div>
+                        </div>
+                        <div class="card-body pt-5">
+                            {% if recent_shipments|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-row-dashed align-middle gs-0 gy-4 my-0">
+                                        <tbody>
+                                            {% for shipment in recent_shipments %}
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex flex-column">
+                                                        <a href="{{ path('user_shipment_detail', {id: shipment.id}) }}" class="text-gray-800 text-hover-primary fw-bold">
+                                                            {{ shipment.trackingNumber }}
+                                                        </a>
+                                                        <span class="text-muted fs-7">{{ shipment.cargoCompany.name }}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-end">
+                                                    {% set shipmentStatusMap = {
+                                                        'created': { label: 'Oluşturuldu', class: 'info' },
+                                                        'picked_up': { label: 'Teslim Alındı', class: 'primary' },
+                                                        'in_transit': { label: 'Yolda', class: 'warning' },
+                                                        'delivered': { label: 'Teslim Edildi', class: 'success' }
+                                                    } %}
+                                                    {% set status = shipmentStatusMap[shipment.status] ?? { label: shipment.status, class: 'secondary' } %}
+                                                    <span class="badge badge-light-{{ status.class }}">{{ status.label }}</span>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-10">
+                                    <i class="ki-duotone ki-parcel fs-5x text-gray-400 mb-3">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                    <h3 class="text-gray-800 fs-4 fw-bold mb-2">Henüz gönderi yok</h3>
+                                    <p class="text-gray-500 fs-6">Siparişleriniz için kargo gönderisi oluşturabilirsiniz.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <!--end::Recent Shipments-->
+            </div>
+
+        </div>
+    </div>
+    <!--end::Content-->
+</div>
+{% endblock %}

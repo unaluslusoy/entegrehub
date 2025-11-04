@@ -1,0 +1,277 @@
+<!--begin::sidebar menu-->
+<div class="app-sidebar-menu overflow-hidden flex-column-fluid">
+	<!--begin::Menu wrapper-->
+	<div id="kt_app_sidebar_menu_wrapper" class="app-sidebar-wrapper hover-scroll-overlay-y my-5" data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_app_sidebar_logo, #kt_app_sidebar_footer" data-kt-scroll-wrappers="#kt_app_sidebar_menu" data-kt-scroll-offset="5px" data-kt-scroll-save-state="true">
+		<!--begin::Menu-->
+		<div class="menu menu-column menu-rounded menu-sub-indention px-3" id="#kt_app_sidebar_menu" data-kt-menu="true" data-kt-menu-expand="false">
+
+			<!--begin:Menu item - Dashboard-->
+			<div class="menu-item">
+				<a class="menu-link {{ app.request.get('_route') == 'admin_dashboard' ? 'active' : '' }}" href="{{ path('admin_dashboard') }}">
+					<span class="menu-icon">
+						<i class="ki-duotone ki-element-11 fs-2">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+							<span class="path4"></span>
+						</i>
+					</span>
+					<span class="menu-title">Dashboard</span>
+				</a>
+			</div>
+			<!--end:Menu item-->
+
+			{% if is_granted('ROLE_SUPER_ADMIN') %}
+
+			<!--begin:Menu separator-->
+			<div class="menu-item">
+				<div class="menu-content pt-8 pb-2">
+					<span class="menu-section text-muted text-uppercase fs-8 ls-1">MÜŞTERİ YÖNETİMİ</span>
+				</div>
+			</div>
+			<!--end:Menu separator-->
+
+			<!--begin:Menu item - Müşteriler-->
+			<div class="menu-item">
+				<a class="menu-link {{ app.request.get('_route') starts with 'admin_customers' ? 'active' : '' }}" href="{{ path('admin_customers_index') }}">
+					<span class="menu-icon">
+						<i class="ki-duotone ki-profile-user fs-2">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+							<span class="path4"></span>
+						</i>
+					</span>
+					<span class="menu-title">Müşteriler</span>
+				</a>
+			</div>
+			<!--end:Menu item-->
+
+			<!--begin:Menu item - Abonelikler-->
+			<div class="menu-item">
+				<a class="menu-link {{ app.request.get('_route') starts with 'admin_subscription' ? 'active' : '' }}" href="{{ path('admin_subscriptions') }}">
+					<span class="menu-icon">
+						<i class="ki-duotone ki-medal-star fs-2">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+							<span class="path4"></span>
+						</i>
+					</span>
+					<span class="menu-title">Abonelikler</span>
+				</a>
+			</div>
+			<!--end:Menu item-->
+
+			<!--begin:Menu item - Faturalar-->
+			<div class="menu-item">
+				<a class="menu-link {{ app.request.get('_route') starts with 'admin_invoice' ? 'active' : '' }}" href="{{ path('admin_invoices') }}">
+					<span class="menu-icon">
+						<i class="ki-duotone ki-document fs-2">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+					<span class="menu-title">Faturalar</span>
+				</a>
+			</div>
+			<!--end:Menu item-->
+
+			<!--begin:Menu separator-->
+			<div class="menu-item">
+				<div class="menu-content pt-8 pb-2">
+					<span class="menu-section text-muted text-uppercase fs-8 ls-1">PAKET & ÖDEME</span>
+				</div>
+			</div>
+			<!--end:Menu separator-->
+
+			<!--begin:Menu item - Paket Yönetimi-->
+			<div class="menu-item">
+				<a class="menu-link {{ app.request.get('_route') starts with 'admin_plans' ? 'active' : '' }}" href="{{ path('admin_plans') }}">
+					<span class="menu-icon">
+						<i class="ki-duotone ki-package fs-2">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+						</i>
+					</span>
+					<span class="menu-title">Abonelik Paketleri</span>
+				</a>
+			</div>
+			<!--end:Menu item-->
+
+			<!--begin:Menu item - Ödeme Entegrasyonları-->
+			<div class="menu-item">
+				<a class="menu-link {{ app.request.get('_route') starts with 'admin_payment_integrations' ? 'active' : '' }}" href="{{ path('admin_payment_integrations') }}">
+					<span class="menu-icon">
+						<i class="ki-duotone ki-credit-cart fs-2">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+					<span class="menu-title">Ödeme Gateway</span>
+				</a>
+			</div>
+			<!--end:Menu item-->
+
+			<!--begin:Menu separator-->
+			<div class="menu-item">
+				<div class="menu-content pt-8 pb-2">
+					<span class="menu-section text-muted text-uppercase fs-8 ls-1">SİSTEM YÖNETİMİ</span>
+				</div>
+			</div>
+			<!--end:Menu separator-->
+
+			<!--begin:Menu item - Kargo Firmaları-->
+			<div class="menu-item">
+				<a class="menu-link {{ app.request.get('_route') starts with 'admin_cargo_providers' ? 'active' : '' }}" href="{{ path('admin_cargo_providers') }}">
+					<span class="menu-icon">
+						<i class="ki-duotone ki-delivery fs-2">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+							<span class="path4"></span>
+							<span class="path5"></span>
+						</i>
+					</span>
+					<span class="menu-title">Kargo Firmaları</span>
+				</a>
+			</div>
+			<!--end:Menu item-->
+
+			<!--begin:Menu item - Kullanıcılar-->
+			<div class="menu-item">
+				<a class="menu-link {{ app.request.get('_route') starts with 'admin_users' ? 'active' : '' }}" href="{{ path('admin_users') }}">
+					<span class="menu-icon">
+						<i class="ki-duotone ki-user-tick fs-2">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+						</i>
+					</span>
+					<span class="menu-title">Kullanıcılar</span>
+				</a>
+			</div>
+			<!--end:Menu item-->
+
+			<!--begin:Menu item - Roller-->
+			<div class="menu-item">
+				<a class="menu-link {{ app.request.get('_route') starts with 'admin_roles' ? 'active' : '' }}" href="{{ path('admin_roles_index') }}">
+					<span class="menu-icon">
+						<i class="ki-duotone ki-shield fs-2">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+					<span class="menu-title">Roller & Yetkiler</span>
+				</a>
+			</div>
+			<!--end:Menu item-->
+
+			<!--begin:Menu item - İzinler-->
+			<div class="menu-item">
+				<a class="menu-link {{ app.request.get('_route') starts with 'admin_permissions' ? 'active' : '' }}" href="{{ path('admin_permissions_index') }}">
+					<span class="menu-icon">
+						<i class="ki-duotone ki-lock fs-2">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+						</i>
+					</span>
+					<span class="menu-title">İzin Yönetimi</span>
+				</a>
+			</div>
+			<!--end:Menu item-->
+
+			<!--begin:Menu separator-->
+			<div class="menu-item">
+				<div class="menu-content pt-8 pb-2">
+					<span class="menu-section text-muted text-uppercase fs-8 ls-1">SİSTEM AYARLARI</span>
+				</div>
+			</div>
+			<!--end:Menu separator-->
+
+			<!--begin:Menu item - Sistem Ayarları (Accordion)-->
+			<div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ app.request.get('_route') starts with 'admin_settings' or app.request.get('_route') starts with 'admin_cloudflare' ? 'hover show' : '' }}">
+				<span class="menu-link">
+					<span class="menu-icon">
+						<i class="ki-duotone ki-setting-2 fs-2">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+					<span class="menu-title">Sistem Ayarları</span>
+					<span class="menu-arrow"></span>
+				</span>
+				<div class="menu-sub menu-sub-accordion">
+					<div class="menu-item">
+						<a class="menu-link {{ app.request.get('_route') == 'admin_settings_general' ? 'active' : '' }}" href="{{ path('admin_settings_general') }}">
+							<span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+							<span class="menu-title">Genel Ayarlar</span>
+						</a>
+					</div>
+					<div class="menu-item">
+						<a class="menu-link {{ app.request.get('_route') == 'admin_settings_mail' ? 'active' : '' }}" href="{{ path('admin_settings_mail') }}">
+							<span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+							<span class="menu-title">Mail Ayarları</span>
+						</a>
+					</div>
+					<div class="menu-item">
+						<a class="menu-link {{ app.request.get('_route') == 'admin_settings_sms' ? 'active' : '' }}" href="{{ path('admin_settings_sms') }}">
+							<span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+							<span class="menu-title">SMS Ayarları</span>
+						</a>
+					</div>
+					<div class="menu-item">
+						<a class="menu-link {{ app.request.get('_route') == 'admin_settings_payment' ? 'active' : '' }}" href="{{ path('admin_settings_payment') }}">
+							<span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+							<span class="menu-title">Ödeme Ayarları</span>
+						</a>
+					</div>
+					<div class="menu-item">
+						<a class="menu-link {{ app.request.get('_route') == 'admin_settings_cargo_api' ? 'active' : '' }}" href="{{ path('admin_settings_cargo_api') }}">
+							<span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+							<span class="menu-title">Kargo API</span>
+						</a>
+					</div>
+					<div class="menu-item">
+						<a class="menu-link {{ app.request.get('_route') starts with 'admin_cloudflare' ? 'active' : '' }}" href="{{ path('admin_cloudflare_dashboard') }}">
+							<span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+							<span class="menu-title">Cloudflare</span>
+						</a>
+					</div>
+				</div>
+			</div>
+			<!--end:Menu item-->
+
+			{% endif %}
+
+			<!--begin:Menu separator-->
+			<div class="menu-item">
+				<div class="menu-content pt-8 pb-2">
+					<span class="menu-section text-muted text-uppercase fs-8 ls-1">HESAP</span>
+				</div>
+			</div>
+			<!--end:Menu separator-->
+
+			<!--begin:Menu item - Hesap Ayarları-->
+			<div class="menu-item">
+				<a class="menu-link {{ app.request.get('_route') starts with 'admin_account' ? 'active' : '' }}" href="{{ path('admin_account') }}">
+					<span class="menu-icon">
+						<i class="ki-duotone ki-profile-circle fs-2">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+						</i>
+					</span>
+					<span class="menu-title">Hesap Ayarları</span>
+				</a>
+			</div>
+			<!--end:Menu item-->
+
+		</div>
+		<!--end::Menu-->
+	</div>
+	<!--end::Menu wrapper-->
+</div>
+<!--end::sidebar menu-->

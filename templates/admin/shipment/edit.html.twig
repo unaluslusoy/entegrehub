@@ -1,0 +1,290 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Gönderi Düzenle{% endblock %}
+
+{% block page_title %}Gönderi Düzenle - {{ shipment.trackingNumber }}{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">
+        <a href="{{ path('admin_shipments') }}" class="text-muted text-hover-primary">Gönderiler</a>
+    </li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">{{ shipment.trackingNumber }}</li>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        <div class="row g-5">
+            <div class="col-xl-9">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Gönderi Bilgileri</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label">Takip Numarası</label>
+                                <input type="text" class="form-control" value="{{ shipment.trackingNumber }}" disabled />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Kargo Firması</label>
+                                <input type="text" class="form-control" value="{{ shipment.cargoCompany.name }}" disabled />
+                            </div>
+                        </div>
+
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label">Sipariş</label>
+                                <input type="text" class="form-control" value="{{ shipment.order.orderNumber }}" disabled />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label required">Durum</label>
+                                <select name="status" class="form-select" required>
+                                    <option value="created" {{ shipment.status == 'created' ? 'selected' : '' }}>Oluşturuldu</option>
+                                    <option value="picked_up" {{ shipment.status == 'picked_up' ? 'selected' : '' }}>Kargoya Verildi</option>
+                                    <option value="in_transit" {{ shipment.status == 'in_transit' ? 'selected' : '' }}>Yolda</option>
+                                    <option value="out_for_delivery" {{ shipment.status == 'out_for_delivery' ? 'selected' : '' }}>Dağıtımda</option>
+                                    <option value="delivered" {{ shipment.status == 'delivered' ? 'selected' : '' }}>Teslim Edildi</option>
+                                    <option value="returned" {{ shipment.status == 'returned' ? 'selected' : '' }}>İade Edildi</option>
+                                    <option value="cancelled" {{ shipment.status == 'cancelled' ? 'selected' : '' }}>İptal Edildi</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="separator separator-dashed my-8"></div>
+
+                        <h4 class="mb-5">Paket Detayları</h4>
+
+                        <div class="row mb-5">
+                            <div class="col-md-3">
+                                <label class="form-label">Servis Tipi</label>
+                                <select name="service_type" class="form-select">
+                                    <option value="standard" {{ shipment.serviceType == 'standard' ? 'selected' : '' }}>Standart</option>
+                                    <option value="express" {{ shipment.serviceType == 'express' ? 'selected' : '' }}>Express</option>
+                                    <option value="same_day" {{ shipment.serviceType == 'same_day' ? 'selected' : '' }}>Aynı Gün</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Paket Sayısı</label>
+                                <input type="number" name="package_count" class="form-control" value="{{ shipment.packageCount }}" min="1" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Ağırlık (kg)</label>
+                                <input type="number" name="weight" class="form-control" value="{{ shipment.weight }}" min="0" step="0.01" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Desi</label>
+                                <input type="number" name="desi" class="form-control" value="{{ shipment.desi }}" min="0" step="0.01" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label">Tahmini Maliyet (TRY)</label>
+                                <input type="number" name="estimated_cost" class="form-control" value="{{ shipment.estimatedCost }}" min="0" step="0.01" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Gerçek Maliyet (TRY)</label>
+                                <input type="number" name="actual_cost" class="form-control" value="{{ shipment.actualCost }}" min="0" step="0.01" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label">Tahmini Teslim Tarihi</label>
+                                <input type="date" name="estimated_delivery_date" class="form-control" 
+                                       value="{{ shipment.estimatedDeliveryDate ? shipment.estimatedDeliveryDate|date('Y-m-d') : '' }}" />
+                            </div>
+                        </div>
+
+                        <div class="separator separator-dashed my-8"></div>
+
+                        <h4 class="mb-5">Ek Seçenekler</h4>
+
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch form-check-custom form-check-solid">
+                                    <input class="form-check-input" type="checkbox" name="requires_signature" value="1" 
+                                           id="requires-signature" {{ shipment.requiresSignature ? 'checked' : '' }} />
+                                    <label class="form-check-label" for="requires-signature">
+                                        İmza Gerekli
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch form-check-custom form-check-solid">
+                                    <input class="form-check-input" type="checkbox" name="is_cod" value="1" 
+                                           id="is-cod" {{ shipment.isCOD ? 'checked' : '' }} />
+                                    <label class="form-check-label" for="is-cod">
+                                        Kapıda Ödeme (COD)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if shipment.isCOD or true %}
+                        <div id="cod-amount-group" class="row mb-5 {{ shipment.isCOD ? '' : 'd-none' }}">
+                            <div class="col-md-6">
+                                <label class="form-label">Kapıda Ödeme Tutarı (TRY)</label>
+                                <input type="number" name="cod_amount" class="form-control" value="{{ shipment.codAmount }}" min="0" step="0.01" />
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-5">
+                            <label class="form-label">Notlar</label>
+                            <textarea name="notes" class="form-control" rows="3">{{ shipment.notes }}</textarea>
+                        </div>
+
+                        <div class="separator separator-dashed my-8"></div>
+
+                        <h4 class="mb-5">Durum Geçmişi</h4>
+                        
+                        {% if shipment.trackingHistory %}
+                        <div class="timeline">
+                            {% for item in shipment.trackingHistory|reverse %}
+                            <div class="timeline-item">
+                                <div class="timeline-line w-40px"></div>
+                                <div class="timeline-icon symbol symbol-circle symbol-40px">
+                                    <div class="symbol-label bg-light">
+                                        <i class="ki-duotone ki-abstract-26 fs-2 text-gray-500">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                    </div>
+                                </div>
+                                <div class="timeline-content mb-10 mt-n1">
+                                    <div class="pe-3 mb-2">
+                                        <div class="fs-5 fw-semibold">{{ item.message }}</div>
+                                        <div class="text-gray-600 fs-7">{{ item.date }}</div>
+                                        {% if item.location %}
+                                        <div class="text-gray-500 fs-7 mt-1">
+                                            <i class="ki-duotone ki-geolocation fs-6 me-1"></i>{{ item.location }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-gray-500 fst-italic">Henüz durum geçmişi yok</div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ki-duotone ki-check fs-2"></i>
+                            Kaydet
+                        </button>
+                        <a href="{{ path('admin_shipment_detail', {id: shipment.id}) }}" class="btn btn-light">İptal</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3">
+                <div class="card card-flush mb-5">
+                    <div class="card-header">
+                        <h3 class="card-title">Hızlı İşlemler</h3>
+                    </div>
+                    <div class="card-body">
+                        <button type="button" class="btn btn-light-primary w-100 mb-3" onclick="updateStatus('picked_up')">
+                            <i class="ki-duotone ki-package fs-2"></i>
+                            Kargoya Verildi
+                        </button>
+                        <button type="button" class="btn btn-light-warning w-100 mb-3" onclick="updateStatus('in_transit')">
+                            <i class="ki-duotone ki-delivery fs-2"></i>
+                            Yolda
+                        </button>
+                        <button type="button" class="btn btn-light-info w-100 mb-3" onclick="updateStatus('out_for_delivery')">
+                            <i class="ki-duotone ki-geolocation fs-2"></i>
+                            Dağıtımda
+                        </button>
+                        <button type="button" class="btn btn-light-success w-100 mb-3" onclick="updateStatus('delivered')">
+                            <i class="ki-duotone ki-verify fs-2"></i>
+                            Teslim Edildi
+                        </button>
+                        <div class="separator my-5"></div>
+                        <button type="button" class="btn btn-light-danger w-100" onclick="updateStatus('cancelled')">
+                            <i class="ki-duotone ki-cross fs-2"></i>
+                            İptal Et
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card card-flush">
+                    <div class="card-body">
+                        <div class="mb-5">
+                            <label class="text-gray-600 fs-7">Oluşturulma</label>
+                            <div class="fw-bold">{{ shipment.createdAt|date('d.m.Y H:i') }}</div>
+                        </div>
+                        {% if shipment.pickedUpAt %}
+                        <div class="mb-5">
+                            <label class="text-gray-600 fs-7">Kargoya Verilme</label>
+                            <div class="fw-bold">{{ shipment.pickedUpAt|date('d.m.Y H:i') }}</div>
+                        </div>
+                        {% endif %}
+                        {% if shipment.deliveredAt %}
+                        <div class="mb-5">
+                            <label class="text-gray-600 fs-7">Teslim</label>
+                            <div class="fw-bold text-success">{{ shipment.deliveredAt|date('d.m.Y H:i') }}</div>
+                        </div>
+                        {% endif %}
+                        {% if shipment.lastTrackedAt %}
+                        <div>
+                            <label class="text-gray-600 fs-7">Son Takip</label>
+                            <div class="fw-bold">{{ shipment.lastTrackedAt|date('d.m.Y H:i') }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // COD toggle
+        const codCheckbox = document.getElementById('is-cod');
+        const codAmountGroup = document.getElementById('cod-amount-group');
+        
+        codCheckbox?.addEventListener('change', function() {
+            if (this.checked) {
+                codAmountGroup.classList.remove('d-none');
+            } else {
+                codAmountGroup.classList.add('d-none');
+            }
+        });
+
+        function updateStatus(status) {
+            let message = prompt('Durum güncelleme mesajı (isteğe bağlı):');
+            let location = null;
+            
+            if (status === 'cancelled') {
+                message = prompt('İptal nedeni:');
+                if (!message) return;
+            }
+
+            fetch('{{ path('admin_shipments_update_status', {id: shipment.id}) }}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ 
+                    status: status, 
+                    message: message,
+                    location: location
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                toastr.success(data.message);
+                setTimeout(() => location.reload(), 1000);
+            });
+        }
+    </script>
+{% endblock %}

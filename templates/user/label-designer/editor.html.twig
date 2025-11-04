@@ -1,0 +1,988 @@
+{% extends 'layout/_user.html.twig' %}
+
+{% block title %}{{ mode == 'edit' ? 'Şablon Düzenle' : 'Yeni Şablon Oluştur' }}{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    /* Canvas Container */
+    #label-canvas-container {
+        background: #f5f5f5;
+        border: 2px solid #ddd;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    #label-canvas {
+        background: white;
+        position: relative;
+        margin: 20px auto;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Grid */
+    .show-grid {
+        background-image:
+            linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+    }
+
+    /* Draggable Elements */
+    .canvas-element {
+        position: absolute;
+        border: 2px solid transparent;
+        cursor: move;
+        min-width: 20px;
+        min-height: 20px;
+    }
+
+    .canvas-element:hover,
+    .canvas-element.selected {
+        border: 2px dashed #3699FF;
+        outline: 1px solid #3699FF;
+    }
+
+    .canvas-element.selected {
+        z-index: 1000;
+    }
+
+    /* Resize Handles */
+    .resize-handle {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: #3699FF;
+        border: 1px solid white;
+        z-index: 1001;
+    }
+
+    .resize-handle.nw { top: -4px; left: -4px; cursor: nw-resize; }
+    .resize-handle.ne { top: -4px; right: -4px; cursor: ne-resize; }
+    .resize-handle.sw { bottom: -4px; left: -4px; cursor: sw-resize; }
+    .resize-handle.se { bottom: -4px; right: -4px; cursor: se-resize; }
+    .resize-handle.n { top: -4px; left: 50%; margin-left: -4px; cursor: n-resize; }
+    .resize-handle.s { bottom: -4px; left: 50%; margin-left: -4px; cursor: s-resize; }
+    .resize-handle.e { top: 50%; right: -4px; margin-top: -4px; cursor: e-resize; }
+    .resize-handle.w { top: 50%; left: -4px; margin-top: -4px; cursor: w-resize; }
+
+    /* Element Types */
+    .element-text {
+        padding: 5px;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .element-qrcode,
+    .element-barcode,
+    .element-image {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+    }
+
+    .element-qrcode img,
+    .element-barcode img,
+    .element-image img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    /* Toolbar Items */
+    .toolbar-item {
+        cursor: grab;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-align: center;
+        transition: all 0.3s;
+    }
+
+    .toolbar-item:hover {
+        background: #f8f9fa;
+        border-color: #3699FF;
+    }
+
+    .toolbar-item:active {
+        cursor: grabbing;
+    }
+
+    /* Property Panel */
+    .property-group {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+
+    .property-group:last-child {
+        border-bottom: none;
+    }
+
+    /* Canvas Toolbar */
+    .canvas-toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: white;
+        border-bottom: 1px solid #ddd;
+        padding: 10px;
+        margin: -20px -20px 20px -20px;
+    }
+
+    /* Zoom Controls */
+    .zoom-control {
+        display: inline-block;
+        margin: 0 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-column-fluid">
+    {# Toolbar #}
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+                    {{ mode == 'edit' ? 'Şablon Düzenle' : 'Yeni Şablon Oluştur' }}
+                </h1>
+                <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                    <li class="breadcrumb-item text-muted">
+                        <a href="{{ path('user_dashboard') }}" class="text-muted text-hover-primary">Ana Sayfa</a>
+                    </li>
+                    <li class="breadcrumb-item"><span class="bullet bg-gray-500 w-5px h-2px"></span></li>
+                    <li class="breadcrumb-item text-muted">
+                        <a href="{{ path('user_label_designer') }}" class="text-muted text-hover-primary">Etiket Tasarımcısı</a>
+                    </li>
+                    <li class="breadcrumb-item"><span class="bullet bg-gray-500 w-5px h-2px"></span></li>
+                    <li class="breadcrumb-item text-muted">{{ mode == 'edit' ? 'Düzenle' : 'Yeni Oluştur' }}</li>
+                </ul>
+            </div>
+            <div class="d-flex align-items-center gap-2 gap-lg-3">
+                <button type="button" class="btn btn-sm btn-light-primary" id="preview-btn">
+                    <i class="ki-duotone ki-eye fs-2"></i>
+                    Önizle
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" id="save-btn">
+                    <i class="ki-duotone ki-check fs-2"></i>
+                    Kaydet
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# Content #}
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+            <div class="row g-5">
+                {# Left Sidebar - Element Toolbar #}
+                <div class="col-lg-2">
+                    <div class="card card-flush h-lg-100">
+                        <div class="card-header">
+                            <h3 class="card-title">Öğeler</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex flex-column gap-3">
+                                {# QR Code #}
+                                <div class="toolbar-item" data-element-type="qrcode">
+                                    <i class="ki-duotone ki-barcode fs-2x text-primary mb-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                        <span class="path4"></span>
+                                        <span class="path5"></span>
+                                        <span class="path6"></span>
+                                        <span class="path7"></span>
+                                        <span class="path8"></span>
+                                    </i>
+                                    <div class="fs-7 fw-semibold">QR Kod</div>
+                                </div>
+
+                                {# Barcode #}
+                                <div class="toolbar-item" data-element-type="barcode">
+                                    <i class="ki-duotone ki-scan-barcode fs-2x text-success mb-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                        <span class="path4"></span>
+                                        <span class="path5"></span>
+                                        <span class="path6"></span>
+                                        <span class="path7"></span>
+                                        <span class="path8"></span>
+                                    </i>
+                                    <div class="fs-7 fw-semibold">Barkod</div>
+                                </div>
+
+                                {# Text #}
+                                <div class="toolbar-item" data-element-type="text">
+                                    <i class="ki-duotone ki-text fs-2x text-info mb-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                        <span class="path4"></span>
+                                        <span class="path5"></span>
+                                    </i>
+                                    <div class="fs-7 fw-semibold">Metin</div>
+                                </div>
+
+                                {# Image/Logo #}
+                                <div class="toolbar-item" data-element-type="image">
+                                    <i class="ki-duotone ki-picture fs-2x text-warning mb-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                    <div class="fs-7 fw-semibold">Resim</div>
+                                </div>
+
+                                <div class="separator my-3"></div>
+
+                                {# Available Fields #}
+                                <div class="fs-7 fw-bold text-gray-700 mb-2">Dinamik Alanlar:</div>
+                                {% for key, field in availableFields %}
+                                    <div class="toolbar-item toolbar-field"
+                                         data-element-type="text"
+                                         data-field-key="{{ key }}"
+                                         data-field-content="{{ field.field }}">
+                                        <i class="ki-duotone ki-tag fs-3 text-primary mb-1">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                            <span class="path3"></span>
+                                        </i>
+                                        <div class="fs-8 fw-semibold">{{ field.label }}</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Center - Canvas #}
+                <div class="col-lg-7">
+                    <div class="card card-flush">
+                        <div class="card-body p-0">
+                            {# Canvas Toolbar #}
+                            <div class="canvas-toolbar">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <button type="button" class="btn btn-sm btn-light" id="delete-element-btn" disabled>
+                                            <i class="ki-duotone ki-trash fs-3"></i>
+                                            Sil
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light" id="duplicate-element-btn" disabled>
+                                            <i class="ki-duotone ki-copy fs-3"></i>
+                                            Kopyala
+                                        </button>
+                                    </div>
+                                    <div>
+                                        <button type="button" class="btn btn-sm btn-light" id="grid-toggle-btn">
+                                            <i class="ki-duotone ki-grid fs-3"></i>
+                                            Grid
+                                        </button>
+                                        <div class="zoom-control">
+                                            <button type="button" class="btn btn-sm btn-light" id="zoom-out-btn">
+                                                <i class="ki-duotone ki-minus fs-3"></i>
+                                            </button>
+                                            <span class="mx-2" id="zoom-level">100%</span>
+                                            <button type="button" class="btn btn-sm btn-light" id="zoom-in-btn">
+                                                <i class="ki-duotone ki-plus fs-3"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {# Canvas #}
+                            <div id="label-canvas-container" style="height: 600px; padding: 20px;">
+                                <div id="label-canvas" class="show-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Right Sidebar - Properties #}
+                <div class="col-lg-3">
+                    <div class="card card-flush sticky-top" style="top: 20px;">
+                        <div class="card-header">
+                            <h3 class="card-title">Şablon Ayarları</h3>
+                        </div>
+                        <div class="card-body">
+                            {# Template Info #}
+                            <div class="property-group">
+                                <label class="form-label required">Şablon Adı</label>
+                                <input type="text" class="form-control form-control-sm" id="template-name"
+                                       value="{{ template ? template.name : '' }}" required>
+                            </div>
+
+                            <div class="property-group">
+                                <label class="form-label">Açıklama</label>
+                                <textarea class="form-control form-control-sm" id="template-description"
+                                          rows="2">{{ template ? template.description : '' }}</textarea>
+                            </div>
+
+                            {# Dimensions #}
+                            <div class="property-group">
+                                <label class="form-label">Boyut (mm)</label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input type="number" class="form-control form-control-sm" id="canvas-width"
+                                               placeholder="Genişlik" value="{{ template ? template.width : 100 }}" min="50" max="300">
+                                        <div class="form-text">Genişlik</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="number" class="form-control form-control-sm" id="canvas-height"
+                                               placeholder="Yükseklik" value="{{ template ? template.height : 150 }}" min="50" max="300">
+                                        <div class="form-text">Yükseklik</div>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-light-primary w-100" id="apply-dimensions-btn">
+                                        Uygula
+                                    </button>
+                                </div>
+                            </div>
+
+                            {# Orientation #}
+                            <div class="property-group">
+                                <label class="form-label">Yönlendirme</label>
+                                <select class="form-select form-select-sm" id="canvas-orientation">
+                                    <option value="portrait" {{ template and template.orientation == 'portrait' ? 'selected' : '' }}>Dikey</option>
+                                    <option value="landscape" {{ template and template.orientation == 'landscape' ? 'selected' : '' }}>Yatay</option>
+                                </select>
+                            </div>
+
+                            {# Category #}
+                            <div class="property-group">
+                                <label class="form-label">Kategori</label>
+                                <select class="form-select form-select-sm" id="template-category">
+                                    <option value="custom">Özel</option>
+                                    <option value="thermal">Termal</option>
+                                    <option value="a4">A4</option>
+                                </select>
+                            </div>
+
+                            {# Default Template #}
+                            <div class="property-group">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="template-is-default"
+                                           {{ template and template.isDefault ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="template-is-default">
+                                        Varsayılan Şablon
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="separator my-5"></div>
+
+                            {# Selected Element Properties #}
+                            <div id="element-properties">
+                                <div class="text-center text-gray-600 py-10">
+                                    <i class="ki-duotone ki-information fs-3x mb-3">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                    </i>
+                                    <div class="fs-6">Öğe seçin</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// Label Designer Application
+const LabelDesigner = {
+    canvas: null,
+    canvasContainer: null,
+    elements: [],
+    selectedElement: null,
+    nextElementId: 1,
+    zoom: 1,
+    gridSize: 5,
+    showGrid: true,
+    isDragging: false,
+    isResizing: false,
+    dragStart: { x: 0, y: 0 },
+    elementStart: { x: 0, y: 0 },
+    resizeHandle: null,
+    templateId: {{ template ? template.id : 'null' }},
+
+    init() {
+        this.canvas = document.getElementById('label-canvas');
+        this.canvasContainer = document.getElementById('label-canvas-container');
+
+        // Set initial canvas size
+        this.updateCanvasSize();
+
+        // Load existing template if editing
+        {% if template and template.designConfig %}
+            this.loadTemplate({{ template.designConfig|json_encode|raw }});
+        {% endif %}
+
+        // Event listeners
+        this.initEventListeners();
+    },
+
+    initEventListeners() {
+        // Toolbar items - drag to canvas
+        document.querySelectorAll('.toolbar-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const type = item.dataset.elementType;
+                const fieldKey = item.dataset.fieldKey;
+                const fieldContent = item.dataset.fieldContent;
+
+                // Add element to center of canvas
+                const canvasRect = this.canvas.getBoundingClientRect();
+                const x = (canvasRect.width / 2 / this.zoom) - 50;
+                const y = (canvasRect.height / 2 / this.zoom) - 25;
+
+                this.addElement(type, x, y, {
+                    fieldKey: fieldKey,
+                    content: fieldContent || type
+                });
+            });
+        });
+
+        // Canvas clicks
+        this.canvas.addEventListener('click', (e) => {
+            if (e.target === this.canvas) {
+                this.deselectAllElements();
+            }
+        });
+
+        // Dimension controls
+        document.getElementById('apply-dimensions-btn').addEventListener('click', () => {
+            this.updateCanvasSize();
+        });
+
+        // Toolbar actions
+        document.getElementById('delete-element-btn').addEventListener('click', () => {
+            this.deleteSelectedElement();
+        });
+
+        document.getElementById('duplicate-element-btn').addEventListener('click', () => {
+            this.duplicateSelectedElement();
+        });
+
+        document.getElementById('grid-toggle-btn').addEventListener('click', () => {
+            this.toggleGrid();
+        });
+
+        document.getElementById('zoom-in-btn').addEventListener('click', () => {
+            this.setZoom(this.zoom + 0.1);
+        });
+
+        document.getElementById('zoom-out-btn').addEventListener('click', () => {
+            this.setZoom(this.zoom - 0.1);
+        });
+
+        // Save button
+        document.getElementById('save-btn').addEventListener('click', () => {
+            this.saveTemplate();
+        });
+
+        // Preview button
+        document.getElementById('preview-btn').addEventListener('click', () => {
+            this.previewTemplate();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Delete' && this.selectedElement) {
+                this.deleteSelectedElement();
+            }
+            if (e.key === 'Escape') {
+                this.deselectAllElements();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'd' && this.selectedElement) {
+                e.preventDefault();
+                this.duplicateSelectedElement();
+            }
+        });
+    },
+
+    updateCanvasSize() {
+        const width = parseFloat(document.getElementById('canvas-width').value) || 100;
+        const height = parseFloat(document.getElementById('canvas-height').value) || 150;
+
+        // Convert mm to pixels (assume 96 DPI: 1mm = 3.7795px)
+        const pxWidth = width * 3.7795;
+        const pxHeight = height * 3.7795;
+
+        this.canvas.style.width = pxWidth + 'px';
+        this.canvas.style.height = pxHeight + 'px';
+
+        // Update grid
+        if (this.showGrid) {
+            const gridPx = this.gridSize * 3.7795;
+            this.canvas.style.backgroundSize = `${gridPx}px ${gridPx}px`;
+        }
+    },
+
+    addElement(type, x, y, options = {}) {
+        const elementId = 'element-' + this.nextElementId++;
+
+        const element = {
+            id: elementId,
+            type: type,
+            x: x,
+            y: y,
+            width: type === 'qrcode' || type === 'barcode' ? 100 : 150,
+            height: type === 'qrcode' || type === 'barcode' ? 100 : 40,
+            content: options.content || (type === 'text' ? 'Metin' : type),
+            fieldKey: options.fieldKey || null,
+            fontSize: 12,
+            fontFamily: 'Arial',
+            fontWeight: 'normal',
+            textAlign: 'left',
+            color: '#000000',
+            backgroundColor: 'transparent',
+            borderWidth: 0,
+            borderColor: '#000000',
+            rotation: 0
+        };
+
+        this.elements.push(element);
+        this.renderElement(element);
+        this.selectElement(elementId);
+    },
+
+    renderElement(element) {
+        const div = document.createElement('div');
+        div.id = element.id;
+        div.className = 'canvas-element element-' + element.type;
+        div.style.left = element.x + 'px';
+        div.style.top = element.y + 'px';
+        div.style.width = element.width + 'px';
+        div.style.height = element.height + 'px';
+        div.style.backgroundColor = element.backgroundColor;
+        div.style.color = element.color;
+        div.style.fontSize = element.fontSize + 'px';
+        div.style.fontFamily = element.fontFamily;
+        div.style.fontWeight = element.fontWeight;
+        div.style.textAlign = element.textAlign;
+        div.style.transform = `rotate(${element.rotation}deg)`;
+
+        if (element.borderWidth > 0) {
+            div.style.border = `${element.borderWidth}px solid ${element.borderColor}`;
+        }
+
+        // Content
+        if (element.type === 'text') {
+            div.textContent = element.fieldKey ? `{${element.fieldKey}}` : element.content;
+        } else if (element.type === 'qrcode' || element.type === 'barcode') {
+            const placeholder = document.createElement('div');
+            placeholder.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f0f0f0;';
+            placeholder.innerHTML = `<i class="ki-duotone ki-${element.type === 'qrcode' ? 'barcode' : 'scan-barcode'} fs-2x text-gray-600"></i>`;
+            div.appendChild(placeholder);
+        } else if (element.type === 'image') {
+            const placeholder = document.createElement('div');
+            placeholder.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f0f0f0;';
+            placeholder.innerHTML = '<i class="ki-duotone ki-picture fs-2x text-gray-600"></i>';
+            div.appendChild(placeholder);
+        }
+
+        // Make draggable
+        div.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('resize-handle')) return;
+            this.startDrag(e, element);
+        });
+
+        div.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.selectElement(element.id);
+        });
+
+        this.canvas.appendChild(div);
+    },
+
+    selectElement(elementId) {
+        // Deselect all
+        this.deselectAllElements();
+
+        const element = this.elements.find(e => e.id === elementId);
+        if (!element) return;
+
+        this.selectedElement = element;
+        const div = document.getElementById(elementId);
+        div.classList.add('selected');
+
+        // Add resize handles
+        this.addResizeHandles(div);
+
+        // Update properties panel
+        this.updatePropertiesPanel(element);
+
+        // Enable toolbar buttons
+        document.getElementById('delete-element-btn').disabled = false;
+        document.getElementById('duplicate-element-btn').disabled = false;
+    },
+
+    deselectAllElements() {
+        document.querySelectorAll('.canvas-element').forEach(el => {
+            el.classList.remove('selected');
+            el.querySelectorAll('.resize-handle').forEach(h => h.remove());
+        });
+        this.selectedElement = null;
+
+        // Disable toolbar buttons
+        document.getElementById('delete-element-btn').disabled = true;
+        document.getElementById('duplicate-element-btn').disabled = true;
+
+        // Clear properties panel
+        document.getElementById('element-properties').innerHTML = `
+            <div class="text-center text-gray-600 py-10">
+                <i class="ki-duotone ki-information fs-3x mb-3">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                    <span class="path3"></span>
+                </i>
+                <div class="fs-6">Öğe seçin</div>
+            </div>
+        `;
+    },
+
+    addResizeHandles(div) {
+        const positions = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
+        positions.forEach(pos => {
+            const handle = document.createElement('div');
+            handle.className = `resize-handle ${pos}`;
+            handle.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                this.startResize(e, this.selectedElement, pos);
+            });
+            div.appendChild(handle);
+        });
+    },
+
+    startDrag(e, element) {
+        e.preventDefault();
+        this.isDragging = true;
+        this.dragStart = { x: e.clientX, y: e.clientY };
+        this.elementStart = { x: element.x, y: element.y };
+
+        const onMouseMove = (e) => {
+            if (!this.isDragging) return;
+
+            const dx = (e.clientX - this.dragStart.x) / this.zoom;
+            const dy = (e.clientY - this.dragStart.y) / this.zoom;
+
+            element.x = Math.max(0, this.elementStart.x + dx);
+            element.y = Math.max(0, this.elementStart.y + dy);
+
+            const div = document.getElementById(element.id);
+            div.style.left = element.x + 'px';
+            div.style.top = element.y + 'px';
+        };
+
+        const onMouseUp = () => {
+            this.isDragging = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    },
+
+    startResize(e, element, handle) {
+        e.preventDefault();
+        this.isResizing = true;
+        this.resizeHandle = handle;
+        this.dragStart = { x: e.clientX, y: e.clientY };
+        this.elementStart = {
+            x: element.x,
+            y: element.y,
+            width: element.width,
+            height: element.height
+        };
+
+        const onMouseMove = (e) => {
+            if (!this.isResizing) return;
+
+            const dx = (e.clientX - this.dragStart.x) / this.zoom;
+            const dy = (e.clientY - this.dragStart.y) / this.zoom;
+
+            // Apply resize based on handle
+            if (handle.includes('e')) {
+                element.width = Math.max(20, this.elementStart.width + dx);
+            }
+            if (handle.includes('w')) {
+                const newWidth = Math.max(20, this.elementStart.width - dx);
+                element.x = this.elementStart.x + (this.elementStart.width - newWidth);
+                element.width = newWidth;
+            }
+            if (handle.includes('s')) {
+                element.height = Math.max(20, this.elementStart.height + dy);
+            }
+            if (handle.includes('n')) {
+                const newHeight = Math.max(20, this.elementStart.height - dy);
+                element.y = this.elementStart.y + (this.elementStart.height - newHeight);
+                element.height = newHeight;
+            }
+
+            const div = document.getElementById(element.id);
+            div.style.left = element.x + 'px';
+            div.style.top = element.y + 'px';
+            div.style.width = element.width + 'px';
+            div.style.height = element.height + 'px';
+        };
+
+        const onMouseUp = () => {
+            this.isResizing = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    },
+
+    updatePropertiesPanel(element) {
+        let html = '<div class="property-group"><h4 class="fs-6 fw-bold mb-3">Öğe Özellikleri</h4>';
+
+        // Common properties
+        html += `
+            <div class="mb-3">
+                <label class="form-label">İçerik</label>
+                <input type="text" class="form-control form-control-sm" id="prop-content" value="${element.content}">
+            </div>
+        `;
+
+        if (element.type === 'text') {
+            html += `
+                <div class="mb-3">
+                    <label class="form-label">Yazı Boyutu</label>
+                    <input type="number" class="form-control form-control-sm" id="prop-fontsize" value="${element.fontSize}" min="6" max="72">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Yazı Ailesi</label>
+                    <select class="form-select form-select-sm" id="prop-fontfamily">
+                        <option value="Arial" ${element.fontFamily === 'Arial' ? 'selected' : ''}>Arial</option>
+                        <option value="Times New Roman" ${element.fontFamily === 'Times New Roman' ? 'selected' : ''}>Times New Roman</option>
+                        <option value="Courier New" ${element.fontFamily === 'Courier New' ? 'selected' : ''}>Courier New</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Hizalama</label>
+                    <select class="form-select form-select-sm" id="prop-textalign">
+                        <option value="left" ${element.textAlign === 'left' ? 'selected' : ''}>Sol</option>
+                        <option value="center" ${element.textAlign === 'center' ? 'selected' : ''}>Orta</option>
+                        <option value="right" ${element.textAlign === 'right' ? 'selected' : ''}>Sağ</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Renk</label>
+                    <input type="color" class="form-control form-control-sm" id="prop-color" value="${element.color}">
+                </div>
+            `;
+        }
+
+        html += '</div>';
+
+        document.getElementById('element-properties').innerHTML = html;
+
+        // Add event listeners for property changes
+        this.bindPropertyListeners(element);
+    },
+
+    bindPropertyListeners(element) {
+        const updateElement = () => {
+            const div = document.getElementById(element.id);
+
+            // Update element properties
+            const content = document.getElementById('prop-content');
+            if (content) {
+                element.content = content.value;
+                if (element.type === 'text') {
+                    div.textContent = element.content;
+                }
+            }
+
+            const fontSize = document.getElementById('prop-fontsize');
+            if (fontSize) {
+                element.fontSize = parseInt(fontSize.value);
+                div.style.fontSize = element.fontSize + 'px';
+            }
+
+            const fontFamily = document.getElementById('prop-fontfamily');
+            if (fontFamily) {
+                element.fontFamily = fontFamily.value;
+                div.style.fontFamily = element.fontFamily;
+            }
+
+            const textAlign = document.getElementById('prop-textalign');
+            if (textAlign) {
+                element.textAlign = textAlign.value;
+                div.style.textAlign = element.textAlign;
+            }
+
+            const color = document.getElementById('prop-color');
+            if (color) {
+                element.color = color.value;
+                div.style.color = element.color;
+            }
+        };
+
+        // Bind all property inputs
+        document.querySelectorAll('#element-properties input, #element-properties select').forEach(input => {
+            input.addEventListener('input', updateElement);
+        });
+    },
+
+    deleteSelectedElement() {
+        if (!this.selectedElement) return;
+
+        const index = this.elements.findIndex(e => e.id === this.selectedElement.id);
+        if (index > -1) {
+            this.elements.splice(index, 1);
+        }
+
+        const div = document.getElementById(this.selectedElement.id);
+        if (div) div.remove();
+
+        this.deselectAllElements();
+    },
+
+    duplicateSelectedElement() {
+        if (!this.selectedElement) return;
+
+        const original = this.selectedElement;
+        this.addElement(original.type, original.x + 10, original.y + 10, {
+            content: original.content,
+            fieldKey: original.fieldKey
+        });
+    },
+
+    toggleGrid() {
+        this.showGrid = !this.showGrid;
+        if (this.showGrid) {
+            this.canvas.classList.add('show-grid');
+            const gridPx = this.gridSize * 3.7795;
+            this.canvas.style.backgroundSize = `${gridPx}px ${gridPx}px`;
+        } else {
+            this.canvas.classList.remove('show-grid');
+        }
+    },
+
+    setZoom(newZoom) {
+        this.zoom = Math.max(0.5, Math.min(2, newZoom));
+        this.canvas.style.transform = `scale(${this.zoom})`;
+        this.canvas.style.transformOrigin = 'top left';
+        document.getElementById('zoom-level').textContent = Math.round(this.zoom * 100) + '%';
+    },
+
+    getDesignConfig() {
+        return {
+            elements: this.elements.map(e => ({
+                type: e.type,
+                x: e.x,
+                y: e.y,
+                width: e.width,
+                height: e.height,
+                content: e.content,
+                fieldKey: e.fieldKey,
+                fontSize: e.fontSize,
+                fontFamily: e.fontFamily,
+                fontWeight: e.fontWeight,
+                textAlign: e.textAlign,
+                color: e.color,
+                backgroundColor: e.backgroundColor,
+                borderWidth: e.borderWidth,
+                borderColor: e.borderColor,
+                rotation: e.rotation
+            })),
+            settings: {
+                backgroundColor: '#ffffff',
+                gridSize: this.gridSize,
+                showGrid: this.showGrid
+            }
+        };
+    },
+
+    loadTemplate(designConfig) {
+        if (!designConfig || !designConfig.elements) return;
+
+        this.elements = [];
+        this.canvas.innerHTML = '';
+
+        designConfig.elements.forEach(elementData => {
+            const elementId = 'element-' + this.nextElementId++;
+            const element = {
+                id: elementId,
+                ...elementData
+            };
+            this.elements.push(element);
+            this.renderElement(element);
+        });
+
+        if (designConfig.settings) {
+            this.gridSize = designConfig.settings.gridSize || 5;
+            this.showGrid = designConfig.settings.showGrid !== false;
+        }
+    },
+
+    saveTemplate() {
+        const name = document.getElementById('template-name').value;
+        if (!name) {
+            Swal.fire('Hata', 'Lütfen şablon adı girin', 'error');
+            return;
+        }
+
+        const data = {
+            id: this.templateId,
+            name: name,
+            description: document.getElementById('template-description').value,
+            designConfig: this.getDesignConfig(),
+            width: parseFloat(document.getElementById('canvas-width').value),
+            height: parseFloat(document.getElementById('canvas-height').value),
+            orientation: document.getElementById('canvas-orientation').value,
+            category: document.getElementById('template-category').value,
+            isDefault: document.getElementById('template-is-default').checked
+        };
+
+        $.ajax({
+            url: '{{ path('user_label_designer_save') }}',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        title: 'Başarılı!',
+                        text: response.message,
+                        icon: 'success',
+                        confirmButtonText: 'Tamam'
+                    }).then(() => {
+                        window.location.href = '{{ path('user_label_designer') }}';
+                    });
+                } else {
+                    Swal.fire('Hata', response.message, 'error');
+                }
+            },
+            error: function() {
+                Swal.fire('Hata', 'Şablon kaydedilirken bir hata oluştu', 'error');
+            }
+        });
+    },
+
+    previewTemplate() {
+        // TODO: Open preview in new window
+        Swal.fire('Bilgi', 'Önizleme özelliği yakında eklenecek', 'info');
+    }
+};
+
+// Initialize on page load
+$(document).ready(function() {
+    LabelDesigner.init();
+});
+</script>
+{% endblock %}

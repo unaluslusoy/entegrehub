@@ -1,0 +1,53 @@
+<!--begin::Flash Messages-->
+{% for type, messages in app.flashes %}
+    {% for message in messages %}
+        {% set alert_class = 'primary' %}
+        {% set icon_name = 'information-5' %}
+        
+        {% if type == 'success' %}
+            {% set alert_class = 'success' %}
+            {% set icon_name = 'check-circle' %}
+        {% elseif type == 'error' or type == 'danger' %}
+            {% set alert_class = 'danger' %}
+            {% set icon_name = 'cross-circle' %}
+        {% elseif type == 'warning' %}
+            {% set alert_class = 'warning' %}
+            {% set icon_name = 'information' %}
+        {% elseif type == 'info' %}
+            {% set alert_class = 'info' %}
+            {% set icon_name = 'information-5' %}
+        {% endif %}
+        
+        <!--begin::Alert-->
+        <div class="alert alert-dismissible bg-light-{{ alert_class }} d-flex flex-column flex-sm-row p-5 mb-10">
+            <!--begin::Icon-->
+            <i class="ki-duotone ki-{{ icon_name }} fs-2hx text-{{ alert_class }} me-4 mb-5 mb-sm-0">
+                <span class="path1"></span>
+                <span class="path2"></span>
+                {% if icon_name == 'information' or icon_name == 'information-5' %}
+                <span class="path3"></span>
+                {% endif %}
+            </i>
+            <!--end::Icon-->
+            
+            <!--begin::Wrapper-->
+            <div class="d-flex flex-column pe-0 pe-sm-10">
+                <!--begin::Content-->
+                <span class="fw-semibold">{{ message }}</span>
+                <!--end::Content-->
+            </div>
+            <!--end::Wrapper-->
+            
+            <!--begin::Close-->
+            <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto" data-bs-dismiss="alert">
+                <i class="ki-duotone ki-cross fs-1 text-{{ alert_class }}">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                </i>
+            </button>
+            <!--end::Close-->
+        </div>
+        <!--end::Alert-->
+    {% endfor %}
+{% endfor %}
+<!--end::Flash Messages-->

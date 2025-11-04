@@ -1,0 +1,393 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}{{ company.name }}{% endblock %}
+
+{% block page_title %}{{ company.name }}{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">
+        <a href="{{ path('admin_cargo_companies') }}" class="text-muted text-hover-primary">Kargo Firmaları</a>
+    </li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">{{ company.name }}</li>
+{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2">
+        {% if company.apiUrl and company.credentials %}
+        <button type="button" class="btn btn-sm btn-light-primary" id="test-connection">
+            <i class="ki-duotone ki-shield-tick fs-2"></i>
+            API Test
+        </button>
+        {% endif %}
+        <a href="{{ path('admin_cargo_companies_edit', {id: company.id}) }}" class="btn btn-sm btn-light">
+            <i class="ki-duotone ki-pencil fs-2"></i>
+            Düzenle
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="row g-5">
+        <div class="col-xl-8">
+            {# Company Info Card #}
+            <div class="card mb-5">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-8">
+                        {% if company.logo %}
+                        <img src="{{ company.logo }}" class="me-4" style="height: 60px;" alt="{{ company.name }}" />
+                        {% else %}
+                        <div class="symbol symbol-60px me-4">
+                            <div class="symbol-label bg-light-primary">
+                                <i class="ki-duotone ki-delivery fs-2x text-primary">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <h1 class="fw-bold text-gray-800 fs-2x mb-2">{{ company.name }}</h1>
+                            <div class="text-gray-600 fs-5">
+                                <span class="badge badge-light-info fs-6">{{ company.code|upper }}</span>
+                                {% if company.isActive %}
+                                <span class="badge badge-light-success fs-6 ms-2">Aktif</span>
+                                {% else %}
+                                <span class="badge badge-light-danger fs-6 ms-2">Pasif</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fs-2 fw-bold text-gray-800">{{ stats.total }}</div>
+                            <div class="text-gray-600">Toplam Gönderi</div>
+                        </div>
+                    </div>
+
+                    <div class="separator separator-dashed mb-8"></div>
+
+                    {# Basic Info #}
+                    <div class="row mb-8">
+                        <div class="col-md-6">
+                            <h5 class="text-gray-700 fw-bold mb-5">Temel Bilgiler</h5>
+                            <div class="mb-3">
+                                <span class="text-gray-600">Firma Kodu:</span>
+                                <span class="text-gray-800 fw-bold ms-2">{{ company.code }}</span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-gray-600">Öncelik:</span>
+                                <span class="text-gray-800 fw-bold ms-2">{{ company.priority }}</span>
+                            </div>
+                            {% if company.baseCost %}
+                            <div class="mb-3">
+                                <span class="text-gray-600">Temel Maliyet:</span>
+                                <span class="text-gray-800 fw-bold ms-2">{{ company.baseCost }} TRY</span>
+                            </div>
+                            {% endif %}
+                            {% if company.costPerKg %}
+                            <div class="mb-3">
+                                <span class="text-gray-600">Kg Başı Maliyet:</span>
+                                <span class="text-gray-800 fw-bold ms-2">{{ company.costPerKg }} TRY/kg</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-gray-700 fw-bold mb-5">API Bilgileri</h5>
+                            {% if company.apiUrl %}
+                            <div class="mb-3">
+                                <span class="text-gray-600">API URL:</span>
+                                <div class="text-gray-800 fw-bold text-break">{{ company.apiUrl }}</div>
+                            </div>
+                            {% endif %}
+                            {% if company.trackingUrl %}
+                            <div class="mb-3">
+                                <span class="text-gray-600">Takip URL:</span>
+                                <div class="text-gray-800 fw-bold text-break">{{ company.trackingUrl }}</div>
+                            </div>
+                            {% endif %}
+                            <div class="mb-3">
+                                <span class="text-gray-600">API Durum:</span>
+                                {% if company.credentials %}
+                                <span class="badge badge-light-success ms-2">Yapılandırılmış</span>
+                                {% else %}
+                                <span class="badge badge-light-secondary ms-2">Yapılandırılmamış</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Settings #}
+                    {% if company.settings %}
+                    <div class="separator separator-dashed mb-8"></div>
+                    <h5 class="text-gray-700 fw-bold mb-5">Ayarlar</h5>
+                    <div class="row">
+                        {% if company.settings.service_types %}
+                        <div class="col-md-6 mb-3">
+                            <span class="text-gray-600">Servis Tipleri:</span>
+                            <div class="mt-2">
+                                {% for type in company.settings.service_types %}
+                                <span class="badge badge-light me-1">{{ type }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if company.settings.max_weight %}
+                        <div class="col-md-6 mb-3">
+                            <span class="text-gray-600">Maksimum Ağırlık:</span>
+                            <span class="text-gray-800 fw-bold ms-2">{{ company.settings.max_weight }} kg</span>
+                        </div>
+                        {% endif %}
+                        {% if company.settings.timeout %}
+                        <div class="col-md-6 mb-3">
+                            <span class="text-gray-600">API Timeout:</span>
+                            <span class="text-gray-800 fw-bold ms-2">{{ company.settings.timeout }} saniye</span>
+                        </div>
+                        {% endif %}
+                        {% if company.settings.test_mode is defined %}
+                        <div class="col-md-6 mb-3">
+                            <span class="text-gray-600">Test Modu:</span>
+                            {% if company.settings.test_mode %}
+                            <span class="badge badge-light-warning ms-2">Aktif</span>
+                            {% else %}
+                            <span class="badge badge-light-success ms-2">Kapalı</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {# Notes #}
+                    {% if company.notes %}
+                    <div class="separator separator-dashed mb-8"></div>
+                    <h5 class="text-gray-700 fw-bold mb-3">Notlar</h5>
+                    <div class="text-gray-700">{{ company.notes|nl2br }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Statistics #}
+            <div class="card mb-5">
+                <div class="card-header">
+                    <h3 class="card-title">Gönderi İstatistikleri</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row g-5">
+                        <div class="col-md-3">
+                            <div class="bg-light-info rounded p-5 text-center">
+                                <i class="ki-duotone ki-package fs-3x text-info mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                </i>
+                                <div class="fs-2x fw-bold text-gray-800">{{ stats.created }}</div>
+                                <div class="text-gray-600 fs-7">Oluşturuldu</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="bg-light-warning rounded p-5 text-center">
+                                <i class="ki-duotone ki-delivery fs-3x text-warning mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <div class="fs-2x fw-bold text-gray-800">{{ stats.in_transit }}</div>
+                                <div class="text-gray-600 fs-7">Yolda</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="bg-light-success rounded p-5 text-center">
+                                <i class="ki-duotone ki-verify fs-3x text-success mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <div class="fs-2x fw-bold text-gray-800">{{ stats.delivered }}</div>
+                                <div class="text-gray-600 fs-7">Teslim Edildi</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="bg-light-danger rounded p-5 text-center">
+                                <i class="ki-duotone ki-cross-circle fs-3x text-danger mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <div class="fs-2x fw-bold text-gray-800">{{ stats.cancelled }}</div>
+                                <div class="text-gray-600 fs-7">İptal</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Recent Shipments #}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Son Gönderiler</h3>
+                    <div class="card-toolbar">
+                        <a href="{{ path('admin_shipments') }}?cargo_company={{ company.id }}" class="btn btn-sm btn-light">
+                            Tümünü Gör
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_shipments|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-row-bordered align-middle gy-4">
+                            <thead>
+                                <tr class="fw-bold text-gray-700">
+                                    <th>Takip No</th>
+                                    <th>Sipariş</th>
+                                    <th>Durum</th>
+                                    <th>Tarih</th>
+                                    <th class="text-end">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for shipment in recent_shipments %}
+                                <tr>
+                                    <td>
+                                        <span class="text-gray-800 fw-bold">{{ shipment.trackingNumber }}</span>
+                                    </td>
+                                    <td>{{ shipment.order.orderNumber }}</td>
+                                    <td>
+                                        {% if shipment.status == 'delivered' %}
+                                            <span class="badge badge-light-success">Teslim</span>
+                                        {% elseif shipment.status == 'in_transit' %}
+                                            <span class="badge badge-light-warning">Yolda</span>
+                                        {% else %}
+                                            <span class="badge badge-light">{{ shipment.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ shipment.createdAt|date('d.m.Y') }}</td>
+                                    <td class="text-end">
+                                        <a href="{{ path('admin_shipment_detail', {id: shipment.id}) }}" class="btn btn-sm btn-icon btn-light">
+                                            <i class="ki-duotone ki-eye fs-2"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="ki-duotone ki-information-5 fs-3x text-gray-400 mb-3">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                            <span class="path3"></span>
+                        </i>
+                        <div class="text-gray-600">Henüz gönderi bulunmuyor</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            {# Quick Actions #}
+            <div class="card card-flush mb-5">
+                <div class="card-header">
+                    <h3 class="card-title">İşlemler</h3>
+                </div>
+                <div class="card-body">
+                    {% if company.apiUrl and company.credentials %}
+                    <button type="button" class="btn btn-light-primary w-100 mb-3" id="test-connection-detail">
+                        <i class="ki-duotone ki-shield-tick fs-2"></i>
+                        API Bağlantısını Test Et
+                    </button>
+                    {% endif %}
+
+                    <a href="{{ path('admin_shipments_create') }}" class="btn btn-light-success w-100 mb-3">
+                        <i class="ki-duotone ki-plus fs-2"></i>
+                        Yeni Gönderi Oluştur
+                    </a>
+
+                    <a href="{{ path('admin_cargo_companies_edit', {id: company.id}) }}" class="btn btn-light w-100 mb-3">
+                        <i class="ki-duotone ki-pencil fs-2"></i>
+                        Düzenle
+                    </a>
+
+                    <div class="separator my-5"></div>
+
+                    <button type="button" class="btn btn-light-{{ company.isActive ? 'warning' : 'success' }} w-100" id="toggle-status">
+                        <i class="ki-duotone ki-{{ company.isActive ? 'cross' : 'check' }} fs-2"></i>
+                        {{ company.isActive ? 'Pasif Et' : 'Aktif Et' }}
+                    </button>
+                </div>
+            </div>
+
+            {# Company Details #}
+            <div class="card card-flush">
+                <div class="card-body">
+                    <div class="mb-5">
+                        <div class="text-gray-600 fw-semibold mb-1">Firma Kodu</div>
+                        <div class="fw-bold fs-4">{{ company.code }}</div>
+                    </div>
+                    <div class="mb-5">
+                        <div class="text-gray-600 fw-semibold mb-1">Durum</div>
+                        <div>
+                            {% if company.isActive %}
+                            <span class="badge badge-success fs-5">Aktif</span>
+                            {% else %}
+                            <span class="badge badge-danger fs-5">Pasif</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="separator my-5"></div>
+                    <div class="mb-5">
+                        <div class="text-gray-600 fw-semibold mb-1">Oluşturulma</div>
+                        <div>{{ company.createdAt|date('d.m.Y H:i') }}</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-600 fw-semibold mb-1">Son Güncelleme</div>
+                        <div>{{ company.updatedAt|date('d.m.Y H:i') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        const testBtn = document.getElementById('test-connection') || document.getElementById('test-connection-detail');
+        testBtn?.addEventListener('click', function() {
+            const originalHtml = this.innerHTML;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Test ediliyor...';
+            this.disabled = true;
+
+            fetch('{{ path('admin_cargo_companies_test', {id: company.id}) }}', {
+                method: 'POST'
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(data.message);
+                } else {
+                    toastr.error(data.message);
+                }
+            })
+            .catch(err => {
+                toastr.error('Bağlantı testi başarısız');
+            })
+            .finally(() => {
+                this.innerHTML = originalHtml;
+                this.disabled = false;
+            });
+        });
+
+        document.getElementById('toggle-status')?.addEventListener('click', function() {
+            fetch('{{ path('admin_cargo_companies_toggle', {id: company.id}) }}', {
+                method: 'POST'
+            })
+            .then(r => r.json())
+            .then(data => {
+                toastr.success(data.message);
+                setTimeout(() => location.reload(), 1000);
+            });
+        });
+    </script>
+{% endblock %}

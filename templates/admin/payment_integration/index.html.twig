@@ -1,0 +1,147 @@
+{% extends 'layout/base.html.twig' %}
+
+{% block title %}Ödeme Entegrasyonları{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_help">
+            <i class="ki-duotone ki-information-5 fs-3">
+                <span class="path1"></span>
+                <span class="path2"></span>
+                <span class="path3"></span>
+            </i>
+            Yardım
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="row g-5 g-xl-10">
+        {% for integration in integrations %}
+        <div class="col-md-6 col-xl-4">
+            <div class="card card-flush h-100">
+                <div class="card-header pt-7">
+                    <div class="d-flex align-items-center">
+                        <div class="symbol symbol-60px me-5">
+                            <span class="symbol-label bg-light-primary">
+                                <i class="ki-duotone ki-credit-cart fs-2x text-primary">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h3 class="fw-bold mb-1">{{ integration.name }}</h3>
+                            <p class="text-gray-600 fs-7 mb-0">{{ integration.description }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body pt-5">
+                    <div class="d-flex align-items-center justify-content-between mb-7">
+                        <span class="text-gray-600 fs-7">Durum:</span>
+                        {% if integration.isActive %}
+                            <span class="badge badge-light-success">Aktif</span>
+                        {% else %}
+                            <span class="badge badge-light-danger">Pasif</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between mb-7">
+                        <span class="text-gray-600 fs-7">Yapılandırma:</span>
+                        {% if integration.isConfigured %}
+                            <span class="badge badge-light-primary">Yapılandırılmış</span>
+                        {% else %}
+                            <span class="badge badge-light-warning">Yapılandırılmamış</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="separator my-5"></div>
+
+                    <h5 class="fw-bold mb-4">Gerekli Bilgiler</h5>
+                    <div class="mb-4">
+                        {% for key, label in integration.fields %}
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="ki-duotone ki-check-circle fs-5 text-success me-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <span class="text-gray-700 fs-7">{{ label }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="card-footer pt-0">
+                    <div class="d-flex gap-2">
+                        <a href="{{ path('admin_payment_integrations_configure', {id: integration.id}) }}" 
+                           class="btn btn-sm btn-primary flex-fill">
+                            <i class="ki-duotone ki-setting-2 fs-5">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            Yapılandır
+                        </a>
+                        
+                        <button type="button" 
+                                class="btn btn-sm btn-light-primary"
+                                onclick="testIntegration('{{ integration.id }}')">
+                            <i class="ki-duotone ki-verify fs-5">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                        </button>
+
+                        <button type="button" 
+                                class="btn btn-sm btn-icon {{ integration.isActive ? 'btn-light-danger' : 'btn-light-success' }}"
+                                onclick="toggleIntegration('{{ integration.id }}')">
+                            <i class="ki-duotone ki-toggle-{{ integration.isActive ? 'off' : 'on' }} fs-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function toggleIntegration(id) {
+            fetch(`/admin/payment-integrations/${id}/toggle`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(data.message);
+                    setTimeout(() => location.reload(), 1000);
+                }
+            });
+        }
+
+        function testIntegration(id) {
+            fetch(`/admin/payment-integrations/${id}/test`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(data.message);
+                } else {
+                    toastr.error(data.message);
+                }
+            });
+        }
+    </script>
+{% endblock %}

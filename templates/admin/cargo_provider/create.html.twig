@@ -1,0 +1,175 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Yeni Kargo Firması Ekle{% endblock %}
+
+{% block page_title %}Yeni Kargo Firması{% endblock %}
+
+{% block content %}
+    <div class="container-xxl">
+        <form method="POST" action="{{ path('admin_cargo_providers_create') }}" enctype="multipart/form-data">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Kargo Firması Bilgileri</h3>
+                </div>
+                <div class="card-body">
+                    <!--begin::Alert-->
+                    <div class="alert alert-info d-flex align-items-center p-5 mb-10">
+                        <i class="ki-duotone ki-information-5 fs-2hx text-info me-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                            <span class="path3"></span>
+                        </i>
+                        <div class="d-flex flex-column">
+                            <h5 class="mb-1">Kargo Firması Ekleme</h5>
+                            <span>Sisteme yeni bir kargo firması ekleyin. Config Fields JSON formatında dinamik form alanlarını tanımlar.</span>
+                        </div>
+                    </div>
+                    <!--end::Alert-->
+
+                    <!--begin::Row-->
+                    <div class="row mb-7">
+                        <label class="col-lg-3 fw-semibold text-muted">
+                            Firma Adı
+                            <span class="text-danger">*</span>
+                        </label>
+                        <div class="col-lg-9">
+                            <input type="text" name="name" class="form-control form-control-lg form-control-solid" placeholder="Aras Kargo" required />
+                        </div>
+                    </div>
+                    <!--end::Row-->
+
+                    <!--begin::Row-->
+                    <div class="row mb-7">
+                        <label class="col-lg-3 fw-semibold text-muted">
+                            Kod (Slug)
+                            <span class="text-danger">*</span>
+                        </label>
+                        <div class="col-lg-9">
+                            <input type="text" name="code" class="form-control form-control-lg form-control-solid" placeholder="aras" required />
+                            <div class="form-text">Benzersiz kod (lowercase, tire kullanılabilir)</div>
+                        </div>
+                    </div>
+                    <!--end::Row-->
+
+                    <!--begin::Row-->
+                    <div class="row mb-7">
+                        <label class="col-lg-3 fw-semibold text-muted">Açıklama</label>
+                        <div class="col-lg-9">
+                            <textarea name="description" class="form-control form-control-lg form-control-solid" rows="3" placeholder="Kargo firması hakkında kısa açıklama"></textarea>
+                        </div>
+                    </div>
+                    <!--end::Row-->
+
+                    <!--begin::Row-->
+                    <div class="row mb-7">
+                        <label class="col-lg-3 fw-semibold text-muted">Logo</label>
+                        <div class="col-lg-9">
+                            <input type="file" name="logo" class="form-control form-control-lg form-control-solid" accept="image/*" />
+                            <div class="form-text">PNG, JPG veya SVG formatında logo yükleyin</div>
+                        </div>
+                    </div>
+                    <!--end::Row-->
+
+                    <!--begin::Row-->
+                    <div class="row mb-7">
+                        <label class="col-lg-3 fw-semibold text-muted">API Endpoint</label>
+                        <div class="col-lg-9">
+                            <input type="url" name="api_endpoint" class="form-control form-control-lg form-control-solid" placeholder="https://api.example.com/v1" />
+                            <div class="form-text">Base API URL</div>
+                        </div>
+                    </div>
+                    <!--end::Row-->
+
+                    <!--begin::Row-->
+                    <div class="row mb-7">
+                        <label class="col-lg-3 fw-semibold text-muted">Webhook URL</label>
+                        <div class="col-lg-9">
+                            <input type="url" name="webhook_url" class="form-control form-control-lg form-control-solid" placeholder="https://api.example.com/webhook" />
+                            <div class="form-text">Webhook callback URL</div>
+                        </div>
+                    </div>
+                    <!--end::Row-->
+
+                    <!--begin::Row-->
+                    <div class="row mb-7">
+                        <label class="col-lg-3 fw-semibold text-muted">API Dokümantasyon</label>
+                        <div class="col-lg-9">
+                            <input type="url" name="api_documentation_url" class="form-control form-control-lg form-control-solid" placeholder="https://docs.example.com" />
+                        </div>
+                    </div>
+                    <!--end::Row-->
+
+                    <!--begin::Row-->
+                    <div class="row mb-7">
+                        <label class="col-lg-3 fw-semibold text-muted">Öncelik</label>
+                        <div class="col-lg-9">
+                            <input type="number" name="priority" class="form-control form-control-lg form-control-solid" value="0" />
+                            <div class="form-text">Yüksek değer = öncelikli gösterim</div>
+                        </div>
+                    </div>
+                    <!--end::Row-->
+
+                    <!--begin::Row-->
+                    <div class="row mb-7">
+                        <label class="col-lg-3 fw-semibold text-muted">Config Fields (JSON)</label>
+                        <div class="col-lg-9">
+                            <textarea name="config_fields" id="config_fields" class="form-control form-control-lg form-control-solid font-monospace" rows="10" placeholder='[{"name": "api_key", "label": "API Key", "type": "text", "required": true}]'></textarea>
+                            <div class="form-text">
+                                Kullanıcıların dolduracağı form alanları (JSON array)
+                                <br>
+                                <strong>Örnek:</strong>
+                                <code>[{"name": "api_key", "label": "API Anahtarı", "type": "text", "required": true, "placeholder": "API Key giriniz"}]</code>
+                            </div>
+                        </div>
+                    </div>
+                    <!--end::Row-->
+
+                    <!--begin::Row-->
+                    <div class="row mb-7">
+                        <label class="col-lg-3 fw-semibold text-muted"></label>
+                        <div class="col-lg-9">
+                            <div class="form-check form-check-custom form-check-solid mb-3">
+                                <input class="form-check-input" type="checkbox" name="is_active" id="is_active" value="1" checked />
+                                <label class="form-check-label" for="is_active">
+                                    Aktif (Kullanıcılara göster)
+                                </label>
+                            </div>
+                            <div class="form-check form-check-custom form-check-solid">
+                                <input class="form-check-input" type="checkbox" name="test_mode_available" id="test_mode_available" value="1" checked />
+                                <label class="form-check-label" for="test_mode_available">
+                                    Test Modu Destekliyor
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <!--end::Row-->
+                </div>
+                <div class="card-footer d-flex justify-content-end gap-2">
+                    <a href="{{ path('admin_cargo_providers') }}" class="btn btn-light">İptal</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ki-duotone ki-check fs-2"></i>
+                        Kaydet
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // JSON formatter helper
+        document.getElementById('config_fields').addEventListener('blur', function() {
+            try {
+                const json = JSON.parse(this.value);
+                this.value = JSON.stringify(json, null, 2);
+                this.classList.remove('is-invalid');
+            } catch (e) {
+                if (this.value.trim() !== '') {
+                    this.classList.add('is-invalid');
+                }
+            }
+        });
+    </script>
+{% endblock %}

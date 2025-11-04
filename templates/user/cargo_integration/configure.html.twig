@@ -1,0 +1,275 @@
+{% extends 'layout/_user.html.twig' %}
+
+{% block title %}{{ provider.name }} Yapılandırma{% endblock %}
+
+{% block page_title %}Kargo Entegrasyonu Yapılandırma{% endblock %}
+
+{% block content %}
+    <div class="container-xxl">
+        <form method="POST" action="{{ path('user_cargo_integration_configure', {id: provider.id}) }}">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card mb-5">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <div class="d-flex align-items-center">
+                                    {% if provider.logo %}
+                                        <img src="{{ provider.logo }}" alt="{{ provider.name }}" class="me-3" style="max-height: 40px;" />
+                                    {% endif %}
+                                    {{ provider.name }} - API Bilgileri
+                                </div>
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <!--begin::Alert-->
+                            <div class="alert alert-primary d-flex align-items-center p-5 mb-10">
+                                <i class="ki-duotone ki-shield-tick fs-2hx text-primary me-4">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                </i>
+                                <div class="d-flex flex-column">
+                                    <h5 class="mb-1">API Bilgileriniz Güvende</h5>
+                                    <span>Tüm API bilgileri şifrelenmiş olarak saklanır. {{ provider.name }} API bilgilerinizi aşağıdaki formu kullanarak girebilirsiniz.</span>
+                                </div>
+                            </div>
+                            <!--end::Alert-->
+
+                            {% if provider.apiDocumentationUrl %}
+                            <div class="mb-7">
+                                <a href="{{ provider.apiDocumentationUrl }}" target="_blank" class="btn btn-sm btn-light-primary">
+                                    <i class="ki-duotone ki-document fs-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                    API Dokümantasyonunu Görüntüle
+                                </a>
+                            </div>
+                            {% endif %}
+
+                            {% if provider.configFields %}
+                                {% for field in provider.configFields %}
+                                <!--begin::Row-->
+                                <div class="row mb-7">
+                                    <label class="col-lg-4 fw-semibold text-muted">
+                                        {{ field.label }}
+                                        {% if field.required %}
+                                        <span class="text-danger">*</span>
+                                        {% endif %}
+                                    </label>
+                                    <div class="col-lg-8">
+                                        {% if field.type == 'password' %}
+                                            <input type="password" 
+                                                   name="{{ field.name }}" 
+                                                   class="form-control form-control-lg form-control-solid" 
+                                                   placeholder="{{ field.placeholder ?? '' }}"
+                                                   value="{{ config ? config.credentials[field.name] ?? '' : '' }}"
+                                                   {{ field.required ? 'required' : '' }} />
+                                        {% elseif field.type == 'textarea' %}
+                                            <textarea name="{{ field.name }}" 
+                                                      class="form-control form-control-lg form-control-solid" 
+                                                      rows="3"
+                                                      placeholder="{{ field.placeholder ?? '' }}"
+                                                      {{ field.required ? 'required' : '' }}>{{ config ? config.credentials[field.name] ?? '' : '' }}</textarea>
+                                        {% else %}
+                                            <input type="{{ field.type }}" 
+                                                   name="{{ field.name }}" 
+                                                   class="form-control form-control-lg form-control-solid" 
+                                                   placeholder="{{ field.placeholder ?? '' }}"
+                                                   value="{{ config ? config.credentials[field.name] ?? '' : '' }}"
+                                                   {{ field.required ? 'required' : '' }} />
+                                        {% endif %}
+                                        
+                                        {% if field.help_text %}
+                                        <div class="form-text">{{ field.help_text }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <!--end::Row-->
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    Bu kargo firması için henüz yapılandırma alanı tanımlanmamış.
+                                </div>
+                            {% endif %}
+
+                            <!--begin::Row - Webhook Secret-->
+                            {% if provider.webhookUrl %}
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">
+                                    Webhook Secret Key
+                                </label>
+                                <div class="col-lg-8">
+                                    <input type="text" 
+                                           name="webhook_secret" 
+                                           class="form-control form-control-lg form-control-solid" 
+                                           placeholder="Webhook doğrulama için secret key"
+                                           value="{{ config ? config.webhookSecret : '' }}" />
+                                    <div class="form-text">Webhook güvenliği için kullanılır (opsiyonel)</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <!--end::Row-->
+
+                            <!--begin::Row - Checkboxes-->
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Ayarlar</label>
+                                <div class="col-lg-8">
+                                    {% if provider.testModeAvailable %}
+                                    <div class="form-check form-check-custom form-check-solid mb-3">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               name="is_test_mode" 
+                                               id="is_test_mode" 
+                                               value="1" 
+                                               {{ config ? (config.isTestMode ? 'checked' : '') : 'checked' }} />
+                                        <label class="form-check-label" for="is_test_mode">
+                                            Test Modu
+                                            <span class="text-muted fs-7 d-block">Gerçek gönderi oluşturulmaz</span>
+                                        </label>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="form-check form-check-custom form-check-solid">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               name="is_active" 
+                                               id="is_active" 
+                                               value="1" 
+                                               {{ config ? (config.isActive ? 'checked' : '') : '' }} />
+                                        <label class="form-check-label" for="is_active">
+                                            Aktif
+                                            <span class="text-muted fs-7 d-block">Bu kargo firmasını kullan</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--end::Row-->
+                        </div>
+                        <div class="card-footer d-flex justify-content-between">
+                            <a href="{{ path('user_cargo_integrations') }}" class="btn btn-light">
+                                <i class="ki-duotone ki-left fs-2"></i>
+                                Geri
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ki-duotone ki-check fs-2"></i>
+                                Kaydet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!--begin::Card - Info-->
+                    <div class="card mb-5">
+                        <div class="card-header">
+                            <h3 class="card-title">Bilgi</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-5">
+                                <div class="fw-bold text-gray-600 mb-2">Kargo Firması:</div>
+                                <div class="fs-6">{{ provider.name }}</div>
+                            </div>
+                            
+                            {% if provider.description %}
+                            <div class="mb-5">
+                                <div class="fw-bold text-gray-600 mb-2">Açıklama:</div>
+                                <div class="fs-7 text-gray-700">{{ provider.description }}</div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if provider.apiEndpoint %}
+                            <div class="mb-5">
+                                <div class="fw-bold text-gray-600 mb-2">API Endpoint:</div>
+                                <div class="fs-7 text-gray-700">
+                                    <code class="bg-light p-2 rounded d-block">{{ provider.apiEndpoint }}</code>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if config %}
+                            <div class="separator my-5"></div>
+                            
+                            <div class="mb-5">
+                                <div class="fw-bold text-gray-600 mb-2">Durum:</div>
+                                <div>
+                                    {% if config.isActive %}
+                                        <span class="badge badge-success">Aktif</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">Pasif</span>
+                                    {% endif %}
+                                    
+                                    {% if config.isTestMode %}
+                                        <span class="badge badge-info ms-2">Test Modu</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if config.testConnectionStatus %}
+                            <div class="mb-5">
+                                <div class="fw-bold text-gray-600 mb-2">Son Test:</div>
+                                <div>
+                                    {% if config.testConnectionStatus == 'success' %}
+                                        <span class="badge badge-light-success">
+                                            <i class="ki-duotone ki-check-circle fs-6"></i>
+                                            Başarılı
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-light-danger">
+                                            <i class="ki-duotone ki-cross-circle fs-6"></i>
+                                            Başarısız
+                                        </span>
+                                    {% endif %}
+                                    
+                                    {% if config.lastTestAt %}
+                                    <div class="text-gray-600 fs-8 mt-2">
+                                        {{ config.lastTestAt|date('d.m.Y H:i') }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if config.testConnectionMessage %}
+                                <div class="text-gray-700 fs-7 mt-2">
+                                    {{ config.testConnectionMessage }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!--end::Card-->
+
+                    <!--begin::Card - Help-->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Yardım</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-5">
+                                <i class="ki-duotone ki-information-5 fs-2x text-primary mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                </i>
+                                <p class="fs-7 text-gray-700 mb-3">
+                                    API bilgilerinizi {{ provider.name }} yönetim panelinizden alabilirsiniz.
+                                </p>
+                                {% if provider.apiDocumentationUrl %}
+                                <p class="fs-7 text-gray-700 mb-0">
+                                    Detaylı bilgi için 
+                                    <a href="{{ provider.apiDocumentationUrl }}" target="_blank" class="fw-bold">
+                                        API dokümantasyonuna
+                                    </a> 
+                                    göz atabilirsiniz.
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <!--end::Card-->
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

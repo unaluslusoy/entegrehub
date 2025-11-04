@@ -1,0 +1,116 @@
+{% extends 'layout/_user.html.twig' %}
+
+{% block title %}Shopify Mağaza Bağla{% endblock %}
+
+{% block page_title %}Shopify Mağaza Bağla{% endblock %}
+
+{% block content %}
+    <div class="container-xxl">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <!--begin::Card-->
+                <div class="card">
+                    <div class="card-body p-10">
+                        <!--begin::Logo-->
+                        <div class="text-center mb-10">
+                            <div class="symbol symbol-100px symbol-circle mb-7 bg-light-primary">
+                                <i class="ki-duotone ki-shop fs-3tx text-primary">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                            </div>
+                            <h1 class="text-gray-900 fw-bolder mb-3">Shopify Mağazanızı Bağlayın</h1>
+                            <div class="text-gray-500 fw-semibold fs-6">
+                                Shopify mağazanızı bağlayarak siparişlerinizi otomatik senkronize edin
+                            </div>
+                        </div>
+                        <!--end::Logo-->
+
+                        <!--begin::Form-->
+                        <form method="post" action="{{ path('user_shopify_install') }}">
+                            <!--begin::Input group-->
+                            <div class="fv-row mb-8">
+                                <label class="form-label fs-6 fw-bolder text-gray-900">Shopify Mağaza Alanı</label>
+                                <input type="text" 
+                                       name="shop_domain" 
+                                       class="form-control form-control-lg form-control-solid" 
+                                       placeholder="mystore.myshopify.com" 
+                                       required />
+                                <div class="form-text">
+                                    Shopify mağazanızın alan adını girin (örn: mystore.myshopify.com)
+                                </div>
+                            </div>
+                            <!--end::Input group-->
+
+                            <!--begin::Alert-->
+                            <div class="alert alert-info d-flex align-items-center p-5 mb-8">
+                                <i class="ki-duotone ki-shield-tick fs-2hx text-info me-4">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <div class="d-flex flex-column">
+                                    <h5 class="mb-1">Güvenli Bağlantı</h5>
+                                    <span class="fs-7">Shopify'ın OAuth 2.0 protokolü ile güvenli bir şekilde bağlanacaksınız. API bilgileriniz şifreli olarak saklanır.</span>
+                                </div>
+                            </div>
+                            <!--end::Alert-->
+
+                            <!--begin::Features-->
+                            <div class="mb-10">
+                                <h3 class="fs-5 fw-bold mb-5">Entegrasyonun Faydaları:</h3>
+                                <div class="d-flex flex-column gap-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="ki-duotone ki-check-circle fs-2 text-success me-3">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                        <span class="fw-semibold text-gray-700">Otomatik sipariş senkronizasyonu</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="ki-duotone ki-check-circle fs-2 text-success me-3">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                        <span class="fw-semibold text-gray-700">Gerçek zamanlı webhook bildirimleri</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="ki-duotone ki-check-circle fs-2 text-success me-3">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                        <span class="fw-semibold text-gray-700">Otomatik kargo takip numarası güncelleme</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="ki-duotone ki-check-circle fs-2 text-success me-3">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                        <span class="fw-semibold text-gray-700">Müşteri ve adres bilgileri senkronizasyonu</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--end::Features-->
+
+                            <!--begin::Actions-->
+                            <div class="d-flex gap-3">
+                                <a href="{{ path('user_shopify_index') }}" class="btn btn-light-secondary flex-fill">
+                                    İptal
+                                </a>
+                                <button type="submit" class="btn btn-primary flex-fill">
+                                    <i class="ki-duotone ki-arrow-right fs-3">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                    Shopify'a Bağlan
+                                </button>
+                            </div>
+                            <!--end::Actions-->
+                        </form>
+                        <!--end::Form-->
+                    </div>
+                </div>
+                <!--end::Card-->
+            </div>
+        </div>
+    </div>
+{% endblock %}

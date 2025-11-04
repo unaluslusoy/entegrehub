@@ -1,0 +1,288 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Abonelikler{% endblock %}
+
+{% block page_title %}Abonelik Yönetimi{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Abonelikler</li>
+{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <a href="{{ path('admin_subscriptions_create') }}" class="btn btn-sm btn-primary">
+            <i class="ki-duotone ki-plus fs-2"></i>
+            Yeni Abonelik
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header border-0 pt-6">
+            <div class="card-title">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="ki-duotone ki-magnifier fs-3">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                    <input type="text" id="subscription-search" class="form-control form-control-solid w-250px" placeholder="Abonelik ara..." />
+                    
+                    <select id="status-filter" class="form-select form-select-solid w-150px" onchange="filterByStatus(this.value)">
+                        <option value="all" {{ current_status == 'all' ? 'selected' : '' }}>Tümü</option>
+                        <option value="active" {{ current_status == 'active' ? 'selected' : '' }}>Aktif</option>
+                        <option value="expired" {{ current_status == 'expired' ? 'selected' : '' }}>Süresi Dolmuş</option>
+                        <option value="cancelled" {{ current_status == 'cancelled' ? 'selected' : '' }}>İptal Edildi</option>
+                        <option value="suspended" {{ current_status == 'suspended' ? 'selected' : '' }}>Askıda</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-toolbar">
+                <span class="text-gray-600 fs-7">Toplam: <span class="fw-bold">{{ total }}</span> abonelik</span>
+            </div>
+        </div>
+
+        <div class="card-body pt-0">
+            {% if subscriptions|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table align-middle table-row-dashed fs-6 gy-5">
+                        <thead>
+                            <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
+                                <th class="min-w-200px">KULLANICI</th>
+                                <th class="min-w-150px">PAKET</th>
+                                <th class="min-w-100px">DURUM</th>
+                                <th class="min-w-125px">BAŞLANGIÇ</th>
+                                <th class="min-w-125px">BİTİŞ</th>
+                                <th class="min-w-100px">KULLANIM</th>
+                                <th class="text-end min-w-150px">İŞLEMLER</th>
+                            </tr>
+                        </thead>
+                        <tbody class="fw-semibold text-gray-600">
+                            {% for sub in subscriptions %}
+                            <tr data-subscription-id="{{ sub.id }}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="symbol symbol-45px me-3">
+                                            <span class="symbol-label bg-light-primary">
+                                                <i class="ki-duotone ki-user fs-2x text-primary">
+                                                    <span class="path1"></span>
+                                                    <span class="path2"></span>
+                                                </i>
+                                            </span>
+                                        </div>
+                                        <div class="d-flex flex-column">
+                                            <span class="text-gray-800 fw-bold">{{ sub.user.fullName }}</span>
+                                            <span class="text-gray-500 fs-7">{{ sub.user.email }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-gray-800 fw-bold">{{ sub.plan.name }}</span>
+                                        <span class="text-gray-500 fs-7">
+                                            {% if sub.billingPeriod == 'monthly' %}
+                                                {{ sub.plan.monthlyPrice }} TRY/Ay
+                                            {% else %}
+                                                {{ sub.plan.yearlyPrice }} TRY/Yıl
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if sub.status == 'active' %}
+                                        <span class="badge badge-light-success">Aktif</span>
+                                    {% elseif sub.status == 'expired' %}
+                                        <span class="badge badge-light-danger">Süresi Dolmuş</span>
+                                    {% elseif sub.status == 'cancelled' %}
+                                        <span class="badge badge-light-warning">İptal</span>
+                                    {% elseif sub.status == 'suspended' %}
+                                        <span class="badge badge-light-info">Askıda</span>
+                                    {% endif %}
+                                    
+                                    {% if sub.isTrialPeriod %}
+                                        <span class="badge badge-light-primary ms-1">Deneme</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ sub.startDate|date('d.m.Y') }}</td>
+                                <td>
+                                    {{ sub.endDate|date('d.m.Y') }}
+                                    {% set days_left = date(sub.endDate).diff(date()).days %}
+                                    {% if sub.status == 'active' and days_left < 7 %}
+                                        <span class="badge badge-light-danger">{{ days_left }} gün</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-gray-600 fs-7">Sipariş: {{ sub.currentMonthOrders }}/{{ sub.plan.maxOrders }}</span>
+                                        <span class="text-gray-600 fs-7">SMS: {{ sub.currentMonthSms }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{{ path('admin_subscription_detail', {id: sub.id}) }}" 
+                                       class="btn btn-sm btn-icon btn-light btn-active-light-primary me-1"
+                                       title="Detay">
+                                        <i class="ki-duotone ki-eye fs-2"></i>
+                                    </a>
+                                    <a href="{{ path('admin_subscriptions_edit', {id: sub.id}) }}" 
+                                       class="btn btn-sm btn-icon btn-light btn-active-light-primary me-1"
+                                       title="Düzenle">
+                                        <i class="ki-duotone ki-pencil fs-2"></i>
+                                    </a>
+                                    
+                                    {% if sub.status == 'active' or sub.status == 'expired' %}
+                                    <form method="POST" action="{{ path('admin_subscriptions_renew', {id: sub.id}) }}" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-icon btn-light btn-active-light-success me-1" title="Yenile">
+                                            <i class="ki-duotone ki-arrows-circle fs-2"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    
+                                    {% if sub.status == 'active' %}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-icon btn-light btn-active-light-danger subscription-cancel"
+                                            data-subscription-id="{{ sub.id }}"
+                                            data-user-name="{{ sub.user.fullName }}"
+                                            title="İptal">
+                                        <i class="ki-duotone ki-cross-circle fs-2"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {# Pagination #}
+                {% if pages > 1 %}
+                <div class="d-flex justify-content-between align-items-center flex-wrap pt-5">
+                    <div class="fs-6 fw-bold text-gray-700">Sayfa {{ page }} / {{ pages }}</div>
+                    <ul class="pagination">
+                        {% if page > 1 %}
+                        <li class="page-item previous">
+                            <a href="{{ path('admin_subscriptions', {page: page - 1, status: current_status}) }}" class="page-link">&laquo;</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item previous disabled"><span class="page-link">&laquo;</span></li>
+                        {% endif %}
+                        
+                        {% for i in 1..pages %}
+                            {% if i == page %}
+                            <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                            {% else %}
+                            <li class="page-item"><a href="{{ path('admin_subscriptions', {page: i, status: current_status}) }}" class="page-link">{{ i }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page < pages %}
+                        <li class="page-item next">
+                            <a href="{{ path('admin_subscriptions', {page: page + 1, status: current_status}) }}" class="page-link">&raquo;</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item next disabled"><span class="page-link">&raquo;</span></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-10">
+                    <i class="ki-duotone ki-information-5 fs-5x text-gray-400 mb-5">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                    </i>
+                    <h3 class="text-gray-800 fw-bold mb-3">Henüz abonelik bulunmuyor</h3>
+                    <p class="text-gray-500 fw-semibold fs-6 mb-8">
+                        Yeni abonelik oluşturmak için yukarıdaki butona tıklayın.
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Cancel Modal #}
+    <div class="modal fade" id="cancel_subscription_modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Aboneliği İptal Et</h3>
+                    <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal">
+                        <i class="ki-duotone ki-cross fs-1"></i>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <p class="fs-6 mb-5">
+                        <strong id="cancel-user-name"></strong> kullanıcısının aboneliğini iptal etmek istediğinizden emin misiniz?
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">İptal Nedeni</label>
+                        <textarea id="cancellation-reason" class="form-control" rows="3" placeholder="İptal nedenini yazın..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="button" class="btn btn-danger" id="confirm-cancel-btn">İptal Et</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Search functionality
+        document.getElementById('subscription-search')?.addEventListener('input', function(e) {
+            const q = e.target.value.toLowerCase();
+            document.querySelectorAll('tbody tr[data-subscription-id]').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        });
+
+        // Status filter
+        function filterByStatus(status) {
+            window.location.href = '{{ path('admin_subscriptions') }}?status=' + status;
+        }
+
+        // Cancel subscription
+        const cancelModal = new bootstrap.Modal(document.getElementById('cancel_subscription_modal'));
+        let selectedSubscriptionId = null;
+
+        document.querySelectorAll('.subscription-cancel').forEach(btn => {
+            btn.addEventListener('click', function() {
+                selectedSubscriptionId = this.dataset.subscriptionId;
+                document.getElementById('cancel-user-name').textContent = this.dataset.userName;
+                document.getElementById('cancellation-reason').value = '';
+                cancelModal.show();
+            });
+        });
+
+        document.getElementById('confirm-cancel-btn')?.addEventListener('click', function() {
+            const reason = document.getElementById('cancellation-reason').value;
+            
+            fetch(`/admin/subscriptions/${selectedSubscriptionId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ reason: reason })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(data.message);
+                    cancelModal.hide();
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    toastr.error('İşlem başarısız');
+                }
+            })
+            .catch(error => {
+                toastr.error('Bir hata oluştu');
+            });
+        });
+    </script>
+{% endblock %}

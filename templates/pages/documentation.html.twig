@@ -1,0 +1,366 @@
+{% extends "#{theme.getParameter('KT_THEME_LAYOUT_DIR')}/sidebar-layout.html.twig" %}
+
+{% block page_title %}Dokümantasyon{% endblock %}
+
+{% block content %}
+<!--begin::Content wrapper-->
+<div class="d-flex flex-column flex-column-fluid">
+	<!--begin::Toolbar-->
+	<div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+		<div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+			<div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+				<h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">Dokümantasyon</h1>
+			</div>
+		</div>
+	</div>
+	<!--end::Toolbar-->
+
+	<!--begin::Content-->
+	<div id="kt_app_content" class="app-content flex-column-fluid">
+		<div id="kt_app_content_container" class="app-container container-fluid">
+			<!--begin::Card-->
+			<div class="card">
+				<div class="card-body p-lg-15">
+					<!--begin::Menu-->
+					<div class="d-flex flex-column flex-lg-row mb-10">
+						<ul class="nav nav-pills nav-pills-custom mb-5 mb-lg-0 me-lg-10 flex-column">
+							<li class="nav-item mb-3">
+								<a class="nav-link active" data-bs-toggle="pill" href="#doc_getting_started">
+									<span class="nav-icon">
+										<i class="ki-duotone ki-rocket fs-2">
+											<span class="path1"></span>
+											<span class="path2"></span>
+										</i>
+									</span>
+									<span class="nav-text">Başlangıç</span>
+								</a>
+							</li>
+							<li class="nav-item mb-3">
+								<a class="nav-link" data-bs-toggle="pill" href="#doc_shopify">
+									<span class="nav-icon">
+										<i class="ki-duotone ki-shop fs-2">
+											<span class="path1"></span>
+											<span class="path2"></span>
+											<span class="path3"></span>
+											<span class="path4"></span>
+											<span class="path5"></span>
+										</i>
+									</span>
+									<span class="nav-text">Shopify Entegrasyonu</span>
+								</a>
+							</li>
+							<li class="nav-item mb-3">
+								<a class="nav-link" data-bs-toggle="pill" href="#doc_cargo">
+									<span class="nav-icon">
+										<i class="ki-duotone ki-delivery fs-2">
+											<span class="path1"></span>
+											<span class="path2"></span>
+											<span class="path3"></span>
+											<span class="path4"></span>
+											<span class="path5"></span>
+										</i>
+									</span>
+									<span class="nav-text">Kargo Firmaları</span>
+								</a>
+							</li>
+							<li class="nav-item mb-3">
+								<a class="nav-link" data-bs-toggle="pill" href="#doc_orders">
+									<span class="nav-icon">
+										<i class="ki-duotone ki-package fs-2">
+											<span class="path1"></span>
+											<span class="path2"></span>
+											<span class="path3"></span>
+										</i>
+									</span>
+									<span class="nav-text">Sipariş Yönetimi</span>
+								</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" data-bs-toggle="pill" href="#doc_api">
+									<span class="nav-icon">
+										<i class="ki-duotone ki-code fs-2">
+											<span class="path1"></span>
+											<span class="path2"></span>
+											<span class="path3"></span>
+											<span class="path4"></span>
+										</i>
+									</span>
+									<span class="nav-text">API Dokümantasyonu</span>
+								</a>
+							</li>
+						</ul>
+
+						<!--begin::Tab Content-->
+						<div class="tab-content flex-grow-1">
+							<!--begin::Tab panel-->
+							<div class="tab-pane fade show active" id="doc_getting_started">
+								<h2 class="fw-bold mb-5">Başlangıç Rehberi</h2>
+								
+								<h3 class="fs-2 fw-bold mb-3">1. Hesap Oluşturma</h3>
+								<p class="fs-5 text-gray-800 mb-5">
+									EntegreHub'a kaydolarak başlayın. Kayıt işlemi sadece birkaç dakika sürer ve ücretsizdir.
+								</p>
+
+								<h3 class="fs-2 fw-bold mb-3">2. Shopify Mağazanızı Bağlayın</h3>
+								<p class="fs-5 text-gray-800 mb-3">
+									Mağazalar bölümünden "Yeni Mağaza Ekle" butonuna tıklayın ve Shopify hesabınızla giriş yapın.
+								</p>
+								<div class="alert alert-info">
+									<i class="ki-duotone ki-information fs-2x me-3">
+										<span class="path1"></span>
+										<span class="path2"></span>
+										<span class="path3"></span>
+									</i>
+									Shopify mağaza bağlantısı için mağaza sahibi veya yetkili hesabı ile giriş yapmanız gerekmektedir.
+								</div>
+
+								<h3 class="fs-2 fw-bold mb-3 mt-10">3. Kargo Firması Ayarları</h3>
+								<p class="fs-5 text-gray-800 mb-5">
+									Kullanmak istediğiniz kargo firmalarının API bilgilerini "Kargo Firmaları" bölümünden ekleyin.
+									Her kargo firması için müşteri numarası ve API anahtarı gereklidir.
+								</p>
+
+								<h3 class="fs-2 fw-bold mb-3">4. İlk Gönderinizi Oluşturun</h3>
+								<p class="fs-5 text-gray-800 mb-5">
+									Siparişler sayfasından bir sipariş seçin ve "Gönderi Oluştur" butonuna tıklayın.
+									Kargo firmasını seçin ve gönderi bilgilerini onaylayın.
+								</p>
+							</div>
+							<!--end::Tab panel-->
+
+							<!--begin::Tab panel-->
+							<div class="tab-pane fade" id="doc_shopify">
+								<h2 class="fw-bold mb-5">Shopify Entegrasyonu</h2>
+								
+								<h3 class="fs-2 fw-bold mb-3">OAuth Bağlantısı</h3>
+								<p class="fs-5 text-gray-800 mb-5">
+									EntegreHub, Shopify OAuth 2.0 protokolünü kullanarak güvenli bir şekilde mağazanıza bağlanır.
+									Bağlantı sırasında aşağıdaki izinler istenir:
+								</p>
+								<ul class="fs-5 text-gray-800 mb-10">
+									<li>Siparişleri okuma ve güncelleme</li>
+									<li>Ürünleri okuma</li>
+									<li>Müşteri bilgilerini okuma</li>
+									<li>Kargo bilgilerini güncelleme</li>
+								</ul>
+
+								<h3 class="fs-2 fw-bold mb-3">Webhook Ayarları</h3>
+								<p class="fs-5 text-gray-800 mb-5">
+									Mağazanız bağlandığında, sistem otomatik olarak gerekli webhook'ları oluşturur:
+								</p>
+								<div class="table-responsive">
+									<table class="table table-row-bordered">
+										<thead>
+											<tr class="fw-bold fs-6 text-gray-800">
+												<th>Webhook</th>
+												<th>Açıklama</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td><code>orders/create</code></td>
+												<td>Yeni sipariş oluşturulduğunda tetiklenir</td>
+											</tr>
+											<tr>
+												<td><code>orders/updated</code></td>
+												<td>Sipariş güncellendiğinde tetiklenir</td>
+											</tr>
+											<tr>
+												<td><code>orders/cancelled</code></td>
+												<td>Sipariş iptal edildiğinde tetiklenir</td>
+											</tr>
+											<tr>
+												<td><code>fulfillments/create</code></td>
+												<td>Yeni kargo kaydı oluşturulduğunda tetiklenir</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+							<!--end::Tab panel-->
+
+							<!--begin::Tab panel-->
+							<div class="tab-pane fade" id="doc_cargo">
+								<h2 class="fw-bold mb-5">Kargo Firması Entegrasyonları</h2>
+								
+								<h3 class="fs-2 fw-bold mb-3">Desteklenen Kargo Firmaları</h3>
+								
+								<div class="row g-5 mb-10">
+									<div class="col-md-6">
+										<div class="card card-bordered">
+											<div class="card-body">
+												<h4 class="fw-bold mb-3">Yurtiçi Kargo</h4>
+												<p class="text-gray-700 mb-3">API versiyonu: v2.0</p>
+												<p class="text-gray-700 mb-0">Gerekli Bilgiler:</p>
+												<ul class="text-gray-700">
+													<li>Müşteri Kodu</li>
+													<li>Şifre</li>
+													<li>Desi Hesaplama Yöntemi</li>
+												</ul>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="card card-bordered">
+											<div class="card-body">
+												<h4 class="fw-bold mb-3">MNG Kargo</h4>
+												<p class="text-gray-700 mb-3">API versiyonu: v3.0</p>
+												<p class="text-gray-700 mb-0">Gerekli Bilgiler:</p>
+												<ul class="text-gray-700">
+													<li>Müşteri Numarası</li>
+													<li>API Key</li>
+													<li>Gönderici Şube Kodu</li>
+												</ul>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-6">
+									<i class="ki-duotone ki-shield-tick fs-2tx text-warning me-4">
+										<span class="path1"></span>
+										<span class="path2"></span>
+									</i>
+									<div class="d-flex flex-stack flex-grow-1">
+										<div class="fw-semibold">
+											<h4 class="text-gray-900 fw-bold">Güvenlik Notu</h4>
+											<div class="fs-6 text-gray-700">
+												Kargo firması API bilgileriniz şifreli olarak saklanır ve güvenli bağlantı üzerinden iletilir.
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<!--end::Tab panel-->
+
+							<!--begin::Tab panel-->
+							<div class="tab-pane fade" id="doc_orders">
+								<h2 class="fw-bold mb-5">Sipariş Yönetimi</h2>
+								
+								<h3 class="fs-2 fw-bold mb-3">Gönderi Oluşturma</h3>
+								<p class="fs-5 text-gray-800 mb-5">
+									Sipariş detay sayfasından veya toplu işlem menüsünden gönderi oluşturabilirsiniz.
+								</p>
+
+								<h4 class="fs-3 fw-bold mb-3">Tek Gönderi</h4>
+								<ol class="fs-5 text-gray-800 mb-10">
+									<li class="mb-2">Siparişler sayfasından ilgili siparişi bulun</li>
+									<li class="mb-2">"Gönderi Oluştur" butonuna tıklayın</li>
+									<li class="mb-2">Kargo firmasını seçin</li>
+									<li class="mb-2">Teslimat bilgilerini kontrol edin</li>
+									<li class="mb-2">"Onayla" butonuna tıklayın</li>
+								</ol>
+
+								<h4 class="fs-3 fw-bold mb-3">Toplu Gönderi</h4>
+								<ol class="fs-5 text-gray-800 mb-10">
+									<li class="mb-2">Siparişler sayfasından gönderilecek siparişleri seçin</li>
+									<li class="mb-2">"Toplu İşlemler" menüsünden "Gönderi Oluştur"u seçin</li>
+									<li class="mb-2">Varsayılan kargo firmasını seçin</li>
+									<li class="mb-2">Tüm siparişler için toplu onay verin</li>
+								</ol>
+
+								<h3 class="fs-2 fw-bold mb-3">Gönderi Takibi</h3>
+								<p class="fs-5 text-gray-800 mb-5">
+									Oluşturulan tüm gönderiler otomatik olarak takip edilir. Gönderiler sayfasından:
+								</p>
+								<ul class="fs-5 text-gray-800 mb-5">
+									<li>Gönderi durumunu görüntüleyebilirsiniz</li>
+									<li>Kargo takip numarasını kopyalayabilirsiniz</li>
+									<li>Kargo etiketini yazdırabilirsiniz</li>
+									<li>Teslimat geçmişini görebilirsiniz</li>
+								</ul>
+							</div>
+							<!--end::Tab panel-->
+
+							<!--begin::Tab panel-->
+							<div class="tab-pane fade" id="doc_api">
+								<h2 class="fw-bold mb-5">API Dokümantasyonu</h2>
+								
+								<h3 class="fs-2 fw-bold mb-3">Authentication</h3>
+								<p class="fs-5 text-gray-800 mb-5">
+									EntegreHub API, JWT (JSON Web Token) tabanlı kimlik doğrulama kullanır.
+								</p>
+
+								<h4 class="fs-3 fw-bold mb-3">Token Alma</h4>
+								<div class="bg-light rounded p-5 mb-10">
+									<code class="text-dark">
+										POST /api/login<br>
+										Content-Type: application/json<br><br>
+										{<br>
+										&nbsp;&nbsp;"email": "kullanici@ornek.com",<br>
+										&nbsp;&nbsp;"password": "sifre123"<br>
+										}
+									</code>
+								</div>
+
+								<h4 class="fs-3 fw-bold mb-3">API Endpoint'leri</h4>
+								<div class="table-responsive mb-10">
+									<table class="table table-row-bordered">
+										<thead>
+											<tr class="fw-bold fs-6 text-gray-800">
+												<th>Method</th>
+												<th>Endpoint</th>
+												<th>Açıklama</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td><span class="badge badge-success">GET</span></td>
+												<td><code>/api/shops</code></td>
+												<td>Mağazaları listele</td>
+											</tr>
+											<tr>
+												<td><span class="badge badge-success">GET</span></td>
+												<td><code>/api/orders</code></td>
+												<td>Siparişleri listele</td>
+											</tr>
+											<tr>
+												<td><span class="badge badge-primary">POST</span></td>
+												<td><code>/api/shipments</code></td>
+												<td>Yeni gönderi oluştur</td>
+											</tr>
+											<tr>
+												<td><span class="badge badge-success">GET</span></td>
+												<td><code>/api/shipments/{id}</code></td>
+												<td>Gönderi detayı</td>
+											</tr>
+											<tr>
+												<td><span class="badge badge-danger">DELETE</span></td>
+												<td><code>/api/shipments/{id}</code></td>
+												<td>Gönderi iptal et</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+
+								<div class="notice d-flex bg-light-primary rounded border-primary border border-dashed p-6">
+									<i class="ki-duotone ki-information fs-2tx text-primary me-4">
+										<span class="path1"></span>
+										<span class="path2"></span>
+										<span class="path3"></span>
+									</i>
+									<div class="d-flex flex-stack flex-grow-1">
+										<div class="fw-semibold">
+											<h4 class="text-gray-900 fw-bold">API Geliştirme</h4>
+											<div class="fs-6 text-gray-700">
+												Detaylı API dokümantasyonu ve Postman koleksiyonu için 
+												<a href="mailto:destek@entegrehub.com" class="fw-bold">destek@entegrehub.com</a> adresinden iletişime geçin.
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<!--end::Tab panel-->
+						</div>
+						<!--end::Tab Content-->
+					</div>
+					<!--end::Menu-->
+				</div>
+			</div>
+			<!--end::Card-->
+		</div>
+	</div>
+	<!--end::Content-->
+</div>
+<!--end::Content wrapper-->
+{% endblock %}

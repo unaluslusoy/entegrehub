@@ -1,0 +1,266 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Faturalar{% endblock %}
+
+{% block page_title %}Fatura Yönetimi{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Faturalar</li>
+{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <a href="{{ path('admin_invoices_create') }}" class="btn btn-sm btn-primary">
+            <i class="ki-duotone ki-plus fs-2"></i>
+            Yeni Fatura
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    {# Stats Cards #}
+    <div class="row g-5 mb-5">
+        <div class="col-xl-3">
+            <div class="card card-flush">
+                <div class="card-body p-5">
+                    <div class="d-flex align-items-center">
+                        <i class="ki-duotone ki-document fs-3x text-warning me-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                        <div>
+                            <div class="fs-2x fw-bold text-gray-800">{{ total_pending }}</div>
+                            <div class="text-gray-600 fw-semibold">Bekleyen</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card card-flush">
+                <div class="card-body p-5">
+                    <div class="d-flex align-items-center">
+                        <i class="ki-duotone ki-check-circle fs-3x text-success me-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                        <div>
+                            <div class="fs-2x fw-bold text-gray-800">{{ total_paid }}</div>
+                            <div class="text-gray-600 fw-semibold">Ödendi</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card card-flush">
+                <div class="card-body p-5">
+                    <div class="d-flex align-items-center">
+                        <i class="ki-duotone ki-time fs-3x text-danger me-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                        <div>
+                            <div class="fs-2x fw-bold text-gray-800">{{ total_overdue }}</div>
+                            <div class="text-gray-600 fw-semibold">Gecikmiş</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card card-flush">
+                <div class="card-body p-5">
+                    <div class="d-flex align-items-center">
+                        <i class="ki-duotone ki-document fs-3x text-primary me-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                        <div>
+                            <div class="fs-2x fw-bold text-gray-800">{{ total }}</div>
+                            <div class="text-gray-600 fw-semibold">Toplam</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header border-0 pt-6">
+            <div class="card-title">
+                <div class="d-flex align-items-center gap-3">
+                    <input type="text" id="invoice-search" class="form-control form-control-solid w-250px" placeholder="Fatura ara..." />
+                    
+                    <select id="status-filter" class="form-select form-select-solid w-150px" onchange="filterByStatus(this.value)">
+                        <option value="all" {{ current_status == 'all' ? 'selected' : '' }}>Tümü</option>
+                        <option value="pending" {{ current_status == 'pending' ? 'selected' : '' }}>Bekleyen</option>
+                        <option value="paid" {{ current_status == 'paid' ? 'selected' : '' }}>Ödendi</option>
+                        <option value="overdue" {{ current_status == 'overdue' ? 'selected' : '' }}>Gecikmiş</option>
+                        <option value="cancelled" {{ current_status == 'cancelled' ? 'selected' : '' }}>İptal</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body pt-0">
+            {% if invoices|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table align-middle table-row-dashed fs-6 gy-5">
+                        <thead>
+                            <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
+                                <th class="min-w-125px">FATURA NO</th>
+                                <th class="min-w-200px">KULLANICI / MÜŞTERİ</th>
+                                <th class="min-w-100px">TARİH</th>
+                                <th class="min-w-100px">VADE</th>
+                                <th class="min-w-100px">TUTAR</th>
+                                <th class="min-w-100px">DURUM</th>
+                                <th class="text-end min-w-150px">İŞLEMLER</th>
+                            </tr>
+                        </thead>
+                        <tbody class="fw-semibold text-gray-600">
+                            {% for inv in invoices %}
+                            <tr data-invoice-id="{{ inv.id }}">
+                                <td>
+                                    <a href="{{ path('admin_invoice_detail', {id: inv.id}) }}" class="text-gray-800 text-hover-primary fw-bold">
+                                        {{ inv.invoiceNumber }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        {% if inv.customer %}
+                                            <span class="text-gray-800 fw-bold">{{ inv.customer.companyName }}</span>
+                                            <span class="text-gray-500 fs-7">{{ inv.customer.email }}</span>
+                                            <span class="badge badge-light-primary badge-sm mt-1">Kurumsal</span>
+                                        {% else %}
+                                            <span class="text-gray-800 fw-bold">{{ inv.user.fullName }}</span>
+                                            <span class="text-gray-500 fs-7">{{ inv.user.email }}</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>{{ inv.invoiceDate|date('d.m.Y') }}</td>
+                                <td>
+                                    {{ inv.dueDate|date('d.m.Y') }}
+                                    {% if inv.isOverdue %}
+                                        <span class="badge badge-light-danger ms-1">Gecikmiş</span>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold">{{ inv.total }} {{ inv.currency }}</td>
+                                <td>
+                                    {% if inv.status == 'paid' %}
+                                        <span class="badge badge-light-success">Ödendi</span>
+                                    {% elseif inv.status == 'cancelled' %}
+                                        <span class="badge badge-light-danger">İptal</span>
+                                    {% elseif inv.isOverdue %}
+                                        <span class="badge badge-light-danger">Gecikmiş</span>
+                                    {% else %}
+                                        <span class="badge badge-light-warning">Bekliyor</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{{ path('admin_invoice_detail', {id: inv.id}) }}" 
+                                       class="btn btn-sm btn-icon btn-light btn-active-light-primary me-1"
+                                       title="Detay">
+                                        <i class="ki-duotone ki-eye fs-2"></i>
+                                    </a>
+                                    <a href="{{ path('admin_invoice_pdf', {id: inv.id}) }}" 
+                                       target="_blank"
+                                       class="btn btn-sm btn-icon btn-light btn-active-light-primary me-1"
+                                       title="PDF">
+                                        <i class="ki-duotone ki-file-down fs-2"></i>
+                                    </a>
+                                    <a href="{{ path('admin_invoices_edit', {id: inv.id}) }}" 
+                                       class="btn btn-sm btn-icon btn-light btn-active-light-primary me-1"
+                                       title="Düzenle">
+                                        <i class="ki-duotone ki-pencil fs-2"></i>
+                                    </a>
+                                    {% if inv.status != 'paid' %}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-icon btn-light btn-active-light-success invoice-mark-paid"
+                                            data-invoice-id="{{ inv.id }}"
+                                            title="Ödendi İşaretle">
+                                        <i class="ki-duotone ki-check fs-2"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if pages > 1 %}
+                <div class="d-flex justify-content-between align-items-center flex-wrap pt-5">
+                    <div class="fs-6 fw-bold text-gray-700">Sayfa {{ page }} / {{ pages }}</div>
+                    <ul class="pagination">
+                        {% if page > 1 %}
+                        <li class="page-item previous"><a href="{{ path('admin_invoices', {page: page - 1, status: current_status}) }}" class="page-link">&laquo;</a></li>
+                        {% else %}
+                        <li class="page-item previous disabled"><span class="page-link">&laquo;</span></li>
+                        {% endif %}
+                        {% for i in 1..pages %}
+                            {% if i == page %}
+                            <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                            {% else %}
+                            <li class="page-item"><a href="{{ path('admin_invoices', {page: i, status: current_status}) }}" class="page-link">{{ i }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if page < pages %}
+                        <li class="page-item next"><a href="{{ path('admin_invoices', {page: page + 1, status: current_status}) }}" class="page-link">&raquo;</a></li>
+                        {% else %}
+                        <li class="page-item next disabled"><span class="page-link">&raquo;</span></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-10">
+                    <i class="ki-duotone ki-information-5 fs-5x text-gray-400 mb-5">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                    </i>
+                    <h3 class="text-gray-800 fw-bold mb-3">Henüz fatura bulunmuyor</h3>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function filterByStatus(status) {
+            window.location.href = '{{ path('admin_invoices') }}?status=' + status;
+        }
+
+        document.getElementById('invoice-search')?.addEventListener('input', function(e) {
+            const q = e.target.value.toLowerCase();
+            document.querySelectorAll('tbody tr[data-invoice-id]').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        });
+
+        // Mark as paid
+        document.querySelectorAll('.invoice-mark-paid').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const invoiceId = this.dataset.invoiceId;
+                if (confirm('Faturayı ödendi olarak işaretlemek istediğinizden emin misiniz?')) {
+                    fetch(`/admin/invoices/${invoiceId}/mark-paid`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        toastr.success(data.message);
+                        setTimeout(() => location.reload(), 1000);
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}

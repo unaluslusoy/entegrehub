@@ -1,0 +1,210 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Siparişler{% endblock %}
+
+{% block page_title %}Siparişler{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Siparişler</li>
+{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <button type="button" class="btn btn-sm btn-light-primary" data-bs-toggle="modal" data-bs-target="#filter_modal">
+            <i class="ki-duotone ki-filter fs-2">
+                <span class="path1"></span>
+                <span class="path2"></span>
+            </i>
+            Filtrele
+        </button>
+        <button type="button" class="btn btn-sm btn-success" id="export-orders">
+            <i class="ki-duotone ki-exit-down fs-2">
+                <span class="path1"></span>
+                <span class="path2"></span>
+            </i>
+            Excel'e Aktar
+        </button>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header border-0 pt-6">
+            <div class="card-title">
+                <div class="d-flex align-items-center position-relative my-1">
+                    <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                    <input type="text" id="order-search" class="form-control form-control-solid w-250px ps-13" placeholder="Sipariş ara..." />
+                </div>
+            </div>
+            <div class="card-toolbar">
+                <div class="d-flex justify-content-end align-items-center">
+                    <span class="text-gray-600 fs-7 me-5">Toplam: <span class="fw-bold">{{ total }}</span> sipariş</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body pt-0">
+            {% if orders|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table align-middle table-row-dashed fs-6 gy-5">
+                        <thead>
+                            <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
+                                <th class="min-w-100px">SİPARİŞ NO</th>
+                                <th class="min-w-150px">MAĞAZA</th>
+                                <th class="min-w-125px">MÜŞTERİ</th>
+                                <th class="min-w-100px">TUTAR</th>
+                                <th class="min-w-100px">DURUM</th>
+                                <th class="min-w-125px">TARİH</th>
+                                <th class="text-end min-w-100px">İŞLEMLER</th>
+                            </tr>
+                        </thead>
+                        <tbody class="fw-semibold text-gray-600">
+                            {% for order in orders %}
+                            <tr data-order-id="{{ order.id }}">
+                                <td>
+                                    <a href="{{ path('admin_order_detail', {id: order.id}) }}" class="text-gray-800 text-hover-primary fw-bold">
+                                        #{{ order.orderNumber }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="symbol symbol-35px me-3">
+                                            <span class="symbol-label bg-light-primary">
+                                                <i class="ki-duotone ki-shop fs-3 text-primary">
+                                                    <span class="path1"></span>
+                                                    <span class="path2"></span>
+                                                </i>
+                                            </span>
+                                        </div>
+                                        <div class="d-flex flex-column">
+                                            <span class="text-gray-800 fw-bold">{{ order.shop.shopName }}</span>
+                                            <span class="text-gray-500 fs-7">{{ order.shop.shopDomain }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-gray-800">{{ order.customerName }}</span>
+                                        <span class="text-gray-500 fs-7">{{ order.customerEmail }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-gray-800 fw-bold">{{ order.totalPrice }} {{ order.currency }}</span>
+                                </td>
+                                <td>
+                                    {% if order.fulfillmentStatus == 'fulfilled' %}
+                                        <span class="badge badge-light-success">Tamamlandı</span>
+                                    {% elseif order.fulfillmentStatus == 'partial' %}
+                                        <span class="badge badge-light-warning">Kısmi</span>
+                                    {% elseif order.fulfillmentStatus == 'cancelled' %}
+                                        <span class="badge badge-light-danger">İptal</span>
+                                    {% else %}
+                                        <span class="badge badge-light-info">Bekliyor</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="text-gray-800">{{ order.orderDate|date('d.m.Y H:i') }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{{ path('admin_order_detail', {id: order.id}) }}" class="btn btn-sm btn-icon btn-light btn-active-light-primary">
+                                        <i class="ki-duotone ki-eye fs-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                            <span class="path3"></span>
+                                        </i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {# Pagination #}
+                {% if pages > 1 %}
+                <div class="d-flex justify-content-between align-items-center flex-wrap pt-5">
+                    <div class="fs-6 fw-bold text-gray-700">
+                        Sayfa {{ page }} / {{ pages }}
+                    </div>
+                    <ul class="pagination">
+                        {% if page > 1 %}
+                        <li class="page-item previous">
+                            <a href="{{ path('admin_orders', {page: page - 1}) }}" class="page-link">
+                                <i class="previous"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item previous disabled">
+                            <span class="page-link"><i class="previous"></i></span>
+                        </li>
+                        {% endif %}
+
+                        {% for i in 1..pages %}
+                            {% if i == page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ i }}</span>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a href="{{ path('admin_orders', {page: i}) }}" class="page-link">{{ i }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page < pages %}
+                        <li class="page-item next">
+                            <a href="{{ path('admin_orders', {page: page + 1}) }}" class="page-link">
+                                <i class="next"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item next disabled">
+                            <span class="page-link"><i class="next"></i></span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-10">
+                    <i class="ki-duotone ki-information-5 fs-5x text-gray-400 mb-5">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                    </i>
+                    <h3 class="text-gray-800 fw-bold mb-3">Henüz sipariş bulunmuyor</h3>
+                    <p class="text-gray-500 fw-semibold fs-6 mb-8">
+                        Shopify mağazanızdan siparişler otomatik olarak buraya aktarılacaktır.
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Order search functionality
+        document.getElementById('order-search')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr[data-order-id]');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Export functionality placeholder
+        document.getElementById('export-orders')?.addEventListener('click', function() {
+            toastr.info('Excel export özelliği yakında eklenecek');
+        });
+    </script>
+{% endblock %}

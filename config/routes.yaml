@@ -1,0 +1,36 @@
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+
+# Homepage - will redirect based on authentication
+homepage:
+    path: /
+    controller: App\Controller\HomeController::index
+
+
+signin:
+    path: /signin
+    controller: App\Controller\AuthController::signin
+
+signup:
+    path: /signup
+    controller: App\Controller\AuthController::signup
+
+# OAuth Routes
+oauth_connect_google:
+    path: /oauth/connect/google
+    controller: App\Controller\OAuthController::connectGoogle
+
+oauth_google_callback:
+    path: /oauth/google/callback
+    controller: App\Controller\OAuthController::googleCallback
+
+oauth_connect_apple:
+    path: /oauth/connect/apple
+    controller: App\Controller\OAuthController::connectApple
+
+shopify_oauth_connect:
+    path: /shopify/oauth/connect
+    controller: App\Controller\User\ShopifyController::appEntry

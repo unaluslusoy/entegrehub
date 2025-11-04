@@ -1,0 +1,265 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Sipariş Detayı - #{{ order.orderNumber }}{% endblock %}
+
+{% block page_title %}Sipariş Detayı - #{{ order.orderNumber }}{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">
+        <a href="{{ path('admin_orders') }}" class="text-muted text-hover-primary">Siparişler</a>
+    </li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Sipariş Detayı</li>
+{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <a href="{{ path('admin_orders') }}" class="btn btn-sm btn-light">
+            <i class="ki-duotone ki-left fs-2"></i>
+            Geri Dön
+        </a>
+        <button type="button" class="btn btn-sm btn-primary" id="create-shipment">
+            <i class="ki-duotone ki-truck fs-2">
+                <span class="path1"></span>
+                <span class="path2"></span>
+                <span class="path3"></span>
+                <span class="path4"></span>
+                <span class="path5"></span>
+            </i>
+            Gönderi Oluştur
+        </button>
+        <button type="button" class="btn btn-sm btn-success" id="print-order">
+            <i class="ki-duotone ki-printer fs-2">
+                <span class="path1"></span>
+                <span class="path2"></span>
+                <span class="path3"></span>
+                <span class="path4"></span>
+                <span class="path5"></span>
+            </i>
+            Yazdır
+        </button>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="row g-5 g-xl-10">
+        {# Order Info Card #}
+        <div class="col-xl-8">
+            <div class="card card-flush mb-5">
+                <div class="card-header">
+                    <h3 class="card-title">Sipariş Bilgileri</h3>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="table-responsive">
+                        <table class="table table-row-bordered table-row-gray-300 gy-5">
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold text-gray-600">Sipariş No:</td>
+                                    <td class="text-gray-800">#{{ order.orderNumber }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-gray-600">Mağaza:</td>
+                                    <td class="text-gray-800">{{ order.shop.shopName }} ({{ order.shop.shopDomain }})</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-gray-600">Sipariş Tarihi:</td>
+                                    <td class="text-gray-800">{{ order.orderDate|date('d.m.Y H:i') }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-gray-600">Durum:</td>
+                                    <td>
+                                        {% if order.fulfillmentStatus == 'fulfilled' %}
+                                            <span class="badge badge-light-success">Tamamlandı</span>
+                                        {% elseif order.fulfillmentStatus == 'partial' %}
+                                            <span class="badge badge-light-warning">Kısmi</span>
+                                        {% elseif order.fulfillmentStatus == 'cancelled' %}
+                                            <span class="badge badge-light-danger">İptal</span>
+                                        {% else %}
+                                            <span class="badge badge-light-info">Bekliyor</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-gray-600">Ödeme Durumu:</td>
+                                    <td>
+                                        {% if order.financialStatus == 'paid' %}
+                                            <span class="badge badge-light-success">Ödendi</span>
+                                        {% elseif order.financialStatus == 'pending' %}
+                                            <span class="badge badge-light-warning">Beklemede</span>
+                                        {% elseif order.financialStatus == 'refunded' %}
+                                            <span class="badge badge-light-danger">İade Edildi</span>
+                                        {% else %}
+                                            <span class="badge badge-light-info">{{ order.financialStatus|upper }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {# Order Items Card #}
+            <div class="card card-flush">
+                <div class="card-header">
+                    <h3 class="card-title">Sipariş Ürünleri</h3>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="table-responsive">
+                        <table class="table table-row-dashed table-row-gray-300 align-middle gy-5">
+                            <thead>
+                                <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
+                                    <th class="min-w-200px">ÜRÜN</th>
+                                    <th class="min-w-70px text-center">ADET</th>
+                                    <th class="min-w-100px text-end">BİRİM FİYAT</th>
+                                    <th class="min-w-100px text-end">TOPLAM</th>
+                                </tr>
+                            </thead>
+                            <tbody class="fw-semibold text-gray-600">
+                                {% for item in order.items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="ms-5">
+                                                <span class="text-gray-800 fw-bold">{{ item.productTitle }}</span>
+                                                {% if item.variantTitle %}
+                                                <div class="text-gray-500 fs-7">{{ item.variantTitle }}</div>
+                                                {% endif %}
+                                                {% if item.sku %}
+                                                <div class="text-gray-500 fs-7">SKU: {{ item.sku }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-light-primary">{{ item.quantity }}</span>
+                                    </td>
+                                    <td class="text-end">{{ item.price }} {{ order.currency }}</td>
+                                    <td class="text-end fw-bold">{{ (item.price * item.quantity)|number_format(2) }} {{ order.currency }}</td>
+                                </tr>
+                                {% endfor %}
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold text-gray-600">Ara Toplam:</td>
+                                    <td class="text-end fw-bold">{{ order.subtotalPrice }} {{ order.currency }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold text-gray-600">Kargo:</td>
+                                    <td class="text-end fw-bold">{{ order.shippingPrice }} {{ order.currency }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold text-gray-600">Vergi:</td>
+                                    <td class="text-end fw-bold">{{ order.totalTax }} {{ order.currency }}</td>
+                                </tr>
+                                <tr class="border-top border-top-dashed">
+                                    <td colspan="3" class="text-end fw-bold text-gray-800 fs-5">GENEL TOPLAM:</td>
+                                    <td class="text-end fw-bold text-gray-800 fs-5">{{ order.totalPrice }} {{ order.currency }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Customer & Address Info #}
+        <div class="col-xl-4">
+            {# Customer Info Card #}
+            <div class="card card-flush mb-5">
+                <div class="card-header">
+                    <h3 class="card-title">Müşteri Bilgileri</h3>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="d-flex flex-column gap-5">
+                        <div class="d-flex align-items-center">
+                            <div class="symbol symbol-50px me-3">
+                                <span class="symbol-label bg-light-primary">
+                                    <i class="ki-duotone ki-user fs-2x text-primary">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                </span>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <span class="text-gray-800 fw-bold">{{ order.customerName }}</span>
+                                <span class="text-gray-500 fs-7">{{ order.customerEmail }}</span>
+                                {% if order.customerPhone %}
+                                <span class="text-gray-500 fs-7">{{ order.customerPhone }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Shipping Address Card #}
+            <div class="card card-flush mb-5">
+                <div class="card-header">
+                    <h3 class="card-title">Teslimat Adresi</h3>
+                </div>
+                <div class="card-body pt-0">
+                    {% if order.shippingAddress %}
+                        <div class="text-gray-800">
+                            {{ order.shippingAddress.firstName }} {{ order.shippingAddress.lastName }}<br>
+                            {{ order.shippingAddress.address1 }}<br>
+                            {% if order.shippingAddress.address2 %}
+                                {{ order.shippingAddress.address2 }}<br>
+                            {% endif %}
+                            {{ order.shippingAddress.city }}, {{ order.shippingAddress.province }}<br>
+                            {{ order.shippingAddress.zip }}<br>
+                            {{ order.shippingAddress.country }}<br>
+                            {% if order.shippingAddress.phone %}
+                                Tel: {{ order.shippingAddress.phone }}
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <span class="text-gray-500">Teslimat adresi bulunamadı</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Billing Address Card #}
+            <div class="card card-flush">
+                <div class="card-header">
+                    <h3 class="card-title">Fatura Adresi</h3>
+                </div>
+                <div class="card-body pt-0">
+                    {% if order.billingAddress %}
+                        <div class="text-gray-800">
+                            {{ order.billingAddress.firstName }} {{ order.billingAddress.lastName }}<br>
+                            {{ order.billingAddress.address1 }}<br>
+                            {% if order.billingAddress.address2 %}
+                                {{ order.billingAddress.address2 }}<br>
+                            {% endif %}
+                            {{ order.billingAddress.city }}, {{ order.billingAddress.province }}<br>
+                            {{ order.billingAddress.zip }}<br>
+                            {{ order.billingAddress.country }}<br>
+                            {% if order.billingAddress.phone %}
+                                Tel: {{ order.billingAddress.phone }}
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <span class="text-gray-500">Fatura adresi bulunamadı</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.getElementById('create-shipment')?.addEventListener('click', function() {
+            toastr.info('Gönderi oluşturma özelliği yakında eklenecek');
+        });
+
+        document.getElementById('print-order')?.addEventListener('click', function() {
+            window.print();
+        });
+    </script>
+{% endblock %}

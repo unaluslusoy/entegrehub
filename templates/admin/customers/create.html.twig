@@ -1,0 +1,86 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Yeni Müşteri Oluştur{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Firma Adı</label>
+                    <input type="text" name="company_name" class="form-control" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" required />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Telefon</label>
+                    <input type="text" name="phone" class="form-control" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Vergi Dairesi</label>
+                    <input type="text" name="tax_office" class="form-control" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Vergi No</label>
+                    <input type="text" name="tax_number" class="form-control" />
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label">Adres</label>
+                    <textarea name="address" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Şehir</label>
+                    <input type="text" name="city" class="form-control" />
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">İlçe</label>
+                    <input type="text" name="district" class="form-control" />
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Posta Kodu</label>
+                    <input type="text" name="postal_code" class="form-control" />
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Ülke</label>
+                    <input type="text" name="country" class="form-control" value="TR" />
+                </div>
+                <div class="col-12">
+                    <hr class="my-5">
+                    <h5 class="mb-4">Abonelik Bilgileri</h5>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Abonelik Paketi</label>
+                    <select name="current_plan_id" class="form-select">
+                        <option value="">Paket Seçiniz</option>
+                        {% for plan in plans %}
+                            <option value="{{ plan.id }}">
+                                {{ plan.name }} 
+                                {% if plan.code == 'custom' %}
+                                    (Özel Paket - Sınırsız Kullanım)
+                                {% else %}
+                                    ({{ plan.maxOrders }} sipariş/ay)
+                                {% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Başlangıç Tarihi</label>
+                    <input type="date" name="subscription_start_date" class="form-control" value="{{ 'now'|date('Y-m-d') }}" />
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Bitiş Tarihi</label>
+                    <input type="date" name="subscription_end_date" class="form-control" />
+                </div>
+                <div class="col-12 mt-4">
+                    <button class="btn btn-primary">Oluştur</button>
+                    <a href="{{ path('admin_customers_index') }}" class="btn btn-light ms-2">İptal</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

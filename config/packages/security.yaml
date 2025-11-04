@@ -1,0 +1,106 @@
+security:
+    # Password hashing configuration
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        App\Entity\User:
+            algorithm: auto
+            cost: 12
+
+    # User providers
+    providers:
+        app_user_provider:
+            id: App\Security\UserProvider
+
+    # Firewalls
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        # Shopify embedded app - no authentication required
+        shopify_app:
+            pattern: ^/user/shopify/(app|callback|install)
+            security: false
+
+        # API authentication with JWT
+        api:
+            pattern: ^/api
+            stateless: true
+            jwt: ~
+            entry_point: jwt
+
+        # Web authentication with form login
+        main:
+            lazy: true
+            provider: app_user_provider
+            custom_authenticator: App\Security\LoginFormAuthenticator
+            entry_point: App\Security\LoginFormAuthenticator
+
+            logout:
+                path: app_logout
+                target: app_login
+                invalidate_session: true
+
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800 # 1 week in seconds
+                path: /
+                always_remember_me: false
+
+            # Enable CSRF protection on login
+            form_login:
+                enable_csrf: true
+
+            # Custom access denied handler
+            access_denied_handler: App\Security\AccessDeniedHandler
+
+    # Access control rules
+    access_control:
+        # Public routes (must be before catch-all)
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/signin, roles: PUBLIC_ACCESS }
+        - { path: ^/signup, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/change-locale, roles: PUBLIC_ACCESS }
+        - { path: ^/oauth/connect, roles: PUBLIC_ACCESS }
+        - { path: ^/oauth/google/callback, roles: PUBLIC_ACCESS }
+        - { path: ^/oauth/apple/callback, roles: PUBLIC_ACCESS }
+        - { path: ^/shopify/oauth, roles: PUBLIC_ACCESS }
+        - { path: ^/user/shopify/app, roles: PUBLIC_ACCESS }
+        - { path: ^/user/shopify/callback, roles: PUBLIC_ACCESS }
+        - { path: ^/user/shopify/install, roles: PUBLIC_ACCESS }
+        - { path: ^/api/shopify, roles: PUBLIC_ACCESS }
+        - { path: ^/hakkimizda, roles: PUBLIC_ACCESS }
+        - { path: ^/destek, roles: PUBLIC_ACCESS }
+        - { path: ^/dokumantasyon, roles: PUBLIC_ACCESS }
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        - { path: ^/_wdt, roles: PUBLIC_ACCESS }
+        - { path: ^/_profiler, roles: PUBLIC_ACCESS }
+
+        # API routes require authentication
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+
+        # Admin panel (Yönetim Paneli) - ROLE_SUPER_ADMIN required
+        - { path: ^/admin, roles: ROLE_SUPER_ADMIN }
+
+        # User panel (Kullanıcı Paneli) - ROLE_USER required
+        - { path: ^/user, roles: ROLE_USER }
+
+    # Role hierarchy - Sadece 2 rol: SUPER_ADMIN ve USER
+    role_hierarchy:
+        ROLE_SUPER_ADMIN: [ROLE_USER, ROLE_ALLOWED_TO_SWITCH]
+
+when@test:
+    security:
+        password_hashers:
+            # By default, password hashers are resource intensive and take time. This is
+            # important to generate secure password hashes. In tests however, secure hashes
+            # are not important, waste resources and increase test times. The following
+            # reduces the work factor to the lowest possible values.
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4 # Lowest possible value for bcrypt
+                time_cost: 3 # Lowest possible value for argon
+                memory_cost: 10 # Lowest possible value for argon

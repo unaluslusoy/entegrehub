@@ -1,0 +1,363 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+    # Application Configuration
+    app.name: '%env(APP_NAME)%'
+    app.url: '%env(APP_URL)%'
+    app.timezone: '%env(APP_TIMEZONE)%'
+    app.locale: '%env(APP_LOCALE)%'
+    app.supported_locales: '%env(SUPPORTED_LOCALES)%'
+    app.encryption_key: '%env(APP_ENCRYPTION_KEY)%'
+    
+    # Shopify Configuration
+    shopify.api_key: '%env(SHOPIFY_API_KEY)%'
+    shopify.api_secret: '%env(SHOPIFY_API_SECRET)%'
+    shopify.scopes: '%env(SHOPIFY_SCOPES)%'
+    
+    # JWT Configuration
+    jwt.secret_key: '%env(JWT_SECRET_KEY)%'
+    jwt.public_key: '%env(JWT_PUBLIC_KEY)%'
+    jwt.passphrase: '%env(JWT_PASSPHRASE)%'
+    jwt.ttl: '%env(int:JWT_TTL)%'
+    
+    # File Upload
+    max_upload_size: '%env(MAX_UPLOAD_SIZE)%'
+    allowed_upload_types: '%env(ALLOWED_UPLOAD_TYPES)%'
+    upload_directory: '%kernel.project_dir%/public/uploads'
+    
+    # Rate Limiting
+    rate_limit.enabled: '%env(bool:RATE_LIMIT_ENABLED)%'
+    rate_limit.per_minute: '%env(int:RATE_LIMIT_PER_MINUTE)%'
+    rate_limit.per_hour: '%env(int:RATE_LIMIT_PER_HOUR)%'
+    
+    # Cloudflare Configuration
+    cloudflare.enabled: '%env(bool:CLOUDFLARE_ENABLED)%'
+    cloudflare.api_token: '%env(CLOUDFLARE_API_TOKEN)%'
+    cloudflare.zone_id: '%env(CLOUDFLARE_ZONE_ID)%'
+    cloudflare.email: '%env(CLOUDFLARE_EMAIL)%'
+
+    # Metronic Theme
+    KT_THEME: 'metronic'
+
+    # Theme layout templates directory
+
+    KT_THEME_LAYOUT_DIR: 'layout'
+
+    # Theme Mode
+    # Value: light | dark | system
+
+    KT_THEME_MODE_DEFAULT: 'light'
+    KT_THEME_MODE_SWITCH_ENABLED: true
+
+
+    # Theme Direction
+    # Value: ltr | rtl
+
+    KT_THEME_DIRECTION: 'ltr'
+
+
+    # Keenicons
+    # Value: duotone | outline | bold
+
+    KT_THEME_ICONS: 'duotone'
+
+
+    # Theme Assets
+
+    KT_THEME_ASSETS.favicon: "media/logos/favicon.ico"
+    KT_THEME_ASSETS.fonts: [
+        'https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700',
+    ]
+    KT_THEME_ASSETS.css: [
+        "plugins/global/plugins.bundle.css",
+        "css/style.bundle.css"
+    ]
+    KT_THEME_ASSETS.js: [
+        "plugins/global/plugins.bundle.js",
+        "js/scripts.bundle.js",
+    ]
+
+    # Theme Vendors
+
+    KT_THEME_VENDORS:
+        "datatables": {
+            "css": [
+                "plugins/custom/datatables/datatables.bundle.css"
+            ],
+            "js": [
+                "plugins/custom/datatables/datatables.bundle.js"
+            ]
+        }
+        "formrepeater": {
+            "js": [
+                "plugins/custom/formrepeater/formrepeater.bundle.js"
+            ]
+        }
+        "fullcalendar": {
+            "css": [
+                "plugins/custom/fullcalendar/fullcalendar.bundle.css"
+            ],
+            "js": [
+                "plugins/custom/fullcalendar/fullcalendar.bundle.js"
+            ]
+        }
+        "flotcharts": {
+            "js": [
+                "plugins/custom/flotcharts/flotcharts.bundle.js"
+            ]
+        }
+        "google-jsapi": {
+            "js": [
+                "//www.google.com/jsapi"
+            ]
+        }
+        "tinymce": {
+            "js": [
+                "plugins/custom/tinymce/tinymce.bundle.js"
+            ]
+        }
+        "ckeditor-classic": {
+            "js": [
+                "plugins/custom/ckeditor/ckeditor-classic.bundle.js"
+            ]
+        }
+        "ckeditor-inline": {
+            "js": [
+                "plugins/custom/ckeditor/ckeditor-inline.bundle.js"
+            ]
+        }
+        "ckeditor-balloon": {
+            "js": [
+                "plugins/custom/ckeditor/ckeditor-balloon.bundle.js"
+            ]
+        }
+        "ckeditor-balloon-block": {
+            "js": [
+                "plugins/custom/ckeditor/ckeditor-balloon-block.bundle.js"
+            ]
+        }
+        "ckeditor-document": {
+            "js": [
+                "plugins/custom/ckeditor/ckeditor-document.bundle.js"
+            ]
+        }
+        "draggable": {
+            "js": [
+                "plugins/custom/draggable/draggable.bundle.js"
+            ]
+        }
+        "fslightbox": {
+            "js": [
+                "plugins/custom/fslightbox/fslightbox.bundle.js"
+            ]
+        }
+        "jkanban": {
+            "css": [
+                "plugins/custom/jkanban/jkanban.bundle.css"
+            ],
+            "js": [
+                "plugins/custom/jkanban/jkanban.bundle.js"
+            ]
+        }
+        "typedjs": {
+            "js": [
+                "plugins/custom/typedjs/typedjs.bundle.js"
+            ]
+        }
+        "cookiealert": {
+            "css": [
+                "plugins/custom/cookiealert/cookiealert.bundle.css"
+            ],
+            "js": [
+                "plugins/custom/cookiealert/cookiealert.bundle.js"
+            ]
+        }
+        "cropper": {
+            "css": [
+                "plugins/custom/cropper/cropper.bundle.css"
+            ],
+            "js": [
+                "plugins/custom/cropper/cropper.bundle.js"
+            ]
+        }
+        "vis-timeline": {
+            "css": [
+                "plugins/custom/vis-timeline/vis-timeline.bundle.css"
+            ],
+            "js": [
+                "plugins/custom/vis-timeline/vis-timeline.bundle.js"
+            ]
+        }
+        "jstree": {
+            "css": [
+                "plugins/custom/jstree/jstree.bundle.css"
+            ],
+            "js": [
+                "plugins/custom/jstree/jstree.bundle.js"
+            ]
+        }
+        "prismjs": {
+            "css": [
+                "plugins/custom/prismjs/prismjs.bundle.css"
+            ],
+            "js": [
+                "plugins/custom/prismjs/prismjs.bundle.js"
+            ]
+        }
+        "leaflet": {
+            "css": [
+                "plugins/custom/leaflet/leaflet.bundle.css"
+            ],
+            "js": [
+                "plugins/custom/leaflet/leaflet.bundle.js"
+            ]
+        }
+        "amcharts": {
+            "js": [
+                "https://cdn.amcharts.com/lib/5/index.js",
+                "https://cdn.amcharts.com/lib/5/xy.js",
+                "https://cdn.amcharts.com/lib/5/percent.js",
+                "https://cdn.amcharts.com/lib/5/radar.js",
+                "https://cdn.amcharts.com/lib/5/themes/Animated.js"
+            ]
+        }
+        "amcharts-maps": {
+            "js": [
+                "https://cdn.amcharts.com/lib/5/index.js",
+                "https://cdn.amcharts.com/lib/5/map.js",
+                "https://cdn.amcharts.com/lib/5/geodata/worldLow.js",
+                "https://cdn.amcharts.com/lib/5/geodata/continentsLow.js",
+                "https://cdn.amcharts.com/lib/5/geodata/usaLow.js",
+                "https://cdn.amcharts.com/lib/5/geodata/worldTimeZonesLow.js",
+                "https://cdn.amcharts.com/lib/5/geodata/worldTimeZoneAreasLow.js",
+                "https://cdn.amcharts.com/lib/5/themes/Animated.js"
+            ]
+        }
+        "amcharts-stock": {
+            "js": [
+                "https://cdn.amcharts.com/lib/5/index.js",
+                "https://cdn.amcharts.com/lib/5/xy.js",
+                "https://cdn.amcharts.com/lib/5/themes/Animated.js"
+            ]
+        }
+        "bootstrap-select": {
+            "css": [
+                "plugins/custom/bootstrap-select/bootstrap-select.bundle.css"
+            ],
+            "js": [
+                "plugins/custom/bootstrap-select/bootstrap-select.bundle.js"
+            ]
+        }
+
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            string $projectDir: '%kernel.project_dir%'
+            string $uploadDirectory: '%upload_directory%'
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+    
+    # Custom Services
+    App\Service\Security\EncryptionService:
+        arguments:
+            $params: '@parameter_bag'
+    
+    App\Service\Security\TwoFactorAuthService:
+        arguments:
+            $appName: '%app.name%'
+    
+    App\Service\Security\RateLimitService:
+        arguments:
+            $rateLimitEnabled: '%rate_limit.enabled%'
+            $rateLimitPerMinute: '%rate_limit.per_minute%'
+            $rateLimitPerHour: '%rate_limit.per_hour%'
+    
+    # Security Providers
+    App\Security\UserProvider:
+        arguments:
+            $userRepository: '@App\Repository\UserRepository'
+    
+    # Locale Listener
+    App\EventListener\LocaleListener:
+        arguments:
+            $defaultLocale: 'tr'
+        tags:
+            - { name: kernel.event_subscriber }
+    
+    # Cloudflare Services
+    App\Service\Cloudflare\CloudflareService:
+        arguments:
+            $httpClient: '@http_client'
+            $apiToken: '%cloudflare.api_token%'
+            $zoneId: '%cloudflare.zone_id%'
+            $enabled: '%cloudflare.enabled%'
+    
+    App\Service\Cloudflare\CloudflareRateLimiter:
+        arguments:
+            $httpClient: '@http_client'
+            $apiToken: '%cloudflare.api_token%'
+            $zoneId: '%cloudflare.zone_id%'
+            $enabled: '%cloudflare.enabled%'
+    
+    App\EventListener\CloudflareRequestListener:
+        arguments:
+            $cloudflareService: '@App\Service\Cloudflare\CloudflareService'
+            $logger: '@logger'
+            $enabled: '%cloudflare.enabled%'
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, priority: 10 }
+    
+    # Shopify Services
+    App\Service\ShopifyService:
+        arguments:
+            $httpClient: '@http_client'
+            $entityManager: '@doctrine.orm.entity_manager'
+            $shopifyStoreRepository: '@App\Repository\ShopifyStoreRepository'
+            $logger: '@logger'
+            $shopifyApiKey: '%shopify.api_key%'
+            $shopifyApiSecret: '%shopify.api_secret%'
+            $appUrl: '%app.url%'
+    
+    App\Service\ShopifyWebhookHandler:
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+            $webhookRepository: '@App\Repository\ShopifyWebhookRepository'
+            $syncService: '@App\Service\ShopifySyncService'
+            $logger: '@logger'
+    
+    App\Service\ShopifySyncService:
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+            $shopifyService: '@App\Service\ShopifyService'
+            $orderMappingRepository: '@App\Repository\ShopifyOrderMappingRepository'
+            $syncLogRepository: '@App\Repository\ShopifySyncLogRepository'
+            $orderRepository: '@App\Repository\OrderRepository'
+            $logger: '@logger'
+
+    # Cargo Label Services
+    App\Service\Cargo\QRCodeService: ~
+
+    App\Service\Cargo\CargoLabelGenerator:
+        arguments:
+            $twig: '@twig'
+            $qrCodeService: '@App\Service\Cargo\QRCodeService'
+            $templateRepository: '@App\Repository\UserLabelTemplateRepository'
+            $projectDir: '%kernel.project_dir%'
+

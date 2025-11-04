@@ -1,0 +1,290 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Yeni Fatura{% endblock %}
+
+{% block page_title %}Yeni Fatura Oluştur{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">
+        <a href="{{ path('admin_invoices') }}" class="text-muted text-hover-primary">Faturalar</a>
+    </li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Yeni Fatura</li>
+{% endblock %}
+
+{% block content %}
+    <form id="invoice-form" method="post">
+        <div class="row g-5">
+            <div class="col-xl-8">
+                <div class="card mb-5">
+                    <div class="card-header">
+                        <h3 class="card-title">Fatura Bilgileri</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label required">Kullanıcı</label>
+                                <select name="user_id" id="user-select" class="form-select" required>
+                                    <option value="">Kullanıcı Seçin</option>
+                                    {% for u in users %}
+                                    <option value="{{ u.id }}">{{ u.fullName }} ({{ u.email }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Abonelik</label>
+                                <select name="subscription_id" id="subscription-select" class="form-select">
+                                    <option value="">Abonelik Seçin (İsteğe Bağlı)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-5">
+                            <div class="col-md-4">
+                                <label class="form-label required">Fatura Tarihi</label>
+                                <input type="date" name="invoice_date" class="form-control" value="{{ "now"|date('Y-m-d') }}" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label required">Vade Tarihi</label>
+                                <input type="date" name="due_date" class="form-control" value="{{ "+30 days"|date('Y-m-d') }}" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label required">Para Birimi</label>
+                                <select name="currency" class="form-select" required>
+                                    <option value="TRY">TRY</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="separator separator-dashed my-8"></div>
+
+                        <h4 class="mb-5">Fatura Kalemleri</h4>
+                        <div id="items-container">
+                            <div class="row mb-3 invoice-item">
+                                <div class="col-md-5">
+                                    <label class="form-label">Açıklama</label>
+                                    <input type="text" class="form-control item-description" placeholder="Hizmet açıklaması" required />
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Miktar</label>
+                                    <input type="number" class="form-control item-quantity" value="1" min="1" step="1" required />
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Birim Fiyat</label>
+                                    <input type="number" class="form-control item-unit-price" value="0" min="0" step="0.01" required />
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Toplam</label>
+                                    <input type="text" class="form-control item-amount" readonly />
+                                </div>
+                                <div class="col-md-1 d-flex align-items-end">
+                                    <button type="button" class="btn btn-sm btn-icon btn-light-danger remove-item">
+                                        <i class="ki-duotone ki-trash fs-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" id="add-item" class="btn btn-sm btn-light-primary">
+                            <i class="ki-duotone ki-plus fs-3"></i>
+                            Kalem Ekle
+                        </button>
+
+                        <div class="separator separator-dashed my-8"></div>
+
+                        <div class="row">
+                            <div class="col-md-8"></div>
+                            <div class="col-md-4">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span class="fw-semibold">Ara Toplam:</span>
+                                    <span id="subtotal-display">0.00 TRY</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3 align-items-center">
+                                    <div>
+                                        <span class="fw-semibold me-2">KDV:</span>
+                                        <input type="number" name="tax_rate" id="tax-rate" class="form-control form-control-sm d-inline-block w-75px" value="20" min="0" max="100" step="1" />
+                                        <span class="ms-1">%</span>
+                                    </div>
+                                    <span id="tax-display">0.00 TRY</span>
+                                </div>
+                                <div class="separator mb-3"></div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold fs-4">Genel Toplam:</span>
+                                    <span class="fw-bold fs-4 text-primary" id="total-display">0.00 TRY</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Fatura Adresi</h3>
+                    </div>
+                    <div class="card-body">
+                        <input type="hidden" name="customer_id" value="{{ customer ? customer.id : '' }}" />
+                        <div class="row">
+                            <div class="col-md-6 mb-5">
+                                <label class="form-label">Fatura Adı</label>
+                                <input type="text" name="billing_name" class="form-control" value="{{ customer ? customer.companyName : '' }}" />
+                            </div>
+                            <div class="col-md-6 mb-5">
+                                <label class="form-label">Vergi Numarası</label>
+                                <input type="text" name="tax_number" class="form-control" value="{{ customer ? customer.taxNumber : '' }}" />
+                            </div>
+                            <div class="col-md-12 mb-5">
+                                <label class="form-label">Adres</label>
+                                <textarea name="billing_address" class="form-control" rows="2">{{ customer ? customer.address : '' }}</textarea>
+                            </div>
+                            <div class="col-md-4 mb-5">
+                                <label class="form-label">Şehir</label>
+                                <input type="text" name="billing_city" class="form-control" value="{{ customer ? customer.city : '' }}" />
+                            </div>
+                            <div class="col-md-4 mb-5">
+                                <label class="form-label">Ülke</label>
+                                <input type="text" name="billing_country" class="form-control" value="{{ customer ? customer.country : 'Türkiye' }}" />
+                            </div>
+                            <div class="col-md-4 mb-5">
+                                <label class="form-label">Posta Kodu</label>
+                                <input type="text" name="billing_zip" class="form-control" value="{{ customer ? customer.zipCode : '' }}" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="card card-flush">
+                    <div class="card-body">
+                        <div class="mb-7">
+                            <h5 class="mb-3">Durum</h5>
+                            <select name="status" class="form-select">
+                                <option value="pending" selected>Bekliyor</option>
+                                <option value="paid">Ödendi</option>
+                                <option value="overdue">Gecikmiş</option>
+                                <option value="cancelled">İptal</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-7">
+                            <h5 class="mb-3">Not</h5>
+                            <textarea name="notes" class="form-control" rows="4" placeholder="Fatura notu..."></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="ki-duotone ki-check fs-2"></i>
+                                Fatura Oluştur
+                            </button>
+                            <a href="{{ path('admin_invoices') }}" class="btn btn-light">İptal</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" name="items" id="items-data" />
+        <input type="hidden" name="subtotal" id="subtotal" />
+        <input type="hidden" name="tax_amount" id="tax-amount" />
+        <input type="hidden" name="total" id="total" />
+    </form>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function calculateTotals() {
+            let subtotal = 0;
+            document.querySelectorAll('.invoice-item').forEach(row => {
+                const qty = parseFloat(row.querySelector('.item-quantity').value) || 0;
+                const price = parseFloat(row.querySelector('.item-unit-price').value) || 0;
+                const amount = qty * price;
+                row.querySelector('.item-amount').value = amount.toFixed(2);
+                subtotal += amount;
+            });
+
+            const taxRate = parseFloat(document.getElementById('tax-rate').value) || 0;
+            const taxAmount = subtotal * (taxRate / 100);
+            const total = subtotal + taxAmount;
+            const currency = document.querySelector('select[name="currency"]').value;
+
+            document.getElementById('subtotal-display').textContent = subtotal.toFixed(2) + ' ' + currency;
+            document.getElementById('tax-display').textContent = taxAmount.toFixed(2) + ' ' + currency;
+            document.getElementById('total-display').textContent = total.toFixed(2) + ' ' + currency;
+
+            document.getElementById('subtotal').value = subtotal.toFixed(2);
+            document.getElementById('tax-amount').value = taxAmount.toFixed(2);
+            document.getElementById('total').value = total.toFixed(2);
+        }
+
+        document.getElementById('add-item').addEventListener('click', function() {
+            const template = document.querySelector('.invoice-item').cloneNode(true);
+            template.querySelectorAll('input').forEach(inp => inp.value = inp.classList.contains('item-quantity') ? '1' : '0');
+            document.getElementById('items-container').appendChild(template);
+            attachEventHandlers();
+        });
+
+        function attachEventHandlers() {
+            document.querySelectorAll('.remove-item').forEach(btn => {
+                btn.onclick = function() {
+                    if (document.querySelectorAll('.invoice-item').length > 1) {
+                        btn.closest('.invoice-item').remove();
+                        calculateTotals();
+                    }
+                };
+            });
+
+            document.querySelectorAll('.item-quantity, .item-unit-price').forEach(inp => {
+                inp.oninput = calculateTotals;
+            });
+        }
+
+        document.getElementById('tax-rate').addEventListener('input', calculateTotals);
+        document.querySelector('select[name="currency"]').addEventListener('change', calculateTotals);
+
+        document.getElementById('invoice-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const items = [];
+            document.querySelectorAll('.invoice-item').forEach(row => {
+                items.push({
+                    description: row.querySelector('.item-description').value,
+                    quantity: parseFloat(row.querySelector('.item-quantity').value),
+                    unit_price: parseFloat(row.querySelector('.item-unit-price').value),
+                    amount: parseFloat(row.querySelector('.item-amount').value)
+                });
+            });
+            document.getElementById('items-data').value = JSON.stringify(items);
+            
+            this.submit();
+        });
+
+        // Load subscriptions when user selected
+        document.getElementById('user-select').addEventListener('change', function() {
+            const userId = this.value;
+            const subsSelect = document.getElementById('subscription-select');
+            subsSelect.innerHTML = '<option value="">Yükleniyor...</option>';
+            
+            if (userId) {
+                fetch(`/admin/users/${userId}/subscriptions`)
+                    .then(r => r.json())
+                    .then(data => {
+                        subsSelect.innerHTML = '<option value="">Abonelik Seçin (İsteğe Bağlı)</option>';
+                        data.forEach(sub => {
+                            subsSelect.innerHTML += `<option value="${sub.id}">${sub.plan.name} - ${sub.status}</option>`;
+                        });
+                    });
+            }
+        });
+
+        attachEventHandlers();
+        calculateTotals();
+    </script>
+{% endblock %}

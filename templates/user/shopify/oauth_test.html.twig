@@ -1,0 +1,215 @@
+{% extends 'layout/_user.html.twig' %}
+
+{% block title %}Shopify OAuth Test{% endblock %}
+
+{% block content %}
+<div class="container-xxl">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Shopify OAuth Test & Debug</h3>
+        </div>
+        <div class="card-body">
+            
+            <!--begin::Alert-->
+            <div class="alert alert-warning d-flex align-items-center p-5 mb-10">
+                <i class="ki-duotone ki-shield-tick fs-2hx text-warning me-4">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                </i>
+                <div class="d-flex flex-column">
+                    <h4 class="mb-1 text-dark">Shopify Partners Dashboard Ayarları</h4>
+                    <span>Lütfen aşağıdaki URL'leri Shopify Partners Dashboard'unuzda ayarlayın:</span>
+                </div>
+            </div>
+            <!--end::Alert-->
+
+            <!--begin::Configuration-->
+            <div class="mb-10">
+                <h4 class="mb-5">1️⃣ Shopify Partners Dashboard'a Git</h4>
+                <a href="https://partners.shopify.com/" target="_blank" class="btn btn-primary mb-5">
+                    <i class="ki-duotone ki-external-link fs-2">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                    Shopify Partners Dashboard'u Aç
+                </a>
+            </div>
+
+            <div class="mb-10">
+                <h4 class="mb-5">2️⃣ Apps → Uygulamanız → App Setup</h4>
+            </div>
+
+            <div class="mb-10">
+                <h4 class="mb-5">3️⃣ Aşağıdaki URL'leri Ayarlayın</h4>
+                
+                <!--begin::App URL-->
+                <div class="mb-7">
+                    <label class="form-label fw-bold fs-6">App URL:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-solid" 
+                               value="{{ app_url }}/user/shopify/app" 
+                               id="app-url-input" readonly>
+                        <button class="btn btn-secondary" type="button" onclick="copyToClipboard('app-url-input')">
+                            <i class="ki-duotone ki-copy fs-2"></i>
+                            Kopyala
+                        </button>
+                    </div>
+                    <div class="form-text">Bu URL'yi Shopify Partners Dashboard → App URL alanına yapıştırın</div>
+                </div>
+                <!--end::App URL-->
+
+                <!--begin::Redirect URI-->
+                <div class="mb-7">
+                    <label class="form-label fw-bold fs-6">Allowed redirection URL(s):</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-solid" 
+                               value="{{ redirect_uri }}" 
+                               id="redirect-uri-input" readonly>
+                        <button class="btn btn-secondary" type="button" onclick="copyToClipboard('redirect-uri-input')">
+                            <i class="ki-duotone ki-copy fs-2"></i>
+                            Kopyala
+                        </button>
+                    </div>
+                    <div class="form-text">Bu URL'yi Shopify Partners Dashboard → Allowed redirection URL(s) alanına yapıştırın</div>
+                </div>
+                <!--end::Redirect URI-->
+
+                <!--begin::API Credentials-->
+                <div class="mb-7">
+                    <label class="form-label fw-bold fs-6">API Key:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-solid" 
+                               value="{{ api_key }}" 
+                               id="api-key-input" readonly>
+                        <button class="btn btn-secondary" type="button" onclick="copyToClipboard('api-key-input')">
+                            <i class="ki-duotone ki-copy fs-2"></i>
+                            Kopyala
+                        </button>
+                    </div>
+                </div>
+                <!--end::API Credentials-->
+
+                <!--begin::Scopes-->
+                <div class="mb-7">
+                    <label class="form-label fw-bold fs-6">OAuth Scopes:</label>
+                    <textarea class="form-control form-control-solid" rows="3" readonly>{{ scopes }}</textarea>
+                </div>
+                <!--end::Scopes-->
+            </div>
+
+            <!--begin::Test-->
+            <div class="separator my-10"></div>
+            
+            <div class="mb-10">
+                <h4 class="mb-5">4️⃣ Test Et</h4>
+                <p class="text-gray-700 mb-5">
+                    Ayarları yaptıktan sonra aşağıdaki butona tıklayarak mağaza bağlantısını test edebilirsiniz.
+                </p>
+                
+                <a href="{{ path('user_shopify_install') }}" class="btn btn-lg btn-success">
+                    <i class="ki-duotone ki-shop fs-2">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                    Mağaza Bağla
+                </a>
+            </div>
+            <!--end::Test-->
+
+            <!--begin::Troubleshooting-->
+            <div class="separator my-10"></div>
+            
+            <div>
+                <h4 class="mb-5">🔧 Sorun Giderme</h4>
+                
+                <div class="accordion" id="troubleshooting">
+                    <!--begin::Item-->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading1">
+                            <button class="accordion-button collapsed" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#collapse1">
+                                ❌ "accounts.shopify.com bağlanmayı reddetti"
+                            </button>
+                        </h2>
+                        <div id="collapse1" class="accordion-collapse collapse" data-bs-parent="#troubleshooting">
+                            <div class="accordion-body">
+                                <p><strong>Neden:</strong> Redirect URI Shopify Partners Dashboard'da whitelist edilmemiş.</p>
+                                <p><strong>Çözüm:</strong></p>
+                                <ol>
+                                    <li>Shopify Partners Dashboard → Apps → Uygulamanız → App Setup</li>
+                                    <li>"Allowed redirection URL(s)" alanına ekleyin: <code>{{ redirect_uri }}</code></li>
+                                    <li>Save butonuna basın</li>
+                                    <li>5-10 dakika bekleyin (propagation)</li>
+                                    <li>Tekrar deneyin</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    <!--end::Item-->
+
+                    <!--begin::Item-->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading2">
+                            <button class="accordion-button collapsed" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#collapse2">
+                                ❌ "The redirect_uri is not whitelisted"
+                            </button>
+                        </h2>
+                        <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#troubleshooting">
+                            <div class="accordion-body">
+                                <p>Aynı sorun - yukarıdaki çözümü uygulayın.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--end::Item-->
+
+                    <!--begin::Item-->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading3">
+                            <button class="accordion-button collapsed" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#collapse3">
+                                ❌ "HMAC verification failed"
+                            </button>
+                        </h2>
+                        <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#troubleshooting">
+                            <div class="accordion-body">
+                                <p><strong>Neden:</strong> API Secret yanlış veya timestamp çok eski.</p>
+                                <p><strong>Çözüm:</strong></p>
+                                <ol>
+                                    <li>Shopify Partners Dashboard'dan API Secret'i kontrol edin</li>
+                                    <li>.env dosyasındaki SHOPIFY_API_SECRET'i güncelleyin</li>
+                                    <li>Cache temizleyin: <code>php bin/console cache:clear</code></li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    <!--end::Item-->
+                </div>
+            </div>
+            <!--end::Troubleshooting-->
+
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(inputId) {
+    const input = document.getElementById(inputId);
+    input.select();
+    document.execCommand('copy');
+    
+    // Show toast notification
+    const button = event.target.closest('button');
+    const originalHtml = button.innerHTML;
+    button.innerHTML = '<i class="ki-duotone ki-check fs-2"></i> Kopyalandı!';
+    button.classList.add('btn-success');
+    button.classList.remove('btn-secondary');
+    
+    setTimeout(() => {
+        button.innerHTML = originalHtml;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-secondary');
+    }, 2000);
+}
+</script>
+{% endblock %}

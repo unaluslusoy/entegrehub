@@ -1,0 +1,250 @@
+{% extends 'layout/_user.html.twig' %}
+
+{% block title %}Kargo Entegrasyonları{% endblock %}
+
+{% block page_title %}Kargo Entegrasyonları{% endblock %}
+
+{% block content %}
+    <div class="container-xxl">
+        <!--begin::Toolbar-->
+        <div class="d-flex flex-wrap flex-stack pb-7">
+            <div class="d-flex flex-wrap align-items-center">
+                <h1 class="fw-bold me-3 my-1">Kargo Firmaları</h1>
+                <span class="badge badge-light-primary my-1">{{ providers|length }} Firma Mevcut</span>
+            </div>
+        </div>
+        <!--end::Toolbar-->
+
+        <!--begin::Alert-->
+        <div class="alert alert-info d-flex align-items-center p-5 mb-10">
+            <i class="ki-duotone ki-information-5 fs-2hx text-info me-4">
+                <span class="path1"></span>
+                <span class="path2"></span>
+                <span class="path3"></span>
+            </i>
+            <div class="d-flex flex-column">
+                <h5 class="mb-1">Kargo Entegrasyonları</h5>
+                <span>Kullanmak istediğiniz kargo firmalarını aktif edin ve API bilgilerinizi girin. Her kargo firması için ayrı ayrı test edebilirsiniz.</span>
+            </div>
+        </div>
+        <!--end::Alert-->
+
+        <!--begin::Content-->
+        <div class="row g-6 g-xl-9">
+            {% for provider in providers %}
+            {% set config = configsByProvider[provider.id] ?? null %}
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100 {{ config and config.isActive ? 'border-primary border-2' : '' }}">
+                    <div class="card-body d-flex flex-center flex-column py-9 px-5">
+                        <!--begin::Logo-->
+                        <div class="symbol symbol-75px symbol-circle mb-5">
+                            {% if provider.logo %}
+                                <img src="{{ provider.logo }}" alt="{{ provider.name }}" />
+                            {% else %}
+                                <div class="symbol-label fs-2 fw-semibold bg-light-primary text-primary">
+                                    {{ provider.name|slice(0, 2)|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <!--end::Logo-->
+
+                        <!--begin::Name-->
+                        <a href="{{ path('user_cargo_integration_configure', {id: provider.id}) }}" 
+                           class="fs-4 text-gray-800 text-hover-primary fw-bold mb-0">
+                            {{ provider.name }}
+                        </a>
+                        <!--end::Name-->
+
+                        <!--begin::Info-->
+                        <div class="fw-semibold text-gray-500 mb-6">{{ provider.code }}</div>
+                        <!--end::Info-->
+
+                        <!--begin::Description-->
+                        {% if provider.description %}
+                        <div class="text-gray-600 text-center fs-7 mb-5">
+                            {{ provider.description|slice(0, 80) }}{% if provider.description|length > 80 %}...{% endif %}
+                        </div>
+                        {% endif %}
+                        <!--end::Description-->
+
+                        <!--begin::Status-->
+                        <div class="mb-5">
+                            {% if config %}
+                                {% if config.isActive %}
+                                    <span class="badge badge-success fs-7 fw-semibold">Aktif</span>
+                                {% else %}
+                                    <span class="badge badge-warning fs-7 fw-semibold">Yapılandırıldı</span>
+                                {% endif %}
+                                
+                                {% if config.testConnectionStatus == 'success' %}
+                                    <span class="badge badge-light-success fs-7 fw-semibold ms-2">
+                                        <i class="ki-duotone ki-check-circle fs-6"></i>
+                                        Test OK
+                                    </span>
+                                {% elseif config.testConnectionStatus == 'failed' %}
+                                    <span class="badge badge-light-danger fs-7 fw-semibold ms-2">
+                                        <i class="ki-duotone ki-cross-circle fs-6"></i>
+                                        Test Failed
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge badge-light-secondary fs-7 fw-semibold">Henüz Yapılandırılmadı</span>
+                            {% endif %}
+                        </div>
+                        <!--end::Status-->
+
+                        <!--begin::Test Mode-->
+                        {% if config and config.isTestMode %}
+                        <div class="mb-5">
+                            <span class="badge badge-light-info fs-8">Test Modu Aktif</span>
+                        </div>
+                        {% endif %}
+                        <!--end::Test Mode-->
+
+                        <!--begin::Features-->
+                        <div class="d-flex flex-wrap gap-2 mb-5">
+                            {% if provider.testModeAvailable %}
+                            <span class="badge badge-light-success">Test Modu</span>
+                            {% endif %}
+                            {% if provider.apiEndpoint %}
+                            <span class="badge badge-light-info">API</span>
+                            {% endif %}
+                            {% if provider.webhookUrl %}
+                            <span class="badge badge-light-warning">Webhook</span>
+                            {% endif %}
+                            {% if provider.apiDocumentationUrl %}
+                            <a href="{{ provider.apiDocumentationUrl }}" target="_blank" class="badge badge-light-primary">
+                                <i class="ki-duotone ki-external-link fs-6"></i>
+                                API Docs
+                            </a>
+                            {% endif %}
+                        </div>
+                        <!--end::Features-->
+
+                        <!--begin::Last Test-->
+                        {% if config and config.lastTestAt %}
+                        <div class="text-gray-500 fs-8 mb-5">
+                            Son test: {{ config.lastTestAt|date('d.m.Y H:i') }}
+                        </div>
+                        {% endif %}
+                        <!--end::Last Test-->
+                    </div>
+
+                    <!--begin::Card footer-->
+                    <div class="card-footer d-flex flex-column gap-2 py-5">
+                        <a href="{{ path('user_cargo_integration_configure', {id: provider.id}) }}" 
+                           class="btn btn-sm btn-primary w-100">
+                            <i class="ki-duotone ki-setting-2 fs-2"></i>
+                            {{ config ? 'Yapılandırmayı Düzenle' : 'Yapılandır' }}
+                        </a>
+                        
+                        {% if config %}
+                        <div class="d-flex gap-2">
+                            <button type="button" 
+                                    class="btn btn-sm btn-light-success flex-fill cargo-test-connection"
+                                    data-provider-id="{{ provider.id }}">
+                                <i class="ki-duotone ki-shield-tick fs-2"></i>
+                                Bağlantı Testi
+                            </button>
+                            <button type="button" 
+                                    class="btn btn-sm btn-light-{{ config.isActive ? 'danger' : 'primary' }} flex-fill cargo-toggle-active"
+                                    data-provider-id="{{ provider.id }}"
+                                    data-is-active="{{ config.isActive ? '1' : '0' }}">
+                                <i class="ki-duotone ki-toggle-{{ config.isActive ? 'off' : 'on' }} fs-2"></i>
+                                {{ config.isActive ? 'Devre Dışı' : 'Aktif Et' }}
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <!--end::Card footer-->
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-15">
+                        <i class="ki-duotone ki-package fs-5x text-gray-400 mb-5">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                            <span class="path3"></span>
+                        </i>
+                        <h3 class="text-gray-800 fw-bold mb-3">Henüz kargo firması bulunmuyor</h3>
+                        <p class="text-gray-500 fw-semibold fs-6">
+                            Sistem yöneticisi henüz kargo firması eklememiş.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <!--end::Content-->
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Test connection
+        document.querySelectorAll('.cargo-test-connection').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const providerId = this.dataset.providerId;
+                const originalHtml = this.innerHTML;
+                
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Test ediliyor...';
+                
+                fetch(`/cargo-integrations/${providerId}/test`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        toastr.success(data.message);
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        toastr.error(data.message);
+                    }
+                })
+                .catch(error => {
+                    toastr.error('Test sırasında bir hata oluştu');
+                })
+                .finally(() => {
+                    this.disabled = false;
+                    this.innerHTML = originalHtml;
+                });
+            });
+        });
+
+        // Toggle active
+        document.querySelectorAll('.cargo-toggle-active').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const providerId = this.dataset.providerId;
+                const isActive = this.dataset.isActive === '1';
+                
+                fetch(`/cargo-integrations/${providerId}/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        toastr.success(data.isActive ? 'Kargo firması aktif edildi' : 'Kargo firması devre dışı bırakıldı');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        toastr.error('İşlem başarısız oldu');
+                    }
+                })
+                .catch(error => {
+                    toastr.error('Bir hata oluştu');
+                });
+            });
+        });
+    </script>
+{% endblock %}

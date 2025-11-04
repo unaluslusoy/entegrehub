@@ -1,0 +1,168 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Kargo API Ayarları{% endblock %}
+
+{% block page_title %}Kargo API Ayarları{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Ayarlar</li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Kargo API</li>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        <div class="row g-5">
+            <div class="col-xl-9">
+                <div class="card mb-5">
+                    <div class="card-header">
+                        <h3 class="card-title">Otomatik İşlemler</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-5">
+                            <div class="form-check form-switch form-check-custom form-check-solid mb-2">
+                                <input class="form-check-input" type="checkbox" name="cargo_auto_create" value="1" 
+                                       id="auto-create" {{ settings.cargo_auto_create ?? false ? 'checked' : '' }} />
+                                <label class="form-check-label" for="auto-create">
+                                    Otomatik Gönderi Oluşturma
+                                </label>
+                            </div>
+                            <div class="form-text">Yeni sipariş geldiğinde otomatik olarak kargo gönderisi oluşturulur</div>
+                        </div>
+
+                        <div class="mb-5">
+                            <div class="form-check form-switch form-check-custom form-check-solid mb-2">
+                                <input class="form-check-input" type="checkbox" name="cargo_auto_label" value="1" 
+                                       id="auto-label" {{ settings.cargo_auto_label ?? false ? 'checked' : '' }} />
+                                <label class="form-check-label" for="auto-label">
+                                    Otomatik Etiket Oluşturma
+                                </label>
+                            </div>
+                            <div class="form-text">Gönderi oluşturulunca otomatik olarak kargo etiketi yazdırılır</div>
+                        </div>
+
+                        <div class="mb-5">
+                            <div class="form-check form-switch form-check-custom form-check-solid mb-2">
+                                <input class="form-check-input" type="checkbox" name="cargo_auto_tracking" value="1" 
+                                       id="auto-tracking" {{ settings.cargo_auto_tracking ?? true ? 'checked' : '' }} />
+                                <label class="form-check-label" for="auto-tracking">
+                                    Otomatik Takip Güncelleme
+                                </label>
+                            </div>
+                            <div class="form-text">Kargo durumu belirli aralıklarla otomatik güncellenir</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-5">
+                    <div class="card-header">
+                        <h3 class="card-title">Takip Ayarları</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-5">
+                            <label class="form-label">Takip Güncelleme Aralığı (dakika)</label>
+                            <input type="number" name="cargo_tracking_interval" class="form-control" 
+                                   value="{{ settings.cargo_tracking_interval ?? 30 }}" min="5" max="1440" />
+                            <div class="form-text">Kargo takip bilgileri bu süre aralıklarında güncellenir (5-1440 dk arası)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Bildirim Ayarları</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-5">
+                            <div class="form-check form-switch form-check-custom form-check-solid mb-2">
+                                <input class="form-check-input" type="checkbox" name="cargo_notification_enabled" value="1" 
+                                       id="notification-enabled" {{ settings.cargo_notification_enabled ?? true ? 'checked' : '' }} />
+                                <label class="form-check-label" for="notification-enabled">
+                                    Kargo Bildirimlerini Etkinleştir
+                                </label>
+                            </div>
+                            <div class="form-text">Kargo durumu değiştiğinde müşterilere otomatik bildirim gönderilir</div>
+                        </div>
+
+                        <div class="notice bg-light-warning rounded border-warning border border-dashed p-6">
+                            <div class="d-flex align-items-center">
+                                <i class="ki-duotone ki-information-5 fs-2tx text-warning me-4">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                </i>
+                                <div class="flex-grow-1">
+                                    <div class="fs-7 text-gray-700">
+                                        Bildirim gönderilebilmesi için <strong>Mail Ayarları</strong> ve/veya 
+                                        <strong>SMS Ayarları</strong> bölümlerinden ilgili servisleri yapılandırmanız gerekmektedir.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3">
+                <div class="card card-flush">
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="ki-duotone ki-check fs-2"></i>
+                            Ayarları Kaydet
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card card-flush mt-5">
+                    <div class="card-header">
+                        <h3 class="card-title">Bilgi</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="notice bg-light-primary rounded border-primary border border-dashed p-4">
+                            <div class="fs-7 text-gray-700">
+                                <strong>Önemli:</strong> Otomatik işlemler için kargo firması API bilgilerinin 
+                                doğru yapılandırılmış olması gerekmektedir.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-flush mt-5">
+                    <div class="card-header">
+                        <h3 class="card-title">İlgili Bağlantılar</h3>
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ path('admin_cargo_companies') }}" class="btn btn-light-primary btn-sm w-100 mb-2">
+                            <i class="ki-duotone ki-truck fs-4 me-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                                <span class="path3"></span>
+                            </i>
+                            Kargo Firmaları
+                        </a>
+                        <a href="{{ path('admin_settings_mail') }}" class="btn btn-light-primary btn-sm w-100 mb-2">
+                            <i class="ki-duotone ki-sms fs-4 me-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            Mail Ayarları
+                        </a>
+                        <a href="{{ path('admin_settings_sms') }}" class="btn btn-light-primary btn-sm w-100">
+                            <i class="ki-duotone ki-message-text fs-4 me-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                                <span class="path3"></span>
+                            </i>
+                            SMS Ayarları
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends 'layout/base.html.twig' %}
+
+{% block title %}Erişim İzinleri{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <a href="{{ path('team_permissions_matrix') }}" class="btn btn-sm btn-light-primary">
+            <i class="ki-duotone ki-element-11 fs-3">
+                <span class="path1"></span>
+                <span class="path2"></span>
+                <span class="path3"></span>
+                <span class="path4"></span>
+            </i>
+            İzin Matrisi
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header border-0 pt-6">
+            <h3 class="card-title align-items-start flex-column">
+                <span class="card-label fw-bold fs-3 mb-1">Ekip Rolleri ve İzinleri</span>
+                <span class="text-muted mt-1 fw-semibold fs-7">Ekip üyelerinizin erişim yetkilerini yönetin</span>
+            </h3>
+        </div>
+
+        <div class="card-body py-4">
+            {% for role in roles %}
+            <div class="card border mb-5">
+                <div class="card-header bg-light-primary">
+                    <h4 class="card-title fw-bold text-primary mb-0">
+                        {{ role.name }}
+                        <span class="badge badge-light ms-2">Level {{ role.level }}</span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if role.permissions|length > 0 %}
+                            {% set modules = {} %}
+                            {% for permission in role.permissions %}
+                                {% set module = permission.module %}
+                                {% if modules[module] is not defined %}
+                                    {% set modules = modules|merge({(module): []}) %}
+                                {% endif %}
+                                {% set modules = modules|merge({(module): modules[module]|merge([permission])}) %}
+                            {% endfor %}
+
+                            {% for module, permissions in modules %}
+                            <div class="col-md-4 mb-5">
+                                <h5 class="fw-bold text-gray-800 mb-3">
+                                    <i class="ki-duotone ki-abstract-26 fs-3 text-primary me-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                    {{ module|title }}
+                                </h5>
+                                <div class="d-flex flex-column gap-2">
+                                    {% for permission in permissions %}
+                                        <div class="d-flex align-items-center">
+                                            <i class="ki-duotone ki-check-circle fs-5 text-success me-2">
+                                                <span class="path1"></span>
+                                                <span class="path2"></span>
+                                            </i>
+                                            <span class="text-gray-700">{{ permission.name }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="col-12">
+                                <div class="alert alert-warning d-flex align-items-center">
+                                    <i class="ki-duotone ki-information fs-2 text-warning me-3">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                    </i>
+                                    <span>Bu role henüz izin atanmamış.</span>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="alert alert-info mt-5">
+        <div class="d-flex align-items-center">
+            <i class="ki-duotone ki-information-5 fs-2 text-info me-4">
+                <span class="path1"></span>
+                <span class="path2"></span>
+                <span class="path3"></span>
+            </i>
+            <div>
+                <h5 class="mb-1">İzin Yönetimi Hakkında</h5>
+                <p class="mb-0">
+                    Ekip üyelerinize rol atayarak sistemin farklı bölümlerine erişim yetkisi verebilirsiniz. 
+                    Her rol, belirli modüller üzerinde önceden tanımlanmış yetkilere sahiptir.
+                    Rol bazlı yetki düzenlemesi için sistem yöneticinizle iletişime geçebilirsiniz.
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

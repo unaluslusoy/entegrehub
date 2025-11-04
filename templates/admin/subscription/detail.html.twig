@@ -1,0 +1,311 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Abonelik Detayı{% endblock %}
+
+{% block page_title %}Abonelik Detayı{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">
+        <a href="{{ path('admin_subscriptions') }}" class="text-muted text-hover-primary">Abonelikler</a>
+    </li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Detay</li>
+{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <a href="{{ path('admin_subscriptions') }}" class="btn btn-sm btn-light">
+            <i class="ki-duotone ki-left fs-2"></i>
+            Geri Dön
+        </a>
+        <a href="{{ path('admin_subscriptions_edit', {id: subscription.id}) }}" class="btn btn-sm btn-primary">
+            <i class="ki-duotone ki-pencil fs-2"></i>
+            Düzenle
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="row g-5 g-xl-10">
+        {# User Info #}
+        <div class="col-xl-4">
+            <div class="card card-flush h-100">
+                <div class="card-header">
+                    <h3 class="card-title">Kullanıcı Bilgileri</h3>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="d-flex align-items-center mb-7">
+                        <div class="symbol symbol-60px me-5">
+                            <span class="symbol-label bg-light-primary">
+                                <i class="ki-duotone ki-user fs-2x text-primary">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                            </span>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="text-gray-800 fw-bold fs-5">{{ subscription.user.fullName }}</span>
+                            <span class="text-gray-500">{{ subscription.user.email }}</span>
+                            {% if subscription.user.phone %}
+                            <span class="text-gray-500">{{ subscription.user.phone }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="separator my-5"></div>
+
+                    <div class="mb-3">
+                        <span class="text-gray-600 fs-7">Rol:</span>
+                        <div class="fw-bold">
+                            {% if 'ROLE_SUPER_ADMIN' in subscription.user.roles %}
+                                <span class="badge badge-light-danger">Süper Admin</span>
+                            {% elseif 'ROLE_SUPER_ADMIN' in subscription.user.roles %}
+                                <span class="badge badge-light-primary">Admin</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="text-gray-600 fs-7">Durum:</span>
+                        <div class="fw-bold">
+                            {% if subscription.user.isActive %}
+                                <span class="badge badge-light-success">Aktif</span>
+                            {% else %}
+                                <span class="badge badge-light-danger">Pasif</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="text-gray-600 fs-7">Kayıt Tarihi:</span>
+                        <div class="fw-bold">{{ subscription.user.createdAt|date('d.m.Y H:i') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Subscription Info #}
+        <div class="col-xl-8">
+            <div class="card card-flush mb-5">
+                <div class="card-header">
+                    <h3 class="card-title">Abonelik Bilgileri</h3>
+                    <div class="card-toolbar">
+                        {% if subscription.status == 'active' %}
+                            <span class="badge badge-light-success fs-7">Aktif</span>
+                        {% elseif subscription.status == 'expired' %}
+                            <span class="badge badge-light-danger fs-7">Süresi Dolmuş</span>
+                        {% elseif subscription.status == 'cancelled' %}
+                            <span class="badge badge-light-warning fs-7">İptal Edildi</span>
+                        {% elseif subscription.status == 'suspended' %}
+                            <span class="badge badge-light-info fs-7">Askıda</span>
+                        {% endif %}
+                        
+                        {% if subscription.isTrialPeriod %}
+                            <span class="badge badge-light-primary fs-7 ms-2">Deneme</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="table-responsive">
+                        <table class="table table-row-bordered table-row-gray-300 gy-5">
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold text-gray-600" style="width: 200px;">Paket:</td>
+                                    <td class="text-gray-800">{{ subscription.plan.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-gray-600">Fiyat:</td>
+                                    <td class="text-gray-800">
+                                        {% if subscription.billingPeriod == 'monthly' %}
+                                            {{ subscription.plan.monthlyPrice }} TRY/Ay
+                                        {% else %}
+                                            {{ subscription.plan.yearlyPrice }} TRY/Yıl
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-gray-600">Başlangıç Tarihi:</td>
+                                    <td class="text-gray-800">{{ subscription.startDate|date('d.m.Y') }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-gray-600">Bitiş Tarihi:</td>
+                                    <td class="text-gray-800">
+                                        {{ subscription.endDate|date('d.m.Y') }}
+                                        {% set days_left = date(subscription.endDate).diff(date()).days %}
+                                        {% if subscription.status == 'active' %}
+                                            {% if days_left < 7 %}
+                                                <span class="badge badge-light-danger ms-2">{{ days_left }} gün kaldı</span>
+                                            {% else %}
+                                                <span class="badge badge-light-success ms-2">{{ days_left }} gün</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if subscription.nextBillingDate %}
+                                <tr>
+                                    <td class="fw-bold text-gray-600">Sonraki Fatura:</td>
+                                    <td class="text-gray-800">{{ subscription.nextBillingDate|date('d.m.Y') }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <td class="fw-bold text-gray-600">Otomatik Yenileme:</td>
+                                    <td class="text-gray-800">
+                                        {% if subscription.autoRenew %}
+                                            <span class="badge badge-light-success">Açık</span>
+                                        {% else %}
+                                            <span class="badge badge-light-danger">Kapalı</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if subscription.paymentMethod %}
+                                <tr>
+                                    <td class="fw-bold text-gray-600">Ödeme Yöntemi:</td>
+                                    <td class="text-gray-800">
+                                        {% if subscription.paymentMethod == 'credit_card' %}Kredi Kartı
+                                        {% elseif subscription.paymentMethod == 'bank_transfer' %}Banka Transferi
+                                        {% elseif subscription.paymentMethod == 'paypal' %}PayPal
+                                        {% else %}{{ subscription.paymentMethod }}{% endif %}
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% if subscription.lastPaymentDate %}
+                                <tr>
+                                    <td class="fw-bold text-gray-600">Son Ödeme:</td>
+                                    <td class="text-gray-800">
+                                        {{ subscription.lastPaymentDate|date('d.m.Y H:i') }}
+                                        {% if subscription.lastPaymentAmount %}
+                                            <span class="text-success fw-bold ms-2">{{ subscription.lastPaymentAmount }} TRY</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if subscription.notes %}
+                    <div class="alert alert-secondary mt-5">
+                        <strong>Notlar:</strong><br>
+                        {{ subscription.notes|nl2br }}
+                    </div>
+                    {% endif %}
+
+                    {% if subscription.status == 'cancelled' and subscription.cancellationReason %}
+                    <div class="alert alert-warning mt-5">
+                        <strong>İptal Nedeni:</strong><br>
+                        {{ subscription.cancellationReason|nl2br }}
+                        <div class="text-muted fs-7 mt-2">İptal Tarihi: {{ subscription.cancelledAt|date('d.m.Y H:i') }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Usage Stats #}
+            <div class="card card-flush">
+                <div class="card-header">
+                    <h3 class="card-title">Kullanım İstatistikleri (Bu Ay)</h3>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="row g-5">
+                        <div class="col-md-4">
+                            <div class="border border-gray-300 border-dashed rounded p-5 text-center">
+                                <i class="ki-duotone ki-delivery fs-3x text-primary mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <div class="fs-2x fw-bold text-gray-800 mb-2">{{ subscription.currentMonthOrders }}</div>
+                                <div class="text-gray-600 fw-semibold">Sipariş</div>
+                                <div class="progress mt-3" style="height: 6px;">
+                                    {% set order_percentage = (subscription.currentMonthOrders / subscription.plan.maxOrders * 100)|round %}
+                                    <div class="progress-bar bg-primary" style="width: {{ order_percentage }}%"></div>
+                                </div>
+                                <div class="text-gray-500 fs-7 mt-2">Limit: {{ subscription.plan.maxOrders }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border border-gray-300 border-dashed rounded p-5 text-center">
+                                <i class="ki-duotone ki-sms fs-3x text-success mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <div class="fs-2x fw-bold text-gray-800 mb-2">{{ subscription.currentMonthSms }}</div>
+                                <div class="text-gray-600 fw-semibold">SMS Gönderimi</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border border-gray-300 border-dashed rounded p-5 text-center">
+                                <i class="ki-duotone ki-message-text-2 fs-3x text-warning mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                </i>
+                                <div class="fs-2x fw-bold text-gray-800 mb-2">{{ subscription.currentMonthEmails }}</div>
+                                <div class="text-gray-600 fw-semibold">Email Gönderimi</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Plan Features #}
+        <div class="col-xl-12">
+            <div class="card card-flush">
+                <div class="card-header">
+                    <h3 class="card-title">Paket Özellikleri</h3>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-5">
+                                <i class="ki-duotone ki-shop fs-2 text-primary me-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <div>
+                                    <div class="text-gray-600 fs-7">Maksimum Mağaza</div>
+                                    <div class="fw-bold text-gray-800">{{ subscription.plan.maxShops }} Mağaza</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-5">
+                                <i class="ki-duotone ki-delivery fs-2 text-primary me-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <div>
+                                    <div class="text-gray-600 fs-7">Aylık Sipariş Limiti</div>
+                                    <div class="fw-bold text-gray-800">{{ subscription.plan.maxOrders }} Sipariş</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if subscription.plan.features %}
+                    <div class="separator my-5"></div>
+                    <h4 class="fs-6 fw-bold mb-5">Paket Özellikleri:</h4>
+                    <div class="row">
+                        {% for feature in subscription.plan.features %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="ki-duotone ki-check-circle fs-2 text-success me-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <span class="text-gray-700 fw-semibold">{{ feature }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

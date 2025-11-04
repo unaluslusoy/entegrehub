@@ -1,0 +1,197 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Sipariş Raporları{% endblock %}
+
+{% block page_title %}Sipariş Raporları{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">
+        <a href="{{ path('admin_reports') }}" class="text-muted text-hover-primary">Raporlar</a>
+    </li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Siparişler</li>
+{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <a href="{{ path('admin_reports_export_orders', {'format': 'csv', 'start_date': start_date|date('Y-m-d'), 'end_date': end_date|date('Y-m-d')}) }}" class="btn btn-sm btn-light-primary">
+            <i class="ki-duotone ki-file-down fs-2">
+                <span class="path1"></span>
+                <span class="path2"></span>
+            </i>
+            CSV Export
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    {# Date Range Filter #}
+    <div class="card mb-5">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Başlangıç Tarihi</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ start_date|date('Y-m-d') }}" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Bitiş Tarihi</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ end_date|date('Y-m-d') }}" />
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="ki-duotone ki-filter fs-2"></i>
+                        Filtrele
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# Summary Stats #}
+    <div class="row g-5 g-xl-10 mb-5">
+        <div class="col-md-6">
+            <div class="card card-flush h-100">
+                <div class="card-header pt-5">
+                    <h3 class="card-title">Toplam Sipariş</h3>
+                </div>
+                <div class="card-body d-flex align-items-center">
+                    <div class="text-primary fs-2hx fw-bold me-2">{{ total_orders }}</div>
+                    <div class="text-gray-500 fs-7">
+                        {{ start_date|date('d.m.Y') }} - {{ end_date|date('d.m.Y') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card card-flush h-100">
+                <div class="card-header pt-5">
+                    <h3 class="card-title">Toplam Gelir</h3>
+                </div>
+                <div class="card-body d-flex align-items-center">
+                    <div class="text-success fs-2hx fw-bold me-2">{{ total_revenue|number_format(2, ',', '.') }} ₺</div>
+                    <div class="text-gray-500 fs-7">
+                        Ortalama: {{ (total_orders > 0 ? (total_revenue / total_orders) : 0)|number_format(2, ',', '.') }} ₺
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-5 g-xl-10">
+        {# Orders by Status #}
+        <div class="col-xl-6">
+            <div class="card card-flush h-100">
+                <div class="card-header pt-5">
+                    <h3 class="card-title">Duruma Göre Siparişler</h3>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="table-responsive">
+                        <table class="table table-row-bordered table-row-gray-300 gy-5">
+                            <thead>
+                                <tr class="fw-bold fs-6 text-gray-800">
+                                    <th>Durum</th>
+                                    <th class="text-end">Adet</th>
+                                    <th class="text-end">Yüzde</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in orders_by_status %}
+                                <tr>
+                                    <td>
+                                        {% if item.status == 'pending' %}
+                                            <span class="badge badge-light-warning">Beklemede</span>
+                                        {% elseif item.status == 'processing' %}
+                                            <span class="badge badge-light-primary">İşleniyor</span>
+                                        {% elseif item.status == 'ready_to_ship' %}
+                                            <span class="badge badge-light-info">Kargoya Hazır</span>
+                                        {% elseif item.status == 'shipped' %}
+                                            <span class="badge badge-light-primary">Kargoda</span>
+                                        {% elseif item.status == 'delivered' %}
+                                            <span class="badge badge-light-success">Teslim Edildi</span>
+                                        {% elseif item.status == 'cancelled' %}
+                                            <span class="badge badge-light-danger">İptal Edildi</span>
+                                        {% else %}
+                                            <span class="badge badge-light">{{ item.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end fw-bold">{{ item.count }}</td>
+                                    <td class="text-end text-muted">
+                                        {% if total_orders > 0 %}
+                                            {{ ((item.count / total_orders) * 100)|number_format(1) }}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Monthly Orders Chart #}
+        <div class="col-xl-6">
+            <div class="card card-flush h-100">
+                <div class="card-header pt-5">
+                    <h3 class="card-title">Aylık Sipariş Trendi</h3>
+                </div>
+                <div class="card-body pt-0">
+                    <canvas id="monthly-orders-chart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Monthly Orders Chart
+        const monthlyData = {{ monthly_orders|json_encode|raw }};
+        const labels = monthlyData.map(item => {
+            const [year, month] = item.month.split('-');
+            const date = new Date(year, month - 1);
+            return date.toLocaleDateString('tr-TR', { month: 'short', year: 'numeric' });
+        });
+        const data = monthlyData.map(item => item.count);
+
+        const ctx = document.getElementById('monthly-orders-chart');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Sipariş Sayısı',
+                    data: data,
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

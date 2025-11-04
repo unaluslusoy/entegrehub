@@ -1,0 +1,219 @@
+{% extends 'layout/base.html.twig' %}
+
+{% block title %}İzinler | {{ parent() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">İzinler Matrisi</h1>
+                <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                    <li class="breadcrumb-item text-muted">
+                        <a href="{{ path('admin_dashboard') }}" class="text-muted text-hover-primary">Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                    </li>
+                    <li class="breadcrumb-item text-muted">Kullanıcı Yönetimi</li>
+                    <li class="breadcrumb-item">
+                        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                    </li>
+                    <li class="breadcrumb-item text-muted">İzinler</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-xxl">
+            <!--begin::Card-->
+            <div class="card">
+                <!--begin::Card header-->
+                <div class="card-header border-0 pt-6">
+                    <div class="card-title">
+                        <h3 class="fw-bold m-0">Rol - İzin Matrisi</h3>
+                    </div>
+                    <div class="card-toolbar">
+                        <div class="d-flex justify-content-end">
+                            <a href="{{ path('admin_roles_index') }}" class="btn btn-sm btn-light-primary me-3">
+                                <i class="ki-duotone ki-shield fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                Rolleri Yönet
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!--end::Card header-->
+
+                <!--begin::Card body-->
+                <div class="card-body py-4">
+                    <div class="table-responsive">
+                        <table class="table table-rounded table-striped border gy-7 gs-7">
+                            <thead>
+                                <tr class="fw-bold fs-6 text-gray-800 border-bottom-2 border-gray-200">
+                                    <th class="min-w-200px">Modül / İzin</th>
+                                    {% for role in roles %}
+                                    <th class="min-w-100px text-center">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <span class="fw-bold">{{ role.name }}</span>
+                                            <span class="badge badge-light-info fs-8 mt-1">{{ role.slug }}</span>
+                                        </div>
+                                    </th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for module, modulePermissions in permissions %}
+                                <tr>
+                                    <td colspan="{{ roles|length + 1 }}" class="bg-light-primary">
+                                        <span class="fw-bold text-primary fs-6">
+                                            <i class="ki-duotone ki-category fs-2 text-primary me-2">
+                                                <span class="path1"></span>
+                                                <span class="path2"></span>
+                                                <span class="path3"></span>
+                                                <span class="path4"></span>
+                                            </i>
+                                            {{ module|upper }} MODÜLÜ
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% for permission in modulePermissions %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-semibold">{{ permission.name }}</span>
+                                            <span class="badge badge-light-secondary fs-8 mt-1 w-fit-content">{{ permission.slug }}</span>
+                                            {% if permission.description %}
+                                            <span class="text-muted fs-7 mt-1">{{ permission.description }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    {% for role in roles %}
+                                    <td class="text-center">
+                                        {% set hasPermission = false %}
+                                        {% for rolePermission in role.permissions %}
+                                            {% if rolePermission.id == permission.id %}
+                                                {% set hasPermission = true %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if hasPermission %}
+                                        <i class="ki-duotone ki-check-circle fs-2x text-success">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                        {% else %}
+                                        <i class="ki-duotone ki-cross-circle fs-2x text-muted opacity-25">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                        {% endif %}
+                                    </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!--begin::Legend-->
+                    <div class="row mt-10">
+                        <div class="col-12">
+                            <div class="alert alert-info d-flex align-items-center p-5">
+                                <i class="ki-duotone ki-information-5 fs-2hx text-info me-4">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                </i>
+                                <div class="d-flex flex-column">
+                                    <h4 class="mb-1 text-dark">İzin Matrisi Açıklaması</h4>
+                                    <span>
+                                        <i class="ki-duotone ki-check-circle fs-2x text-success me-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i> = Rol bu izne sahip
+                                        <span class="mx-3">|</span>
+                                        <i class="ki-duotone ki-cross-circle fs-2x text-muted me-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i> = Rol bu izne sahip değil
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--end::Legend-->
+                </div>
+                <!--end::Card body-->
+            </div>
+            <!--end::Card-->
+
+            <!--begin::Stats cards-->
+            <div class="row g-6 g-xl-9 mt-6">
+                <!--begin::Col-->
+                <div class="col-lg-6 col-xxl-4">
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div class="fw-bold text-gray-800 fs-2 mb-2">{{ roles|length }}</div>
+                            <div class="fw-semibold text-gray-500">Toplam Rol Sayısı</div>
+                            <div class="mt-5">
+                                <a href="{{ path('admin_roles_index') }}" class="btn btn-sm btn-light-primary">Rolleri Görüntüle</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end::Col-->
+
+                <!--begin::Col-->
+                <div class="col-lg-6 col-xxl-4">
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            {% set totalPermissions = 0 %}
+                            {% for module, modulePermissions in permissions %}
+                                {% set totalPermissions = totalPermissions + modulePermissions|length %}
+                            {% endfor %}
+                            <div class="fw-bold text-gray-800 fs-2 mb-2">{{ totalPermissions }}</div>
+                            <div class="fw-semibold text-gray-500">Toplam İzin Sayısı</div>
+                            <div class="mt-5">
+                                <span class="badge badge-light-info">{{ permissions|length }} Modül</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end::Col-->
+
+                <!--begin::Col-->
+                <div class="col-lg-6 col-xxl-4">
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div class="fw-bold text-gray-800 fs-2 mb-2">
+                                {% set systemRoles = 0 %}
+                                {% for role in roles %}
+                                    {% if role.isSystem %}
+                                        {% set systemRoles = systemRoles + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ systemRoles }}
+                            </div>
+                            <div class="fw-semibold text-gray-500">Sistem Rolü</div>
+                            <div class="mt-5">
+                                <span class="badge badge-light-warning">Korumalı</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end::Col-->
+            </div>
+            <!--end::Stats cards-->
+        </div>
+    </div>
+    <!--end::Content-->
+</div>
+{% endblock %}

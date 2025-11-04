@@ -1,0 +1,203 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Yeni Kargo Firması{% endblock %}
+
+{% block page_title %}Yeni Kargo Firması Ekle{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">
+        <a href="{{ path('admin_cargo_companies') }}" class="text-muted text-hover-primary">Kargo Firmaları</a>
+    </li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Yeni Firma</li>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        <div class="row g-5">
+            <div class="col-xl-8">
+                {# Basic Info #}
+                <div class="card mb-5">
+                    <div class="card-header">
+                        <h3 class="card-title">Temel Bilgiler</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label required">Firma Adı</label>
+                                <input type="text" name="name" class="form-control" placeholder="Örn: Yurtiçi Kargo" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label required">Firma Kodu</label>
+                                <input type="text" name="code" class="form-control" placeholder="Örn: yurtici" required />
+                                <div class="form-text">Küçük harf ve tire kullanın (API entegrasyonunda kullanılır)</div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-5">
+                            <div class="col-md-12">
+                                <label class="form-label">Logo URL</label>
+                                <input type="url" name="logo" class="form-control" placeholder="https://example.com/logo.png" />
+                                <div class="form-text">Kargo firmasının logo görsel linki</div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-5">
+                            <div class="col-md-4">
+                                <label class="form-label">Öncelik</label>
+                                <input type="number" name="priority" class="form-control" value="0" min="0" step="1" />
+                                <div class="form-text">Yüksek değer = Daha öncelikli</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Temel Maliyet (TRY)</label>
+                                <input type="number" name="base_cost" class="form-control" placeholder="0.00" min="0" step="0.01" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Kg Başı Maliyet (TRY)</label>
+                                <input type="number" name="cost_per_kg" class="form-control" placeholder="0.00" min="0" step="0.01" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# API Configuration #}
+                <div class="card mb-5">
+                    <div class="card-header">
+                        <h3 class="card-title">API Yapılandırması</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-5">
+                            <label class="form-label">API URL</label>
+                            <input type="url" name="api_url" class="form-control" placeholder="https://api.example.com/v1" />
+                            <div class="form-text">Kargo firmasının API base URL</div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label">Takip URL Şablonu</label>
+                            <input type="text" name="tracking_url" class="form-control" placeholder="https://kargo.com/takip?no={tracking_number}" />
+                            <div class="form-text">{tracking_number} yerine gerçek takip numarası konulacak</div>
+                        </div>
+
+                        <div class="separator separator-dashed my-8"></div>
+
+                        <h5 class="mb-5">API Kimlik Bilgileri</h5>
+
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label">API Key</label>
+                                <input type="text" name="api_key" class="form-control" placeholder="API anahtarı" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">API Secret</label>
+                                <input type="password" name="api_secret" class="form-control" placeholder="API gizli anahtarı" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label">Kullanıcı Adı</label>
+                                <input type="text" name="username" class="form-control" placeholder="API kullanıcı adı" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Şifre</label>
+                                <input type="password" name="password" class="form-control" placeholder="API şifresi" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Settings #}
+                <div class="card mb-5">
+                    <div class="card-header">
+                        <h3 class="card-title">Gelişmiş Ayarlar</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-5">
+                            <label class="form-label">Desteklenen Servis Tipleri</label>
+                            <input type="text" name="service_types" class="form-control" placeholder="standard,express,same_day" />
+                            <div class="form-text">Virgülle ayırarak yazın</div>
+                        </div>
+
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label">Maksimum Ağırlık (kg)</label>
+                                <input type="number" name="max_weight" class="form-control" placeholder="50" min="0" step="0.1" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">API Timeout (saniye)</label>
+                                <input type="number" name="timeout" class="form-control" value="30" min="5" step="1" />
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <div class="form-check form-switch form-check-custom form-check-solid">
+                                <input class="form-check-input" type="checkbox" name="test_mode" value="1" id="test-mode" />
+                                <label class="form-check-label" for="test-mode">
+                                    Test Modu
+                                </label>
+                            </div>
+                            <div class="form-text">API çağrıları test sunucusuna yapılır</div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label">Notlar</label>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="Kargo firması hakkında notlar..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="card card-flush">
+                    <div class="card-body">
+                        <div class="mb-7">
+                            <h5 class="mb-3">Durum</h5>
+                            <div class="form-check form-switch form-check-custom form-check-solid">
+                                <input class="form-check-input" type="checkbox" name="is_active" value="1" id="is-active" checked />
+                                <label class="form-check-label" for="is-active">
+                                    Aktif
+                                </label>
+                            </div>
+                            <div class="form-text">Aktif kargo firmaları gönderi oluşturmada görünür</div>
+                        </div>
+
+                        <div class="mb-7">
+                            <h5 class="mb-3 text-gray-700">Bilgilendirme</h5>
+                            <div class="notice d-flex bg-light-info rounded border-info border border-dashed p-5">
+                                <i class="ki-duotone ki-information-5 fs-2tx text-info me-4">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                </i>
+                                <div class="d-flex flex-stack flex-grow-1">
+                                    <div class="fw-semibold">
+                                        <div class="fs-6 text-gray-700">
+                                            <ul class="mb-0">
+                                                <li>API bilgileri şifrelenmiş olarak saklanır</li>
+                                                <li>Test modu gerçek gönderi oluşturmaz</li>
+                                                <li>Öncelik değeri otomatik seçimde kullanılır</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="ki-duotone ki-check fs-2"></i>
+                                Kaydet
+                            </button>
+                            <a href="{{ path('admin_cargo_companies') }}" class="btn btn-light">İptal</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

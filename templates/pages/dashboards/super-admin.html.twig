@@ -1,0 +1,284 @@
+{% extends 'layout/master.html.twig' %}
+
+{% block title %}Sistem Yönetimi - Dashboard{% endblock %}
+
+{% block content %}
+<!--begin::Row-->
+<div class="row g-5 g-xl-10 mb-5 mb-xl-10">
+    <!--begin::Col-->
+    <div class="col-xl-3">
+        <!--begin::Card widget-->
+        <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end h-xl-100" style="background-color: #F1416C; background-image:url('{{ asset('build/media/patterns/vector-1.png') }}')">
+            <!--begin::Header-->
+            <div class="card-header pt-5">
+                <!--begin::Title-->
+                <div class="card-title d-flex flex-column">
+                    <!--begin::Amount-->
+                    <span class="fs-2hx fw-bold text-white me-2 lh-1 ls-n2">{{ totalUsers }}</span>
+                    <!--end::Amount-->
+                    <!--begin::Subtitle-->
+                    <span class="text-white opacity-75 pt-1 fw-semibold fs-6">Toplam Kullanıcı</span>
+                    <!--end::Subtitle-->
+                </div>
+                <!--end::Title-->
+            </div>
+            <!--end::Header-->
+            <!--begin::Card body-->
+            <div class="card-body d-flex align-items-end pt-0">
+                <!--begin::Progress-->
+                <div class="d-flex align-items-center flex-column mt-3 w-100">
+                    <div class="d-flex justify-content-between fw-bold fs-6 text-white opacity-75 w-100 mt-auto mb-2">
+                        <span>Son 30 Gün</span>
+                    </div>
+                </div>
+                <!--end::Progress-->
+            </div>
+            <!--end::Card body-->
+        </div>
+        <!--end::Card widget-->
+    </div>
+    <!--end::Col-->
+
+    <!--begin::Col-->
+    <div class="col-xl-3">
+        <!--begin::Card widget-->
+        <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end h-xl-100" style="background-color: #7239EA; background-image:url('{{ asset('build/media/patterns/vector-1.png') }}')">
+            <!--begin::Header-->
+            <div class="card-header pt-5">
+                <!--begin::Title-->
+                <div class="card-title d-flex flex-column">
+                    <!--begin::Amount-->
+                    <span class="fs-2hx fw-bold text-white me-2 lh-1 ls-n2">{{ activeSubscriptions }}</span>
+                    <!--end::Amount-->
+                    <!--begin::Subtitle-->
+                    <span class="text-white opacity-75 pt-1 fw-semibold fs-6">Aktif Abonelik</span>
+                    <!--end::Subtitle-->
+                </div>
+                <!--end::Title-->
+            </div>
+            <!--end::Header-->
+            <!--begin::Card body-->
+            <div class="card-body d-flex align-items-end pt-0">
+                <!--begin::Progress-->
+                <div class="d-flex align-items-center flex-column mt-3 w-100">
+                    <div class="d-flex justify-content-between fw-bold fs-6 text-white opacity-75 w-100 mt-auto mb-2">
+                        <span>Aktif / Toplam</span>
+                    </div>
+                </div>
+                <!--end::Progress-->
+            </div>
+            <!--end::Card body-->
+        </div>
+        <!--end::Card widget-->
+    </div>
+    <!--end::Col-->
+
+    <!--begin::Col-->
+    <div class="col-xl-3">
+        <!--begin::Card widget-->
+        <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end h-xl-100" style="background-color: #50CD89; background-image:url('{{ asset('build/media/patterns/vector-1.png') }}')">
+            <!--begin::Header-->
+            <div class="card-header pt-5">
+                <!--begin::Title-->
+                <div class="card-title d-flex flex-column">
+                    <!--begin::Amount-->
+                    <span class="fs-2hx fw-bold text-white me-2 lh-1 ls-n2">₺{{ monthlyRevenue|number_format(2, ',', '.') }}</span>
+                    <!--end::Amount-->
+                    <!--begin::Subtitle-->
+                    <span class="text-white opacity-75 pt-1 fw-semibold fs-6">Aylık Gelir</span>
+                    <!--end::Subtitle-->
+                </div>
+                <!--end::Title-->
+            </div>
+            <!--end::Header-->
+            <!--begin::Card body-->
+            <div class="card-body d-flex align-items-end pt-0">
+                <!--begin::Progress-->
+                <div class="d-flex align-items-center flex-column mt-3 w-100">
+                    <div class="d-flex justify-content-between fw-bold fs-6 text-white opacity-75 w-100 mt-auto mb-2">
+                        <span>MRR (Monthly Recurring Revenue)</span>
+                    </div>
+                </div>
+                <!--end::Progress-->
+            </div>
+            <!--end::Card body-->
+        </div>
+        <!--end::Card widget-->
+    </div>
+    <!--end::Col-->
+
+    <!--begin::Col-->
+    <div class="col-xl-3">
+        <!--begin::Card widget-->
+        <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end h-xl-100" style="background-color: #F6C000; background-image:url('{{ asset('build/media/patterns/vector-1.png') }}')">
+            <!--begin::Header-->
+            <div class="card-header pt-5">
+                <!--begin::Title-->
+                <div class="card-title d-flex flex-column">
+                    <!--begin::Amount-->
+                    <span class="fs-2hx fw-bold text-white me-2 lh-1 ls-n2">{{ totalOrders }}</span>
+                    <!--end::Amount-->
+                    <!--begin::Subtitle-->
+                    <span class="text-white opacity-75 pt-1 fw-semibold fs-6">Toplam Sipariş</span>
+                    <!--end::Subtitle-->
+                </div>
+                <!--end::Title-->
+            </div>
+            <!--end::Header-->
+            <!--begin::Card body-->
+            <div class="card-body d-flex align-items-end pt-0">
+                <!--begin::Progress-->
+                <div class="d-flex align-items-center flex-column mt-3 w-100">
+                    <div class="d-flex justify-content-between fw-bold fs-6 text-white opacity-75 w-100 mt-auto mb-2">
+                        <span>Tüm Sistem</span>
+                    </div>
+                </div>
+                <!--end::Progress-->
+            </div>
+            <!--end::Card body-->
+        </div>
+        <!--end::Card widget-->
+    </div>
+    <!--end::Col-->
+</div>
+<!--end::Row-->
+
+<!--begin::Row-->
+<div class="row g-5 g-xl-10">
+    <!--begin::Col-->
+    <div class="col-xl-8 mb-5 mb-xl-10">
+        <!--begin::Card-->
+        <div class="card card-flush h-xl-100">
+            <!--begin::Card header-->
+            <div class="card-header pt-7">
+                <!--begin::Title-->
+                <h3 class="card-title align-items-start flex-column">
+                    <span class="card-label fw-bold text-gray-800">Son Kayıt Olan Kullanıcılar</span>
+                    <span class="text-gray-500 mt-1 fw-semibold fs-6">Son 10 kullanıcı</span>
+                </h3>
+                <!--end::Title-->
+            </div>
+            <!--end::Card header-->
+            <!--begin::Card body-->
+            <div class="card-body pt-6">
+                <!--begin::Table-->
+                <table class="table table-row-dashed align-middle gs-0 gy-3 my-0">
+                    <!--begin::Table head-->
+                    <thead>
+                        <tr class="fs-7 fw-bold text-gray-500 border-bottom-0">
+                            <th class="p-0 pb-3 min-w-150px text-start">Kullanıcı</th>
+                            <th class="p-0 pb-3 min-w-100px text-end">Kayıt Tarihi</th>
+                            <th class="p-0 pb-3 min-w-100px text-end">Mağaza</th>
+                            <th class="p-0 pb-3 min-w-100px text-end">Durum</th>
+                        </tr>
+                    </thead>
+                    <!--end::Table head-->
+                    <!--begin::Table body-->
+                    <tbody>
+                        {% for user in recentUsers %}
+                        <tr>
+                            <td class="text-start">
+                                <span class="text-gray-800 fw-bold text-hover-primary mb-1 fs-6">{{ user.fullName }}</span>
+                                <span class="text-gray-500 fw-semibold d-block">{{ user.email }}</span>
+                            </td>
+                            <td class="text-end">
+                                <span class="text-gray-600 fw-bold">{{ user.createdAt|date('d.m.Y') }}</span>
+                            </td>
+                            <td class="text-end">
+                                <span class="badge badge-light-primary">{{ user.shops|length }}</span>
+                            </td>
+                            <td class="text-end">
+                                {% if user.isActive %}
+                                <span class="badge badge-light-success">Aktif</span>
+                                {% else %}
+                                <span class="badge badge-light-danger">Pasif</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <!--end::Table body-->
+                </table>
+                <!--end::Table-->
+            </div>
+            <!--end::Card body-->
+        </div>
+        <!--end::Card-->
+    </div>
+    <!--end::Col-->
+
+    <!--begin::Col-->
+    <div class="col-xl-4 mb-5 mb-xl-10">
+        <!--begin::Card-->
+        <div class="card card-flush h-xl-100">
+            <!--begin::Card header-->
+            <div class="card-header pt-7">
+                <!--begin::Title-->
+                <h3 class="card-title align-items-start flex-column">
+                    <span class="card-label fw-bold text-gray-800">Hızlı İşlemler</span>
+                    <span class="text-gray-500 mt-1 fw-semibold fs-6">Sistem yönetimi</span>
+                </h3>
+                <!--end::Title-->
+            </div>
+            <!--end::Card header-->
+            <!--begin::Card body-->
+            <div class="card-body pt-5">
+                <!--begin::Item-->
+                <div class="d-flex flex-stack">
+                    <a href="#" class="text-primary fw-semibold fs-6 me-2">Tüm Kullanıcıları Görüntüle</a>
+                    <button type="button" class="btn btn-icon btn-sm btn-light-primary">
+                        <i class="ki-duotone ki-arrow-right fs-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </button>
+                </div>
+                <div class="separator separator-dashed my-3"></div>
+                <!--end::Item-->
+
+                <!--begin::Item-->
+                <div class="d-flex flex-stack">
+                    <a href="#" class="text-primary fw-semibold fs-6 me-2">Abonelik Planlarını Düzenle</a>
+                    <button type="button" class="btn btn-icon btn-sm btn-light-primary">
+                        <i class="ki-duotone ki-arrow-right fs-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </button>
+                </div>
+                <div class="separator separator-dashed my-3"></div>
+                <!--end::Item-->
+
+                <!--begin::Item-->
+                <div class="d-flex flex-stack">
+                    <a href="#" class="text-primary fw-semibold fs-6 me-2">Sistem Ayarları</a>
+                    <button type="button" class="btn btn-icon btn-sm btn-light-primary">
+                        <i class="ki-duotone ki-arrow-right fs-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </button>
+                </div>
+                <div class="separator separator-dashed my-3"></div>
+                <!--end::Item-->
+
+                <!--begin::Item-->
+                <div class="d-flex flex-stack">
+                    <a href="{{ path('admin_cloudflare_dashboard') }}" class="text-primary fw-semibold fs-6 me-2">Cloudflare Yönetimi</a>
+                    <button type="button" class="btn btn-icon btn-sm btn-light-primary">
+                        <i class="ki-duotone ki-arrow-right fs-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </button>
+                </div>
+                <!--end::Item-->
+            </div>
+            <!--end::Card body-->
+        </div>
+        <!--end::Card-->
+    </div>
+    <!--end::Col-->
+</div>
+<!--end::Row-->
+{% endblock %}

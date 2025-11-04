@@ -1,0 +1,53 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Müşteri - {{ customer.companyName }}{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <a href="{{ path('admin_customers_edit', {id: customer.id}) }}" class="btn btn-sm btn-warning">Düzenle</a>
+        <form method="post" action="{{ path('admin_customers_toggle_status', {id: customer.id}) }}" style="display:inline;">
+            <button class="btn btn-sm btn-secondary">{{ customer.isActive ? 'Pasif Yap' : 'Aktif Yap' }}</button>
+        </form>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card p-4 mb-4">
+            <h5>Firma Bilgileri</h5>
+            <dl class="row">
+                <dt class="col-sm-4">Firma</dt><dd class="col-sm-8">{{ customer.companyName }}</dd>
+                <dt class="col-sm-4">Email</dt><dd class="col-sm-8">{{ customer.email }}</dd>
+                <dt class="col-sm-4">Telefon</dt><dd class="col-sm-8">{{ customer.phone ?: '-' }}</dd>
+                <dt class="col-sm-4">Vergi Dairesi</dt><dd class="col-sm-8">{{ customer.taxOffice ?: '-' }}</dd>
+                <dt class="col-sm-4">Vergi No</dt><dd class="col-sm-8">{{ customer.taxNumber ?: '-' }}</dd>
+                <dt class="col-sm-4">Adres</dt><dd class="col-sm-8">{{ customer.address ?: '-' }}</dd>
+            </dl>
+        </div>
+
+        <div class="card p-4 mb-4">
+            <h5>Hızlı İşlemler</h5>
+            <div class="d-grid gap-2">
+                <a href="{{ path('admin_invoices_create') }}?customer_id={{ customer.id }}" class="btn btn-light-primary">Fatura Oluştur</a>
+                <a href="{{ path('admin_customers_transactions', {id: customer.id}) }}" class="btn btn-light-primary">Ekstre / Cari</a>
+                <a href="#" class="btn btn-light-primary">Abonelik Yönetimi</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card p-4 mb-4">
+            <h5>Abonelik Bilgileri</h5>
+            <p>Mevcut paket: {{ customer.currentPlan ? customer.currentPlan.name : '-' }}</p>
+            <p>Başlangıç: {{ customer.subscriptionStartDate ? customer.subscriptionStartDate|date('d.m.Y') : '-' }}</p>
+            <p>Bitiş: {{ customer.subscriptionEndDate ? customer.subscriptionEndDate|date('d.m.Y') : '-' }}</p>
+        </div>
+
+        <div class="card p-4 mb-4">
+            <h5>Geçmiş Faturalar</h5>
+            <p>Henüz fatura yok.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

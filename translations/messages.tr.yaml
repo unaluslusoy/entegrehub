@@ -1,0 +1,26 @@
+login:
+  title: Giriş Yap
+  subtitle: EntegreHub Kargo Yönetim Sistemi
+  email: E-posta Adresi
+  password: Şifre
+  remember_me: Beni Hatırla
+  forgot_password: Şifremi Unuttum
+  submit: Giriş Yap
+  no_account: Hesabınız yok mu?
+  register_link: Kayıt Ol
+  or_with_email: veya e-posta ile
+  error_title: Giriş Başarısız
+  
+auth:
+  google: Google
+  apple: Apple
+  shopify: Shopify
+  
+general:
+  about: Hakkımızda
+  pricing: Fiyatlandırma
+  contact: İletişim
+  powered_by: Powered by
+  copyright: © 2025 EntegreHub
+  turkish: Türkçe
+  english: English

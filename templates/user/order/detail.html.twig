@@ -1,0 +1,446 @@
+{% extends 'layout/_user.html.twig' %}
+
+{% block title %}Sipariş Detay - {{ order.orderNumber }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+                    Sipariş #{{ order.orderNumber }}
+                </h1>
+                <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                    <li class="breadcrumb-item text-muted">
+                        <a href="{{ path('user_dashboard') }}" class="text-muted text-hover-primary">Anasayfa</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <span class="bullet bg-gray-400 w-5px h-2px"></span>
+                    </li>
+                    <li class="breadcrumb-item text-muted">
+                        <a href="{{ path('user_orders') }}" class="text-muted text-hover-primary">Siparişler</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <span class="bullet bg-gray-400 w-5px h-2px"></span>
+                    </li>
+                    <li class="breadcrumb-item text-muted">{{ order.orderNumber }}</li>
+                </ul>
+            </div>
+            <div class="d-flex align-items-center gap-2 gap-lg-3">
+                {% if order.status in ['pending', 'processing'] %}
+                <button type="button" class="btn btn-sm btn-danger" data-action="cancel" data-id="{{ order.id }}">
+                    <i class="ki-duotone ki-cross-square fs-2"><span class="path1"></span><span class="path2"></span></i>
+                    İptal Et
+                </button>
+                {% endif %}
+                
+                {% if order.status == 'processing' %}
+                <button type="button" class="btn btn-sm btn-primary" data-action="prepare-shipment" data-id="{{ order.id }}">
+                    <i class="ki-duotone ki-parcel fs-2"><span class="path1"></span><span class="path2"></span></i>
+                    Kargo Hazırla
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-xxl">
+            
+            <div class="row g-5 g-xl-8">
+                <!--begin::Order Details-->
+                <div class="col-xl-8">
+                    <!--begin::Order Info-->
+                    <div class="card mb-5 mb-xl-8">
+                        <div class="card-header">
+                            <h3 class="card-title">Sipariş Bilgileri</h3>
+                            <div class="card-toolbar">
+                                {% set statusMap = {
+                                    'pending': { label: 'Bekliyor', class: 'warning' },
+                                    'processing': { label: 'İşleniyor', class: 'info' },
+                                    'ready_to_ship': { label: 'Kargoya Hazır', class: 'primary' },
+                                    'shipped': { label: 'Kargoda', class: 'primary' },
+                                    'delivered': { label: 'Teslim Edildi', class: 'success' },
+                                    'cancelled': { label: 'İptal', class: 'danger' }
+                                } %}
+                                {% set status = statusMap[order.status] ?? { label: order.status, class: 'secondary' } %}
+                                <span class="badge badge-light-{{ status.class }} fs-5">{{ status.label }}</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Sipariş Numarası</label>
+                                <div class="col-lg-8">
+                                    <span class="fw-bold fs-6 text-gray-800">{{ order.orderNumber }}</span>
+                                </div>
+                            </div>
+                            
+                            {% if order.shopifyOrderNumber %}
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Shopify Sipariş No</label>
+                                <div class="col-lg-8">
+                                    <span class="fw-bold fs-6 text-gray-800">{{ order.shopifyOrderNumber }}</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Mağaza</label>
+                                <div class="col-lg-8">
+                                    <span class="fw-bold fs-6 text-gray-800">{{ order.shop.shopName }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Sipariş Tarihi</label>
+                                <div class="col-lg-8">
+                                    <span class="fw-bold fs-6 text-gray-800">{{ order.orderDate|date('d.m.Y H:i') }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Ödeme Yöntemi</label>
+                                <div class="col-lg-8">
+                                    {% set paymentMethod = {
+                                        'online': 'Online',
+                                        'cod_cash': 'Kapıda Nakit',
+                                        'cod_credit_card': 'Kapıda Kredi Kartı'
+                                    } %}
+                                    <span class="fw-bold fs-6 text-gray-800">{{ paymentMethod[order.paymentMethod] ?? order.paymentMethod }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Ödeme Durumu</label>
+                                <div class="col-lg-8">
+                                    {% set paymentStatusMap = {
+                                        'pending': { label: 'Bekliyor', class: 'warning' },
+                                        'paid': { label: 'Ödendi', class: 'success' },
+                                        'failed': { label: 'Başarısız', class: 'danger' },
+                                        'refunded': { label: 'İade', class: 'dark' }
+                                    } %}
+                                    {% set paymentStatus = paymentStatusMap[order.paymentStatus] ?? { label: order.paymentStatus, class: 'secondary' } %}
+                                    <span class="badge badge-light-{{ paymentStatus.class }}">{{ paymentStatus.label }}</span>
+                                </div>
+                            </div>
+                            
+                            {% if order.notes %}
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Notlar</label>
+                                <div class="col-lg-8">
+                                    <span class="fw-semibold fs-6 text-gray-800">{{ order.notes }}</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!--end::Order Info-->
+
+                    <!--begin::Order Items-->
+                    <div class="card mb-5 mb-xl-8">
+                        <div class="card-header">
+                            <h3 class="card-title">Ürünler</h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-row-dashed align-middle gs-0 gy-4 my-0">
+                                    <thead>
+                                        <tr class="fs-7 fw-bold text-gray-500 border-bottom-0">
+                                            <th class="p-5 min-w-200px">Ürün</th>
+                                            <th class="p-5 min-w-100px">SKU</th>
+                                            <th class="p-5 min-w-70px">Miktar</th>
+                                            <th class="p-5 min-w-100px text-end">Birim Fiyat</th>
+                                            <th class="p-5 min-w-100px text-end">Toplam</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in order.items %}
+                                        <tr>
+                                            <td class="p-5">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="ms-5">
+                                                        <div class="fw-bold text-gray-800">{{ item.productName }}</div>
+                                                        {% if item.variantTitle %}
+                                                        <div class="fs-7 text-muted">{{ item.variantTitle }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="p-5">
+                                                <span class="text-gray-600 fw-semibold">{{ item.sku ?? '-' }}</span>
+                                            </td>
+                                            <td class="p-5">
+                                                <span class="text-gray-600 fw-bold">{{ item.quantity }}</span>
+                                            </td>
+                                            <td class="p-5 text-end">
+                                                <span class="text-gray-800 fw-bold">{{ item.price|number_format(2) }} {{ order.currency }}</span>
+                                            </td>
+                                            <td class="p-5 text-end">
+                                                <span class="text-gray-800 fw-bold">{{ (item.price * item.quantity)|number_format(2) }} {{ order.currency }}</span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="border-top">
+                                            <td colspan="4" class="text-end p-5 fw-bold text-gray-600">Ara Toplam:</td>
+                                            <td class="text-end p-5 fw-bold text-gray-800">
+                                                {{ (order.totalAmount - (order.shippingAmount ?? 0))|number_format(2) }} {{ order.currency }}
+                                            </td>
+                                        </tr>
+                                        {% if order.shippingAmount %}
+                                        <tr>
+                                            <td colspan="4" class="text-end p-5 fw-bold text-gray-600">Kargo:</td>
+                                            <td class="text-end p-5 fw-bold text-gray-800">
+                                                {{ order.shippingAmount|number_format(2) }} {{ order.currency }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        <tr class="border-top border-top-dashed">
+                                            <td colspan="4" class="text-end p-5 fs-4 fw-bold text-gray-900">Genel Toplam:</td>
+                                            <td class="text-end p-5 fs-4 fw-bold text-primary">
+                                                {{ order.totalAmount|number_format(2) }} {{ order.currency }}
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!--end::Order Items-->
+
+                    <!--begin::Shipments-->
+                    {% if order.shipments|length > 0 %}
+                    <div class="card mb-5 mb-xl-8">
+                        <div class="card-header">
+                            <h3 class="card-title">Kargolar</h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-row-dashed align-middle gs-0 gy-4 my-0">
+                                    <thead>
+                                        <tr class="fs-7 fw-bold text-gray-500 border-bottom-0">
+                                            <th class="p-5">Takip No</th>
+                                            <th class="p-5">Kargo Firması</th>
+                                            <th class="p-5">Durum</th>
+                                            <th class="p-5">Tarih</th>
+                                            <th class="p-5 text-end">İşlem</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for shipment in order.shipments %}
+                                        <tr>
+                                            <td class="p-5">
+                                                <span class="fw-bold">{{ shipment.trackingNumber ?? '-' }}</span>
+                                            </td>
+                                            <td class="p-5">
+                                                <span class="text-gray-800">{{ shipment.provider.name }}</span>
+                                            </td>
+                                            <td class="p-5">
+                                                {% set shipmentStatusMap = {
+                                                    'pending': { label: 'Bekliyor', class: 'warning' },
+                                                    'ready': { label: 'Hazır', class: 'info' },
+                                                    'shipped': { label: 'Kargoda', class: 'primary' },
+                                                    'delivered': { label: 'Teslim Edildi', class: 'success' },
+                                                    'cancelled': { label: 'İptal', class: 'danger' }
+                                                } %}
+                                                {% set shipmentStatus = shipmentStatusMap[shipment.status] ?? { label: shipment.status, class: 'secondary' } %}
+                                                <span class="badge badge-light-{{ shipmentStatus.class }}">{{ shipmentStatus.label }}</span>
+                                            </td>
+                                            <td class="p-5">
+                                                <span class="text-gray-600">{{ shipment.createdAt|date('d.m.Y H:i') }}</span>
+                                            </td>
+                                            <td class="p-5 text-end">
+                                                <a href="{{ path('user_shipment_detail', {id: shipment.id}) }}" class="btn btn-sm btn-light-primary">
+                                                    Detay
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <!--end::Shipments-->
+                </div>
+                <!--end::Order Details-->
+
+                <!--begin::Sidebar-->
+                <div class="col-xl-4">
+                    <!--begin::Customer Info-->
+                    <div class="card mb-5 mb-xl-8">
+                        <div class="card-header">
+                            <h3 class="card-title">Müşteri Bilgileri</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-7">
+                                <div class="fw-bold text-gray-600 mb-2">Ad Soyad:</div>
+                                <div class="fw-bold fs-6 text-gray-800">{{ order.customerName }}</div>
+                            </div>
+                            
+                            <div class="mb-7">
+                                <div class="fw-bold text-gray-600 mb-2">E-posta:</div>
+                                <div class="fw-bold fs-6 text-gray-800">{{ order.customerEmail }}</div>
+                            </div>
+                            
+                            {% if order.customerPhone %}
+                            <div class="mb-7">
+                                <div class="fw-bold text-gray-600 mb-2">Telefon:</div>
+                                <div class="fw-bold fs-6 text-gray-800">{{ order.customerPhone }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!--end::Customer Info-->
+
+                    <!--begin::Shipping Address-->
+                    {% if order.shippingAddress %}
+                    <div class="card mb-5 mb-xl-8">
+                        <div class="card-header">
+                            <h3 class="card-title">Teslimat Adresi</h3>
+                        </div>
+                        <div class="card-body">
+                            {% set address = order.shippingAddress %}
+                            <div class="text-gray-800">
+                                {% if address.firstName or address.lastName %}
+                                <div class="fw-bold mb-2">{{ address.firstName }} {{ address.lastName }}</div>
+                                {% endif %}
+                                
+                                {% if address.address1 %}
+                                <div>{{ address.address1 }}</div>
+                                {% endif %}
+                                
+                                {% if address.address2 %}
+                                <div>{{ address.address2 }}</div>
+                                {% endif %}
+                                
+                                <div>
+                                    {{ address.city }}
+                                    {% if address.province %}, {{ address.province }}{% endif %}
+                                    {% if address.zip %} {{ address.zip }}{% endif %}
+                                </div>
+                                
+                                {% if address.country %}
+                                <div>{{ address.country }}</div>
+                                {% endif %}
+                                
+                                {% if address.phone %}
+                                <div class="mt-3">
+                                    <span class="fw-bold">Tel:</span> {{ address.phone }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <!--end::Shipping Address-->
+
+                    <!--begin::Status Update-->
+                    <div class="card mb-5 mb-xl-8">
+                        <div class="card-header">
+                            <h3 class="card-title">Durum Güncelle</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="status-update-form">
+                                <div class="mb-5">
+                                    <label class="form-label">Yeni Durum</label>
+                                    <select class="form-select" name="status" id="order-status">
+                                        <option value="pending" {{ order.status == 'pending' ? 'selected' : '' }}>Bekliyor</option>
+                                        <option value="processing" {{ order.status == 'processing' ? 'selected' : '' }}>İşleniyor</option>
+                                        <option value="ready_to_ship" {{ order.status == 'ready_to_ship' ? 'selected' : '' }}>Kargoya Hazır</option>
+                                        <option value="shipped" {{ order.status == 'shipped' ? 'selected' : '' }}>Kargoda</option>
+                                        <option value="delivered" {{ order.status == 'delivered' ? 'selected' : '' }}>Teslim Edildi</option>
+                                        <option value="cancelled" {{ order.status == 'cancelled' ? 'selected' : '' }}>İptal</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-5">
+                                    <label class="form-label">Not (Opsiyonel)</label>
+                                    <textarea class="form-control" name="note" id="status-note" rows="3"></textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary w-100">Güncelle</button>
+                            </form>
+                        </div>
+                    </div>
+                    <!--end::Status Update-->
+                </div>
+                <!--end::Sidebar-->
+            </div>
+            
+        </div>
+    </div>
+    <!--end::Content-->
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+$(document).ready(function() {
+    // Status update
+    $('#status-update-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const status = $('#order-status').val();
+        const note = $('#status-note').val();
+        
+        $.ajax({
+            url: '{{ path('user_order_update_status', {id: order.id}) }}',
+            method: 'POST',
+            data: { status: status, note: note },
+            success: function(response) {
+                if (response.success) {
+                    toastr.success('Sipariş durumu güncellendi');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    toastr.error(response.message || 'Bir hata oluştu');
+                }
+            },
+            error: function() {
+                toastr.error('Bir hata oluştu');
+            }
+        });
+    });
+
+    // Cancel order
+    $('[data-action="cancel"]').on('click', function() {
+        if (!confirm('Bu siparişi iptal etmek istediğinizden emin misiniz?')) {
+            return;
+        }
+        
+        const orderId = $(this).data('id');
+        $.ajax({
+            url: '{{ path('user_order_cancel', {id: order.id}) }}',
+            method: 'POST',
+            success: function(response) {
+                if (response.success) {
+                    toastr.success('Sipariş iptal edildi');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    toastr.error(response.message || 'Bir hata oluştu');
+                }
+            },
+            error: function() {
+                toastr.error('Bir hata oluştu');
+            }
+        });
+    });
+
+    // Prepare shipment
+    $('[data-action="prepare-shipment"]').on('click', function() {
+        const orderId = $(this).data('id');
+        window.location.href = '{{ path('user_shipment_create') }}?order_id=' + orderId;
+    });
+});
+</script>
+{% endblock %}

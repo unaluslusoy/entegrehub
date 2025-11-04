@@ -1,0 +1,239 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Yeni Abonelik Paketi{% endblock %}
+
+{% block page_title %}Yeni Abonelik Paketi{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">
+        <a href="{{ path('admin_plans') }}" class="text-muted text-hover-primary">Abonelik Paketleri</a>
+    </li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Yeni Paket</li>
+{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <a href="{{ path('admin_plans') }}" class="btn btn-sm btn-light">
+            <i class="ki-duotone ki-left fs-2"></i>
+            Geri Dön
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="alert alert-info d-flex align-items-center mb-5">
+        <i class="ki-duotone ki-information-5 fs-2x me-4">
+            <span class="path1"></span>
+            <span class="path2"></span>
+            <span class="path3"></span>
+        </i>
+        <div class="d-flex flex-column">
+            <h5 class="mb-1">Yeni Paket Oluşturma</h5>
+            <span>İstediğiniz özelliklere sahip custom paketler oluşturabilirsiniz. Aylık ve yıllık fiyatlandırma, limitler ve özellikleri belirleyin.</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Paket Bilgileri</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ path('admin_plans_create') }}" id="plan-form">
+                <div class="row mb-7">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold required">Paket Adı</label>
+                        <input type="text" name="name" class="form-control form-control-solid" required placeholder="Örn: Başlangıç" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold required">Paket Kodu</label>
+                        <input type="text" name="code" class="form-control form-control-solid" required placeholder="Örn: starter" />
+                        <div class="form-text">free, starter, business, enterprise, custom</div>
+                    </div>
+                </div>
+
+                <div class="mb-7">
+                    <label class="form-label fw-bold">Açıklama</label>
+                    <textarea name="description" class="form-control form-control-solid" rows="3" placeholder="Paket hakkında kısa açıklama"></textarea>
+                </div>
+
+                <div class="row mb-7">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold required">Aylık Fiyat (TRY)</label>
+                        <input type="number" name="monthly_price" class="form-control form-control-solid" step="0.01" required placeholder="0.00" value="0" />
+                        <div class="form-text">Ücretsiz paketler için 0 yazın</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold required">Yıllık Fiyat (TRY)</label>
+                        <input type="number" name="yearly_price" class="form-control form-control-solid" step="0.01" required placeholder="0.00" value="0" />
+                        <div class="form-text">Genelde aylık fiyatın 10 katı</div>
+                    </div>
+                </div>
+
+                <div class="separator my-7"></div>
+                <h5 class="mb-5">Kullanım Limitleri</h5>
+
+                <div class="row mb-7">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold required">Maksimum Mağaza</label>
+                        <input type="number" name="max_shops" class="form-control form-control-solid" required min="1" value="1" />
+                        <div class="form-text">Sınırsız için 999 yazın</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold required">Aylık Sipariş Limiti</label>
+                        <input type="number" name="max_orders" class="form-control form-control-solid" required min="1" value="50" />
+                        <div class="form-text">Sınırsız için 999999 yazın</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold required">Maksimum Kullanıcı</label>
+                        <input type="number" name="max_users" class="form-control form-control-solid" required min="1" value="1" />
+                        <div class="form-text">Sınırsız için 999 yazın</div>
+                    </div>
+                </div>
+
+                <div class="row mb-7">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Aylık SMS Limiti</label>
+                        <input type="number" name="max_sms_per_month" class="form-control form-control-solid" min="0" placeholder="Sınırsız için boş bırakın" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Aylık Email Limiti</label>
+                        <input type="number" name="max_email_per_month" class="form-control form-control-solid" min="0" placeholder="Sınırsız için boş bırakın" />
+                    </div>
+                </div>
+
+                <div class="separator my-7"></div>
+                <h5 class="mb-5">Özellikler</h5>
+
+                <div class="row mb-7">
+                    <div class="col-md-4">
+                        <div class="form-check form-switch form-check-custom form-check-solid mb-3">
+                            <input class="form-check-input" type="checkbox" name="has_api_access" value="1" />
+                            <label class="form-check-label">API Erişimi</label>
+                        </div>
+                        <div class="form-check form-switch form-check-custom form-check-solid mb-3">
+                            <input class="form-check-input" type="checkbox" name="has_advanced_reports" value="1" />
+                            <label class="form-check-label">Gelişmiş Raporlar</label>
+                        </div>
+                        <div class="form-check form-switch form-check-custom form-check-solid mb-3">
+                            <input class="form-check-input" type="checkbox" name="has_barcode_scanner" value="1" />
+                            <label class="form-check-label">Barkod Okuyucu</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check form-switch form-check-custom form-check-solid mb-3">
+                            <input class="form-check-input" type="checkbox" name="has_ai_features" value="1" />
+                            <label class="form-check-label">AI Özellikleri</label>
+                        </div>
+                        <div class="form-check form-switch form-check-custom form-check-solid mb-3">
+                            <input class="form-check-input" type="checkbox" name="has_white_label" value="1" />
+                            <label class="form-check-label">White Label</label>
+                        </div>
+                        <div class="form-check form-switch form-check-custom form-check-solid mb-3">
+                            <input class="form-check-input" type="checkbox" name="has_priority_support" value="1" />
+                            <label class="form-check-label">Öncelikli Destek</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check form-switch form-check-custom form-check-solid mb-3">
+                            <input class="form-check-input" type="checkbox" name="has_custom_domain" value="1" />
+                            <label class="form-check-label">Özel Domain</label>
+                        </div>
+                        <div class="form-check form-switch form-check-custom form-check-solid mb-3">
+                            <input class="form-check-input" type="checkbox" name="is_popular" value="1" />
+                            <label class="form-check-label">Popüler Paket</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="separator my-7"></div>
+
+                <div class="row mb-7">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold required">Sıralama</label>
+                        <input type="number" name="priority" class="form-control form-control-solid" required value="0" min="0" />
+                        <div class="form-text">Paketlerin görüntülenme sırası</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-switch form-check-custom form-check-solid mt-8">
+                            <input class="form-check-input" type="checkbox" name="is_active" value="1" checked />
+                            <label class="form-check-label fw-bold">Paket Aktif</label>
+                        </div>
+                    </div>
+                </div>                <div class="d-flex justify-content-end gap-3">
+                    <a href="{{ path('admin_plans') }}" class="btn btn-light">İptal</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ki-duotone ki-check fs-2"></i>
+                        Paket Oluştur
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Add feature functionality
+        document.getElementById('add-feature').addEventListener('click', function() {
+            const container = document.getElementById('features-container');
+            const newFeature = document.createElement('div');
+            newFeature.className = 'input-group mb-3';
+            newFeature.innerHTML = `
+                <input type="text" name="features[]" class="form-control" placeholder="Özellik girin" />
+                <button type="button" class="btn btn-icon btn-light-danger remove-feature">
+                    <i class="ki-duotone ki-trash fs-2"></i>
+                </button>
+            `;
+            container.appendChild(newFeature);
+            updateRemoveButtons();
+        });
+
+        // Remove feature functionality
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-feature')) {
+                e.target.closest('.input-group').remove();
+                updateRemoveButtons();
+            }
+        });
+
+        function updateRemoveButtons() {
+            const features = document.querySelectorAll('#features-container .input-group');
+            features.forEach((feature, index) => {
+                const removeBtn = feature.querySelector('.remove-feature');
+                removeBtn.disabled = features.length === 1;
+            });
+        }
+
+        // Auto-generate slug from name
+        document.querySelector('input[name="name"]').addEventListener('input', function() {
+            const slugInput = document.querySelector('input[name="slug"]');
+            if (!slugInput.value || slugInput.dataset.autoGenerated) {
+                const slug = this.value
+                    .toLowerCase()
+                    .replace(/ğ/g, 'g')
+                    .replace(/ü/g, 'u')
+                    .replace(/ş/g, 's')
+                    .replace(/ı/g, 'i')
+                    .replace(/ö/g, 'o')
+                    .replace(/ç/g, 'c')
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+                slugInput.value = slug;
+                slugInput.dataset.autoGenerated = 'true';
+            }
+        });
+
+        document.querySelector('input[name="slug"]').addEventListener('input', function() {
+            if (this.value) {
+                delete this.dataset.autoGenerated;
+            }
+        });
+    </script>
+{% endblock %}

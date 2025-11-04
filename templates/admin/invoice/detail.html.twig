@@ -1,0 +1,382 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Fatura Detayı{% endblock %}
+
+{% block page_title %}{{ invoice.invoiceNumber }}{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">
+        <a href="{{ path('admin_invoices') }}" class="text-muted text-hover-primary">Faturalar</a>
+    </li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">{{ invoice.invoiceNumber }}</li>
+{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2">
+        <a href="{{ path('admin_invoice_pdf', {id: invoice.id}) }}" target="_blank" class="btn btn-sm btn-light-primary">
+            <i class="ki-duotone ki-file-down fs-2"></i>
+            PDF İndir
+        </a>
+        {% if invoice.status != 'paid' %}
+        <button type="button" class="btn btn-sm btn-success" onclick="markAsPaid()">
+            <i class="ki-duotone ki-check fs-2"></i>
+            Ödendi İşaretle
+        </button>
+        {% endif %}
+        <a href="{{ path('admin_invoices_edit', {id: invoice.id}) }}" class="btn btn-sm btn-light">
+            <i class="ki-duotone ki-pencil fs-2"></i>
+            Düzenle
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="row g-5">
+        <div class="col-xl-9">
+            <div class="card" id="invoice-print">
+                <div class="card-body p-10">
+                    {# Invoice Header #}
+                    <div class="d-flex justify-content-between mb-10">
+                        <div>
+                            <h1 class="fw-bold text-gray-800 fs-2qx mb-2">FATURA</h1>
+                            <div class="text-gray-600">
+                                <div class="fw-bold fs-4 mb-1">{{ invoice.invoiceNumber }}</div>
+                                <div class="fs-6">Fatura Tarihi: {{ invoice.invoiceDate|date('d.m.Y') }}</div>
+                                <div class="fs-6">Vade Tarihi: {{ invoice.dueDate|date('d.m.Y') }}</div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            {% if invoice.status == 'paid' %}
+                                <span class="badge badge-success fs-1 px-5 py-3">ÖDENDİ</span>
+                            {% elseif invoice.status == 'cancelled' %}
+                                <span class="badge badge-danger fs-1 px-5 py-3">İPTAL</span>
+                            {% elseif invoice.isOverdue %}
+                                <span class="badge badge-danger fs-1 px-5 py-3">GECİKMİŞ</span>
+                            {% else %}
+                                <span class="badge badge-warning fs-1 px-5 py-3">BEKLİYOR</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="separator separator-dashed mb-10"></div>
+
+                    {# Billing Info #}
+                    <div class="row mb-10">
+                        <div class="col-md-6">
+                            <h5 class="text-gray-700 fw-bold mb-3">Müşteri Bilgileri</h5>
+                            {% if invoice.customer %}
+                                <div class="text-gray-800 fs-5 fw-bold">{{ invoice.customer.companyName }}</div>
+                                <div class="text-gray-600">{{ invoice.customer.email }}</div>
+                                {% if invoice.customer.phone %}
+                                <div class="text-gray-600">{{ invoice.customer.phone }}</div>
+                                {% endif %}
+                                <div class="badge badge-light-primary mt-2">Kurumsal Müşteri</div>
+                            {% else %}
+                                <div class="text-gray-800 fs-5 fw-bold">{{ invoice.user.fullName }}</div>
+                                <div class="text-gray-600">{{ invoice.user.email }}</div>
+                                {% if invoice.user.phone %}
+                                <div class="text-gray-600">{{ invoice.user.phone }}</div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-gray-700 fw-bold mb-3">Fatura Adresi</h5>
+                            {% if invoice.billingName %}
+                                <div class="text-gray-800 fw-bold">{{ invoice.billingName }}</div>
+                                {% if invoice.taxNumber %}
+                                <div class="text-gray-600">VKN: {{ invoice.taxNumber }}</div>
+                                {% endif %}
+                                {% if invoice.billingAddress %}
+                                <div class="text-gray-600">{{ invoice.billingAddress }}</div>
+                                {% endif %}
+                                {% if invoice.billingCity or invoice.billingCountry %}
+                                <div class="text-gray-600">
+                                    {{ invoice.billingCity }}{% if invoice.billingZip %} {{ invoice.billingZip }}{% endif %}
+                                    {% if invoice.billingCountry %}, {{ invoice.billingCountry }}{% endif %}
+                                </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="text-gray-500 fst-italic">Adres bilgisi girilmemiş</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if invoice.subscription %}
+                    <div class="alert alert-primary d-flex align-items-center mb-10">
+                        <i class="ki-duotone ki-information-5 fs-2x me-3">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                            <span class="path3"></span>
+                        </i>
+                        <div>
+                            <strong>Abonelik Faturası</strong>
+                            <div class="text-gray-700 fs-7">
+                                {{ invoice.subscription.plan.name }} - 
+                                {{ invoice.subscription.startDate|date('d.m.Y') }} / {{ invoice.subscription.endDate|date('d.m.Y') }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# Invoice Items #}
+                    <div class="table-responsive mb-10">
+                        <table class="table table-row-bordered">
+                            <thead>
+                                <tr class="fw-bold fs-6 text-gray-800 border-bottom-2 border-gray-200">
+                                    <th class="ps-0">HİZMET AÇIKLAMASI</th>
+                                    <th class="text-end" width="100px">MİKTAR</th>
+                                    <th class="text-end" width="120px">BİRİM FİYAT</th>
+                                    <th class="text-end pe-0" width="120px">TOPLAM</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in invoice.items %}
+                                <tr>
+                                    <td class="ps-0">
+                                        <div class="fw-bold">{{ item.description }}</div>
+                                    </td>
+                                    <td class="text-end">{{ item.quantity }}</td>
+                                    <td class="text-end">{{ item.unit_price|number_format(2, '.', ',') }} {{ invoice.currency }}</td>
+                                    <td class="text-end pe-0 fw-bold">{{ item.amount|number_format(2, '.', ',') }} {{ invoice.currency }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {# Totals #}
+                    <div class="d-flex justify-content-end mb-10">
+                        <div style="min-width: 350px;">
+                            <div class="d-flex justify-content-between py-3 border-bottom">
+                                <span class="fw-semibold text-gray-700 fs-5">Ara Toplam:</span>
+                                <span class="fw-bold text-gray-800 fs-5">{{ invoice.subtotal }} {{ invoice.currency }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-3 border-bottom">
+                                <span class="fw-semibold text-gray-700 fs-5">KDV (%{{ invoice.taxRate }}):</span>
+                                <span class="fw-bold text-gray-800 fs-5">{{ invoice.taxAmount }} {{ invoice.currency }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-5">
+                                <span class="fw-bold text-gray-800 fs-2">Genel Toplam:</span>
+                                <span class="fw-bold text-primary fs-2x">{{ invoice.total }} {{ invoice.currency }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if invoice.notes %}
+                    <div class="bg-light-primary rounded p-5 mb-5">
+                        <h6 class="fw-bold mb-2">Not:</h6>
+                        <div class="text-gray-700">{{ invoice.notes|nl2br }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if invoice.paidAt %}
+                    <div class="separator separator-dashed mb-8"></div>
+                    <div class="alert alert-success d-flex align-items-center">
+                        <i class="ki-duotone ki-check-circle fs-2x text-success me-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                        <div class="flex-grow-1">
+                            <h5 class="text-success mb-1">Ödeme Alındı</h5>
+                            <div class="text-gray-700 fs-6">
+                                <strong>Tarih:</strong> {{ invoice.paidAt|date('d.m.Y H:i') }}
+                                {% if invoice.paymentMethod %}
+                                <br><strong>Yöntem:</strong> 
+                                {% if invoice.paymentMethod == 'credit_card' %}Kredi Kartı
+                                {% elseif invoice.paymentMethod == 'bank_transfer' %}Banka Havalesi
+                                {% elseif invoice.paymentMethod == 'paypal' %}PayPal
+                                {% elseif invoice.paymentMethod == 'cash' %}Nakit
+                                {% else %}{{ invoice.paymentMethod }}
+                                {% endif %}
+                                {% endif %}
+                                {% if invoice.paymentTransactionId %}
+                                <br><strong>İşlem ID:</strong> {{ invoice.paymentTransactionId }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="text-center text-gray-600 fs-7 mt-10 pt-5 border-top">
+                        Bu fatura elektronik olarak oluşturulmuştur.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3">
+            {# Quick Actions #}
+            <div class="card card-flush mb-5">
+                <div class="card-header">
+                    <h3 class="card-title">İşlemler</h3>
+                </div>
+                <div class="card-body">
+                    {% if invoice.status != 'paid' %}
+                    <button type="button" class="btn btn-success w-100 mb-3" onclick="markAsPaid()">
+                        <i class="ki-duotone ki-check fs-2"></i>
+                        Ödendi İşaretle
+                    </button>
+                    {% endif %}
+
+                    <button type="button" class="btn btn-light-info w-100 mb-3" onclick="sendEmail()">
+                        <i class="ki-duotone ki-sms fs-2"></i>
+                        Email Gönder
+                    </button>
+
+                    <a href="{{ path('admin_invoice_pdf', {id: invoice.id}) }}" target="_blank" class="btn btn-light-primary w-100 mb-3">
+                        <i class="ki-duotone ki-file-down fs-2"></i>
+                        PDF İndir
+                    </a>
+
+                    <a href="{{ path('admin_invoices_edit', {id: invoice.id}) }}" class="btn btn-light w-100 mb-3">
+                        <i class="ki-duotone ki-pencil fs-2"></i>
+                        Düzenle
+                    </a>
+
+                    {% if invoice.status != 'paid' %}
+                    <div class="separator my-5"></div>
+                    <button type="button" class="btn btn-light-danger w-100" onclick="cancelInvoice()">
+                        <i class="ki-duotone ki-cross fs-2"></i>
+                        İptal Et
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Invoice Info #}
+            <div class="card card-flush mb-5">
+                <div class="card-body">
+                    <div class="mb-5">
+                        <div class="text-gray-600 fw-semibold mb-1">Fatura Numarası</div>
+                        <div class="fw-bold fs-4">{{ invoice.invoiceNumber }}</div>
+                    </div>
+                    <div class="mb-5">
+                        <div class="text-gray-600 fw-semibold mb-1">Durum</div>
+                        <div>
+                            {% if invoice.status == 'paid' %}
+                                <span class="badge badge-success fs-5">Ödendi</span>
+                            {% elseif invoice.status == 'cancelled' %}
+                                <span class="badge badge-danger fs-5">İptal</span>
+                            {% elseif invoice.isOverdue %}
+                                <span class="badge badge-danger fs-5">Gecikmiş</span>
+                            {% else %}
+                                <span class="badge badge-warning fs-5">Bekliyor</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-5">
+                        <div class="text-gray-600 fw-semibold mb-1">Tutar</div>
+                        <div class="fw-bold fs-3 text-primary">{{ invoice.total }} {{ invoice.currency }}</div>
+                    </div>
+                    <div class="separator my-5"></div>
+                    <div class="mb-5">
+                        <div class="text-gray-600 fw-semibold mb-1">Oluşturulma</div>
+                        <div>{{ invoice.createdAt|date('d.m.Y H:i') }}</div>
+                    </div>
+                    {% if invoice.updatedAt %}
+                    <div class="mb-5">
+                        <div class="text-gray-600 fw-semibold mb-1">Son Güncelleme</div>
+                        <div>{{ invoice.updatedAt|date('d.m.Y H:i') }}</div>
+                    </div>
+                    {% endif %}
+                    {% if invoice.emailSent %}
+                    <div>
+                        <div class="text-gray-600 fw-semibold mb-1">Email Durumu</div>
+                        <div class="d-flex align-items-center">
+                            <i class="ki-duotone ki-check-circle fs-3 text-success me-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <span>{{ invoice.emailSentAt|date('d.m.Y H:i') }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# User Info #}
+            <div class="card card-flush">
+                <div class="card-header">
+                    <h3 class="card-title">Müşteri</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-5">
+                        <div class="symbol symbol-50px me-3">
+                            <div class="symbol-label fs-2 fw-bold bg-light-primary text-primary">
+                                {{ invoice.user.fullName|slice(0, 1)|upper }}
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <a href="#" class="text-gray-800 text-hover-primary fw-bold fs-6">{{ invoice.user.fullName }}</a>
+                            <div class="text-gray-600 fw-semibold fs-7">{{ invoice.user.email }}</div>
+                        </div>
+                    </div>
+                    {% if invoice.user.phone %}
+                    <div class="mb-3">
+                        <i class="ki-duotone ki-phone fs-4 text-gray-500 me-2"></i>
+                        <span class="text-gray-800">{{ invoice.user.phone }}</span>
+                    </div>
+                    {% endif %}
+                    <a href="#" class="btn btn-sm btn-light-primary w-100">
+                        Müşteri Detayı
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function markAsPaid() {
+            if (confirm('Faturayı ödendi olarak işaretlemek istediğinizden emin misiniz?')) {
+                fetch('{{ path('admin_invoices_mark_paid', {id: invoice.id}) }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({})
+                })
+                .then(r => r.json())
+                .then(data => {
+                    toastr.success(data.message);
+                    setTimeout(() => location.reload(), 1000);
+                });
+            }
+        }
+
+        function sendEmail() {
+            fetch('{{ path('admin_invoices_send_email', {id: invoice.id}) }}', {
+                method: 'POST'
+            })
+            .then(r => r.json())
+            .then(data => {
+                toastr.success(data.message);
+                setTimeout(() => location.reload(), 1000);
+            });
+        }
+
+        function cancelInvoice() {
+            if (confirm('Faturayı iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+                fetch('{{ path('admin_invoices_cancel', {id: invoice.id}) }}', {
+                    method: 'POST'
+                })
+                .then(r => r.json())
+                .then(data => {
+                    toastr.success(data.message);
+                    setTimeout(() => location.href = '{{ path('admin_invoices') }}', 1000);
+                });
+            }
+        }
+
+        // Print function
+        function printInvoice() {
+            window.print();
+        }
+    </script>
+{% endblock %}

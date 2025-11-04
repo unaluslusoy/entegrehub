@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Etiket Önizleme - {{ template.name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .preview-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .preview-header {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .preview-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .preview-header p {
+            margin: 0;
+            color: #666;
+        }
+
+        .preview-actions {
+            margin-top: 15px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #3699FF;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            background: #187DE4;
+        }
+
+        .btn-secondary {
+            background: #E4E6EF;
+            color: #3F4254;
+        }
+
+        .btn-secondary:hover {
+            background: #D1D3E0;
+        }
+
+        .label-wrapper {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: inline-block;
+        }
+
+        .label-preview {
+            position: relative;
+            background: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .preview-element {
+            position: absolute;
+            overflow: hidden;
+        }
+
+        .preview-element.text {
+            display: flex;
+            align-items: center;
+        }
+
+        .preview-element.qrcode,
+        .preview-element.barcode,
+        .preview-element.image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-element img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .preview-header,
+            .preview-actions {
+                display: none;
+            }
+
+            .label-wrapper {
+                padding: 0;
+                box-shadow: none;
+            }
+
+            .label-preview {
+                border: none;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <div class="preview-header">
+            <h1>{{ template.name }}</h1>
+            {% if template.description %}
+                <p>{{ template.description }}</p>
+            {% endif %}
+            <div class="preview-actions">
+                <button class="btn" onclick="window.print()">
+                    Yazdır
+                </button>
+                <button class="btn btn-secondary" onclick="window.close()">
+                    Kapat
+                </button>
+            </div>
+        </div>
+
+        <div class="label-wrapper">
+            <div class="label-preview" id="label-preview" style="width: {{ template.width * 3.7795 }}px; height: {{ template.height * 3.7795 }}px;">
+                {# Elements will be rendered here by JavaScript #}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for preview
+        const sampleData = {{ sampleData|json_encode|raw }};
+
+        // Template design config
+        const designConfig = {{ template.designConfig|json_encode|raw }};
+
+        // Render preview
+        function renderPreview() {
+            const labelPreview = document.getElementById('label-preview');
+
+            if (!designConfig || !designConfig.elements) {
+                labelPreview.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;">Tasarım bulunamadı</div>';
+                return;
+            }
+
+            designConfig.elements.forEach(element => {
+                const div = document.createElement('div');
+                div.className = 'preview-element ' + element.type;
+
+                // Position and size
+                div.style.left = element.x + 'px';
+                div.style.top = element.y + 'px';
+                div.style.width = element.width + 'px';
+                div.style.height = element.height + 'px';
+
+                // Styling
+                div.style.color = element.color || '#000000';
+                div.style.backgroundColor = element.backgroundColor || 'transparent';
+                div.style.fontSize = (element.fontSize || 12) + 'px';
+                div.style.fontFamily = element.fontFamily || 'Arial';
+                div.style.fontWeight = element.fontWeight || 'normal';
+                div.style.textAlign = element.textAlign || 'left';
+                div.style.transform = `rotate(${element.rotation || 0}deg)`;
+
+                if (element.borderWidth > 0) {
+                    div.style.border = `${element.borderWidth}px solid ${element.borderColor || '#000000'}`;
+                }
+
+                // Content based on type
+                if (element.type === 'text') {
+                    let content = element.content;
+
+                    // Replace field placeholders with sample data
+                    if (element.fieldKey) {
+                        content = getFieldValue(element.fieldKey);
+                    }
+
+                    div.textContent = content;
+
+                } else if (element.type === 'qrcode') {
+                    // For QR code, we'll use the sample QR code from sampleData
+                    const img = document.createElement('img');
+                    img.src = sampleData.qrCode || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    div.appendChild(img);
+
+                } else if (element.type === 'barcode') {
+                    // Placeholder for barcode
+                    div.innerHTML = '<div style="width:100%;height:100%;background:#000;background:repeating-linear-gradient(90deg, #000 0px, #000 2px, #fff 2px, #fff 4px);"></div>';
+
+                } else if (element.type === 'image') {
+                    // Placeholder for image
+                    const img = document.createElement('img');
+                    img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2VlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JTUFHRTwvdGV4dD48L3N2Zz4=';
+                    div.appendChild(img);
+                }
+
+                labelPreview.appendChild(div);
+            });
+        }
+
+        // Get field value from sample data
+        function getFieldValue(fieldKey) {
+            const fieldMap = {
+                'tracking': sampleData.shipment.trackingNumber,
+                'order_number': sampleData.order.orderNumber,
+                'receiver_name': sampleData.address.firstName + ' ' + sampleData.address.lastName,
+                'receiver_company': sampleData.address.company,
+                'receiver_address': sampleData.address.address1,
+                'receiver_city': sampleData.address.city,
+                'receiver_phone': sampleData.address.phone,
+                'cargo_company': sampleData.cargoCompany.name,
+                'service_type': sampleData.shipment.serviceType === 'express' ? 'EKSPRES' : 'STANDART',
+                'weight': sampleData.shipment.weight + ' kg',
+                'cod_amount': sampleData.shipment.isCOD ? sampleData.shipment.codAmount + ' ₺' : '-',
+                'created_date': new Date().toLocaleDateString('tr-TR'),
+                'sender_name': sampleData.company.firstName + ' ' + sampleData.company.lastName
+            };
+
+            return fieldMap[fieldKey] || fieldKey;
+        }
+
+        // Render on load
+        document.addEventListener('DOMContentLoaded', renderPreview);
+    </script>
+</body>
+</html>

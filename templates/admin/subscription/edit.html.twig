@@ -1,0 +1,257 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Abonelik Düzenle{% endblock %}
+
+{% block page_title %}Abonelik Düzenle{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">
+        <a href="{{ path('admin_subscriptions') }}" class="text-muted text-hover-primary">Abonelikler</a>
+    </li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Düzenle</li>
+{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <a href="{{ path('admin_subscriptions') }}" class="btn btn-sm btn-light">
+            <i class="ki-duotone ki-left fs-2"></i>
+            Geri Dön
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="row g-5">
+        <div class="col-xl-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Abonelik Bilgileri</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ path('admin_subscriptions_edit', {id: subscription.id}) }}">
+                        <div class="mb-7">
+                            <label class="form-label fw-bold">Kullanıcı</label>
+                            <input type="text" class="form-control form-control-solid" value="{{ subscription.user.fullName }} ({{ subscription.user.email }})" readonly />
+                            <div class="form-text">Kullanıcı değiştirilemez</div>
+                        </div>
+
+                        <div class="mb-7">
+                            <label class="form-label fw-bold required">Abonelik Paketi</label>
+                            <select name="plan_id" class="form-select form-select-solid" required>
+                                {% for plan in plans %}
+                                <option value="{{ plan.id }}" {{ subscription.plan.id == plan.id ? 'selected' : '' }}>
+                                    {{ plan.name }} - {{ plan.monthlyPrice }} TRY/Ay
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-7">
+                            <label class="form-label fw-bold required">Durum</label>
+                            <select name="status" class="form-select form-select-solid" required>
+                                <option value="active" {{ subscription.status == 'active' ? 'selected' : '' }}>Aktif</option>
+                                <option value="expired" {{ subscription.status == 'expired' ? 'selected' : '' }}>Süresi Dolmuş</option>
+                                <option value="cancelled" {{ subscription.status == 'cancelled' ? 'selected' : '' }}>İptal Edildi</option>
+                                <option value="suspended" {{ subscription.status == 'suspended' ? 'selected' : '' }}>Askıya Alındı</option>
+                            </select>
+                        </div>
+
+                        <div class="row mb-7">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Başlangıç Tarihi</label>
+                                <input type="date" class="form-control form-control-solid" value="{{ subscription.startDate|date('Y-m-d') }}" readonly />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold required">Bitiş Tarihi</label>
+                                <input type="date" name="end_date" class="form-control form-control-solid" value="{{ subscription.endDate|date('Y-m-d') }}" required />
+                            </div>
+                        </div>
+
+                        <div class="mb-7">
+                            <label class="form-label fw-bold">Ödeme Yöntemi</label>
+                            <select name="payment_method" class="form-select form-select-solid">
+                                <option value="">Seçiniz</option>
+                                <option value="credit_card" {{ subscription.paymentMethod == 'credit_card' ? 'selected' : '' }}>Kredi Kartı</option>
+                                <option value="bank_transfer" {{ subscription.paymentMethod == 'bank_transfer' ? 'selected' : '' }}>Banka Transferi</option>
+                                <option value="paypal" {{ subscription.paymentMethod == 'paypal' ? 'selected' : '' }}>PayPal</option>
+                                <option value="cash" {{ subscription.paymentMethod == 'cash' ? 'selected' : '' }}>Nakit</option>
+                            </select>
+                        </div>
+
+                        <div class="separator my-7"></div>
+
+                        <div class="mb-7">
+                            <div class="form-check form-switch form-check-custom form-check-solid">
+                                <input class="form-check-input" type="checkbox" name="auto_renew" value="1" {{ subscription.autoRenew ? 'checked' : '' }} />
+                                <label class="form-check-label fw-bold">
+                                    Otomatik Yenileme
+                                </label>
+                            </div>
+                        </div>
+
+                        {% if subscription.status == 'cancelled' %}
+                        <div class="mb-7">
+                            <label class="form-label fw-bold">İptal Nedeni</label>
+                            <textarea name="cancellation_reason" class="form-control form-control-solid" rows="2">{{ subscription.cancellationReason }}</textarea>
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-7">
+                            <label class="form-label fw-bold">Notlar</label>
+                            <textarea name="notes" class="form-control form-control-solid" rows="3">{{ subscription.notes }}</textarea>
+                        </div>
+
+                        <div class="separator my-7"></div>
+
+                        <div class="bg-light-info rounded border-info border border-dashed p-5 mb-7">
+                            <h4 class="text-gray-800 fw-bold mb-3">Kullanım İstatistikleri (Bu Ay)</h4>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <div class="fs-2x fw-bold text-primary">{{ subscription.currentMonthOrders }}</div>
+                                        <div class="text-gray-600 fs-7">Sipariş</div>
+                                        <div class="text-gray-500 fs-8">Limit: {{ subscription.plan.maxOrders }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <div class="fs-2x fw-bold text-success">{{ subscription.currentMonthSms }}</div>
+                                        <div class="text-gray-600 fs-7">SMS</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <div class="fs-2x fw-bold text-warning">{{ subscription.currentMonthEmails }}</div>
+                                        <div class="text-gray-600 fs-7">Email</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-3">
+                            <a href="{{ path('admin_subscriptions') }}" class="btn btn-light">İptal</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ki-duotone ki-check fs-2"></i>
+                                Değişiklikleri Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Hızlı İşlemler</h3>
+                </div>
+                <div class="card-body">
+                    {% if subscription.status == 'active' or subscription.status == 'expired' %}
+                    <form method="POST" action="{{ path('admin_subscriptions_renew', {id: subscription.id}) }}">
+                        <button type="submit" class="btn btn-success w-100 mb-3">
+                            <i class="ki-duotone ki-arrows-circle fs-2"></i>
+                            Aboneliği Yenile
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    {% if subscription.status == 'active' %}
+                    <button type="button" class="btn btn-warning w-100 mb-3" onclick="suspendSubscription()">
+                        <i class="ki-duotone ki-pause-circle fs-2"></i>
+                        Askıya Al
+                    </button>
+                    {% endif %}
+
+                    {% if subscription.status == 'suspended' %}
+                    <button type="button" class="btn btn-success w-100 mb-3" onclick="activateSubscription()">
+                        <i class="ki-duotone ki-check-circle fs-2"></i>
+                        Aktif Et
+                    </button>
+                    {% endif %}
+
+                    <button type="button" class="btn btn-info w-100 mb-3" onclick="resetUsage()">
+                        <i class="ki-duotone ki-arrows-loop fs-2"></i>
+                        Kullanımı Sıfırla
+                    </button>
+
+                    <div class="separator my-5"></div>
+
+                    <div class="mb-3">
+                        <span class="text-gray-600 fs-7">Oluşturulma:</span>
+                        <div class="fw-bold">{{ subscription.createdAt|date('d.m.Y H:i') }}</div>
+                    </div>
+
+                    {% if subscription.lastPaymentDate %}
+                    <div class="mb-3">
+                        <span class="text-gray-600 fs-7">Son Ödeme:</span>
+                        <div class="fw-bold">{{ subscription.lastPaymentDate|date('d.m.Y H:i') }}</div>
+                        {% if subscription.lastPaymentAmount %}
+                        <div class="text-primary">{{ subscription.lastPaymentAmount }} TRY</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if subscription.isTrialPeriod %}
+                    <div class="mb-3">
+                        <span class="badge badge-light-primary">Deneme Süresi</span>
+                        <div class="text-gray-600 fs-7 mt-2">
+                            {{ subscription.trialStartDate|date('d.m.Y') }} - {{ subscription.trialEndDate|date('d.m.Y') }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function suspendSubscription() {
+            if (confirm('Aboneliği askıya almak istediğinizden emin misiniz?')) {
+                fetch('/admin/subscriptions/{{ subscription.id }}/suspend', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                })
+                .then(response => response.json())
+                .then(data => {
+                    toastr.success(data.message);
+                    setTimeout(() => location.reload(), 1000);
+                });
+            }
+        }
+
+        function activateSubscription() {
+            fetch('/admin/subscriptions/{{ subscription.id }}/activate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(response => response.json())
+            .then(data => {
+                toastr.success(data.message);
+                setTimeout(() => location.reload(), 1000);
+            });
+        }
+
+        function resetUsage() {
+            if (confirm('Kullanım istatistiklerini sıfırlamak istediğinizden emin misiniz?')) {
+                fetch('/admin/subscriptions/{{ subscription.id }}/reset-usage', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                })
+                .then(response => response.json())
+                .then(data => {
+                    toastr.success(data.message);
+                    setTimeout(() => location.reload(), 1000);
+                });
+            }
+        }
+    </script>
+{% endblock %}

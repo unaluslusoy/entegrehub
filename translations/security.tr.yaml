@@ -1,0 +1,22 @@
+# Symfony Security Türkçe Çevirileri
+
+# Authentication Errors
+"Invalid credentials.": "E-posta adresi veya şifre hatalı. Lütfen tekrar deneyin."
+"Invalid CSRF token.": "Oturum güvenlik hatası. Lütfen sayfayı yenileyip tekrar deneyin."
+"Username could not be found.": "Bu e-posta adresi sistemde kayıtlı değil."
+"Account disabled.": "Hesabınız devre dışı bırakılmış. Destek ekibiyle iletişime geçin."
+"Account locked.": "Hesabınız kilitlenmiş. Destek ekibiyle iletişime geçin."
+
+# Validation Errors
+"This value should not be blank.": "Bu alan boş bırakılamaz."
+"This value is too short.": "Bu alan çok kısa. En az %limit% karakter olmalıdır."
+"This value is too long.": "Bu alan çok uzun. En fazla %limit% karakter olabilir."
+"This value is not a valid email address.": "Geçerli bir e-posta adresi girin."
+
+# Password Errors
+"The presented password is invalid.": "Girdiğiniz şifre hatalı."
+"Password does not match.": "Şifreler eşleşmiyor."
+
+# Access Denied
+"Access Denied.": "Bu sayfaya erişim yetkiniz yok."
+"Full authentication is required to access this resource.": "Bu sayfayı görüntülemek için giriş yapmalısınız."

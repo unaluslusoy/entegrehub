@@ -1,0 +1,145 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Kullanıcı Düzenle - {{ user.fullName }}{% endblock %}
+
+{% block page_title %}Kullanıcı Düzenle{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">
+        <a href="{{ path('admin_users') }}" class="text-muted text-hover-primary">Kullanıcılar</a>
+    </li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Düzenle</li>
+{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <a href="{{ path('admin_users') }}" class="btn btn-sm btn-light">
+            <i class="ki-duotone ki-left fs-2"></i>
+            Geri Dön
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Kullanıcı Bilgileri</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ path('admin_users_edit', {id: user.id}) }}">
+                <div class="row mb-7">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold required">Ad</label>
+                        <input type="text" name="first_name" class="form-control form-control-solid" value="{{ user.firstName }}" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold required">Soyad</label>
+                        <input type="text" name="last_name" class="form-control form-control-solid" value="{{ user.lastName }}" required />
+                    </div>
+                </div>
+
+                <div class="mb-7">
+                    <label class="form-label fw-bold required">E-posta</label>
+                    <input type="email" class="form-control form-control-solid" value="{{ user.email }}" readonly />
+                    <div class="form-text">E-posta adresi değiştirilemez</div>
+                </div>
+
+                <div class="mb-7">
+                    <label class="form-label fw-bold">Yeni Şifre</label>
+                    <div class="position-relative">
+                        <input type="password" name="password" class="form-control form-control-solid" minlength="8" placeholder="Değiştirmek için yeni şifre girin" />
+                        <span class="btn btn-sm btn-icon position-absolute translate-middle top-50 end-0 me-n2" 
+                              data-kt-password-meter-control="visibility">
+                            <i class="ki-duotone ki-eye-slash fs-2"></i>
+                            <i class="ki-duotone ki-eye fs-2 d-none"></i>
+                        </span>
+                    </div>
+                    <div class="form-text">Boş bırakırsanız mevcut şifre değişmez</div>
+                </div>
+
+                <div class="mb-7">
+                    <label class="form-label fw-bold">Telefon</label>
+                    <input type="text" name="phone" class="form-control form-control-solid" value="{{ user.phone }}" placeholder="+90 (5xx) xxx xx xx" />
+                </div>
+
+                <div class="mb-7">
+                    <label class="form-label fw-bold required">Rol</label>
+                    <select name="role" class="form-select form-select-solid" required>
+                        <option value="ROLE_SUPER_ADMIN" {{ 'ROLE_SUPER_ADMIN' in user.roles and 'ROLE_SUPER_ADMIN' not in user.roles ? 'selected' : '' }}>Admin</option>
+                        <option value="ROLE_SUPER_ADMIN" {{ 'ROLE_SUPER_ADMIN' in user.roles ? 'selected' : '' }}>Süper Admin</option>
+                    </select>
+                    <div class="form-text">Kullanıcının sistem üzerindeki yetki seviyesi</div>
+                </div>
+
+                <div class="mb-7">
+                    <div class="form-check form-switch form-check-custom form-check-solid">
+                        <input class="form-check-input" type="checkbox" name="is_active" value="1" {{ user.isActive ? 'checked' : '' }} />
+                        <label class="form-check-label fw-bold">
+                            Hesap Aktif
+                        </label>
+                    </div>
+                </div>
+
+                <div class="separator my-7"></div>
+
+                <div class="bg-light-info rounded border-info border border-dashed p-6 mb-7">
+                    <div class="d-flex align-items-center">
+                        <i class="ki-duotone ki-information-5 fs-2x text-info me-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                            <span class="path3"></span>
+                        </i>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-gray-800">Hesap Bilgileri</div>
+                            <div class="text-gray-600 fs-7">
+                                Kayıt Tarihi: {{ user.createdAt|date('d.m.Y H:i') }}<br>
+                                Son Güncelleme: {{ user.updatedAt|date('d.m.Y H:i') }}<br>
+                                {% if user.lastLoginAt %}
+                                Son Giriş: {{ user.lastLoginAt|date('d.m.Y H:i') }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3">
+                    <a href="{{ path('admin_users') }}" class="btn btn-light">İptal</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ki-duotone ki-check fs-2"></i>
+                        Değişiklikleri Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Password visibility toggle
+        document.querySelectorAll('[data-kt-password-meter-control="visibility"]').forEach(function(toggle) {
+            toggle.addEventListener('click', function() {
+                const input = this.previousElementSibling;
+                const eyeSlash = this.querySelector('.ki-eye-slash');
+                const eye = this.querySelector('.ki-eye');
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    eyeSlash.classList.add('d-none');
+                    eye.classList.remove('d-none');
+                } else {
+                    input.type = 'password';
+                    eyeSlash.classList.remove('d-none');
+                    eye.classList.add('d-none');
+                }
+            });
+        });
+    </script>
+{% endblock %}

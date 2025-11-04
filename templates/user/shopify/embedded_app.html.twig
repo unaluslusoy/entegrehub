@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kargo Entegre - Shopify App</title>
+    <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f6f6f7;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 1px 0 rgba(0,0,0,.05);
+        }
+        .header {
+            margin-bottom: 24px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .status-success {
+            background: #d1f7d6;
+            color: #108043;
+        }
+        .status-warning {
+            background: #fff4e0;
+            color: #8a6116;
+        }
+        .card {
+            background: white;
+            border: 1px solid #e1e3e5;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .stat-card {
+            background: #f6f6f7;
+            padding: 16px;
+            border-radius: 8px;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: #202223;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #6d7175;
+            margin-top: 4px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 16px;
+            background: #008060;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .btn:hover {
+            background: #006e52;
+        }
+        .btn-secondary {
+            background: #f6f6f7;
+            color: #202223;
+        }
+        .btn-secondary:hover {
+            background: #e1e3e5;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #008060;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .log {
+            background: #f6f6f7;
+            padding: 16px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 4px 0;
+            padding: 4px;
+        }
+        .log-success { color: #108043; }
+        .log-error { color: #d72c0d; }
+        .log-info { color: #006e52; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚚 Kargo Entegre</h1>
+            <p>Shopify siparişlerinizi otomatik kargo firmalarına gönder</p>
+            <span class="status-badge status-success" id="connectionStatus">✓ Bağlı</span>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalOrders">-</div>
+                <div class="stat-label">Toplam Sipariş</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="syncedOrders">-</div>
+                <div class="stat-label">Senkronize Edildi</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="pendingOrders">-</div>
+                <div class="stat-label">Beklemede</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="lastSync">-</div>
+                <div class="stat-label">Son Senkronizasyon</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Hızlı İşlemler</h3>
+            <button class="btn" onclick="syncOrders()">
+                🔄 Siparişleri Senkronize Et
+            </button>
+            <button class="btn btn-secondary" onclick="viewSettings()">
+                ⚙️ Ayarlar
+            </button>
+            <button class="btn btn-secondary" onclick="viewLogs()">
+                📋 Logları Görüntüle
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>İşlem yapılıyor...</p>
+        </div>
+
+        <div class="card" id="logContainer" style="display: none;">
+            <h3>Senkronizasyon Logları</h3>
+            <div class="log" id="syncLog"></div>
+        </div>
+    </div>
+
+    <script>
+        // Shopify App Bridge initialization
+        const apiKey = '{{ api_key }}';
+        const host = new URLSearchParams(window.location.search).get('host');
+        const shopOrigin = new URLSearchParams(window.location.search).get('shop');
+        
+        let app;
+        if (window.shopify) {
+            app = window.shopify.createApp({
+                apiKey: apiKey,
+                host: host,
+                forceRedirect: false
+            });
+        }
+
+        // API Base URL
+        const API_BASE = '{{ api_base }}';
+        const SHOP_DOMAIN = shopOrigin;
+
+        // Performance optimization - Request queue
+        class RequestQueue {
+            constructor() {
+                this.queue = [];
+                this.processing = false;
+                this.cache = new Map();
+                this.cacheExpiry = new Map();
+            }
+
+            async add(url, options = {}) {
+                // Check cache first
+                const cacheKey = url + JSON.stringify(options);
+                if (this.cache.has(cacheKey)) {
+                    const expiry = this.cacheExpiry.get(cacheKey);
+                    if (expiry > Date.now()) {
+                        return this.cache.get(cacheKey);
+                    }
+                }
+
+                return new Promise((resolve, reject) => {
+                    this.queue.push({ url, options, resolve, reject });
+                    this.process();
+                });
+            }
+
+            async process() {
+                if (this.processing || this.queue.length === 0) return;
+                
+                this.processing = true;
+                const { url, options, resolve, reject } = this.queue.shift();
+
+                try {
+                    const response = await fetch(url, options);
+                    const data = await response.json();
+                    
+                    // Cache successful responses
+                    const cacheKey = url + JSON.stringify(options);
+                    this.cache.set(cacheKey, data);
+                    this.cacheExpiry.set(cacheKey, Date.now() + 30000); // 30 seconds
+                    
+                    resolve(data);
+                } catch (error) {
+                    reject(error);
+                } finally {
+                    this.processing = false;
+                    // Process next in queue after small delay
+                    setTimeout(() => this.process(), 100);
+                }
+            }
+        }
+
+        const requestQueue = new RequestQueue();
+
+        // Debounce function for performance
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Load initial stats with caching
+        async function loadStats() {
+            try {
+                const data = await requestQueue.add(
+                    `${API_BASE}/api/shopify/stats?shop=${SHOP_DOMAIN}`,
+                    {
+                        headers: {
+                            'X-Shopify-Shop-Domain': SHOP_DOMAIN
+                        }
+                    }
+                );
+                
+                // Smooth number transitions
+                animateValue('totalOrders', 0, data.total_orders || 0, 500);
+                animateValue('syncedOrders', 0, data.synced_orders || 0, 500);
+                animateValue('pendingOrders', 0, data.pending_orders || 0, 500);
+                
+                document.getElementById('lastSync').textContent = data.last_sync 
+                    ? new Date(data.last_sync).toLocaleString('tr-TR') 
+                    : 'Henüz yapılmadı';
+                
+                if (data.is_connected) {
+                    document.getElementById('connectionStatus').textContent = '✓ Bağlı';
+                    document.getElementById('connectionStatus').className = 'status-badge status-success';
+                } else {
+                    document.getElementById('connectionStatus').textContent = '⚠ Bağlantı Yok';
+                    document.getElementById('connectionStatus').className = 'status-badge status-warning';
+                }
+            } catch (error) {
+                console.error('Stats loading error:', error);
+                addLog('error', 'İstatistikler yüklenirken hata oluştu: ' + error.message);
+            }
+        }
+
+        // Animate number changes
+        function animateValue(id, start, end, duration) {
+            const element = document.getElementById(id);
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    element.textContent = end;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.round(current);
+                }
+            }, 16);
+        }
+
+        // Sync orders with optimistic UI
+        async function syncOrders() {
+            const loadingEl = document.getElementById('loading');
+            const logContainer = document.getElementById('logContainer');
+            const syncLog = document.getElementById('syncLog');
+            
+            loadingEl.style.display = 'block';
+            logContainer.style.display = 'block';
+            syncLog.innerHTML = '';
+            
+            addLog('info', '🔄 Senkronizasyon başlatıldı...');
+            
+            const startTime = Date.now();
+            
+            try {
+                const data = await requestQueue.add(
+                    `${API_BASE}/api/shopify/sync-orders`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Shopify-Shop-Domain': SHOP_DOMAIN
+                        },
+                        body: JSON.stringify({ shop: SHOP_DOMAIN })
+                    }
+                );
+                
+                const duration = Date.now() - startTime;
+                
+                if (data.success) {
+                    addLog('success', `✓ ${data.synced_count} sipariş başarıyla senkronize edildi`);
+                    addLog('info', `⏱ İşlem süresi: ${data.duration}ms`);
+                    addLog('info', `📊 Cache: ${data.from_cache ? 'HIT' : 'MISS'}`);
+                    
+                    if (data.rate_limit) {
+                        addLog('info', `🚦 Rate Limit: %${data.rate_limit.percentage} (${data.rate_limit.available_tokens}/${data.rate_limit.max_tokens})`);
+                    }
+                    
+                    // Reload stats with debounce
+                    debouncedLoadStats();
+                } else {
+                    addLog('error', '✗ Senkronizasyon başarısız: ' + data.message);
+                }
+            } catch (error) {
+                addLog('error', '✗ Hata: ' + error.message);
+            } finally {
+                loadingEl.style.display = 'none';
+            }
+        }
+
+        // Debounced stats reload
+        const debouncedLoadStats = debounce(loadStats, 1000);
+
+        // View settings
+        function viewSettings() {
+            if (app) {
+                window.open(`${API_BASE}/user/shopify/settings?shop=${SHOP_DOMAIN}`, '_blank');
+            } else {
+                window.location.href = `${API_BASE}/user/shopify/settings?shop=${SHOP_DOMAIN}`;
+            }
+        }
+
+        // View logs with lazy loading
+        async function viewLogs() {
+            const logContainer = document.getElementById('logContainer');
+            const syncLog = document.getElementById('syncLog');
+            
+            logContainer.style.display = 'block';
+            syncLog.innerHTML = '<div class="log-entry log-info">📋 Loglar yükleniyor...</div>';
+            
+            try {
+                const data = await requestQueue.add(
+                    `${API_BASE}/api/shopify/logs?shop=${SHOP_DOMAIN}&limit=50`,
+                    {
+                        headers: {
+                            'X-Shopify-Shop-Domain': SHOP_DOMAIN
+                        }
+                    }
+                );
+                
+                syncLog.innerHTML = '';
+                data.logs.forEach(log => {
+                    addLog(log.level, `[${new Date(log.timestamp).toLocaleString('tr-TR')}] ${log.message}`);
+                });
+            } catch (error) {
+                addLog('error', 'Loglar yüklenirken hata: ' + error.message);
+            }
+        }
+
+        // Add log entry with smooth animation
+        function addLog(type, message) {
+            const logContainer = document.getElementById('syncLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = message;
+            entry.style.opacity = '0';
+            entry.style.transform = 'translateY(-10px)';
+            entry.style.transition = 'opacity 0.3s, transform 0.3s';
+            
+            logContainer.appendChild(entry);
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                entry.style.opacity = '1';
+                entry.style.transform = 'translateY(0)';
+            });
+            
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Initialize with performance monitoring
+        document.addEventListener('DOMContentLoaded', function() {
+            const perfStart = performance.now();
+            
+            loadStats().then(() => {
+                const perfEnd = performance.now();
+                console.log(`Stats loaded in ${Math.round(perfEnd - perfStart)}ms`);
+            });
+            
+            // Auto-refresh stats every 30 seconds with debounce
+            setInterval(debouncedLoadStats, 30000);
+            
+            // Prefetch critical resources
+            if ('connection' in navigator && navigator.connection.effectiveType !== 'slow-2g') {
+                // Prefetch logs endpoint
+                requestQueue.add(`${API_BASE}/api/shopify/logs?shop=${SHOP_DOMAIN}&limit=10`, {
+                    headers: { 'X-Shopify-Shop-Domain': SHOP_DOMAIN }
+                });
+            }
+        });
+
+        // Visibility API for performance
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                debouncedLoadStats();
+            }
+        });
+    </script>
+
+</body>
+</html>

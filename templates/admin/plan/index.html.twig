@@ -1,0 +1,382 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Abonelik Paketleri{% endblock %}
+
+{% block page_title %}Abonelik Paketleri{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Abonelik Paketleri</li>
+{% endblock %}
+
+{% block toolbar %}
+<div class="d-flex align-items-center gap-2 gap-lg-3">
+    <!--begin::Filter menu-->
+    <div class="m-0">
+        <!--begin::Menu toggle-->
+        <a href="#" class="btn btn-sm btn-flex btn-secondary fw-bold" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+            <i class="ki-duotone ki-filter fs-6 text-muted me-1">
+                <span class="path1"></span>
+                <span class="path2"></span>
+            </i>               
+            Filtrele
+        </a>
+        <!--end::Menu toggle-->
+        
+        <!--begin::Menu-->
+        <div class="menu menu-sub menu-sub-dropdown w-250px w-md-300px" data-kt-menu="true">
+            <!--begin::Header-->
+            <div class="px-7 py-5">
+                <div class="fs-5 text-gray-900 fw-bold">Filtre Seçenekleri</div>
+            </div>
+            <!--end::Header-->
+
+            <!--begin::Separator-->
+            <div class="separator border-gray-200"></div>
+            <!--end::Separator-->
+
+            <!--begin::Content-->
+            <div class="px-7 py-5">
+                <!--begin::Input group-->
+                <div class="mb-10">
+                    <label class="form-label fw-semibold">Durum:</label>
+                    <div class="d-flex">
+                        <label class="form-check form-check-sm form-check-custom form-check-solid me-5">
+                            <input class="form-check-input plan-filter-checkbox" type="checkbox" id="filter-active" value="active">
+                            <span class="form-check-label">Aktif</span>
+                        </label>
+                        <label class="form-check form-check-sm form-check-custom form-check-solid">
+                            <input class="form-check-input plan-filter-checkbox" type="checkbox" id="filter-inactive" value="inactive">
+                            <span class="form-check-label">Pasif</span>
+                        </label>
+                    </div>
+                </div>
+                <!--end::Input group-->
+
+                <!--begin::Input group-->
+                <div class="mb-10">
+                    <label class="form-label fw-semibold">Popüler Paketler:</label>
+                    <div class="form-check form-switch form-switch-sm form-check-custom form-check-solid">
+                        <input class="form-check-input plan-filter-checkbox" type="checkbox" id="filter-popular" value="popular">
+                        <label class="form-check-label">Sadece Popüler</label>
+                    </div>
+                </div>
+                <!--end::Input group-->
+
+                <!--begin::Actions-->
+                <div class="d-flex justify-content-end">
+                    <button type="button" id="filter-reset" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true">Sıfırla</button>
+                    <button type="button" class="btn btn-sm btn-primary" data-kt-menu-dismiss="true">Uygula</button>
+                </div>
+                <!--end::Actions-->
+            </div>
+            <!--end::Content-->
+        </div>
+        <!--end::Menu-->
+    </div>
+    <!--end::Filter menu-->
+    
+    <!--begin::Primary button-->
+    <a href="{{ path('admin_plans_create') }}" class="btn btn-sm fw-bold btn-primary">
+        <i class="ki-duotone ki-plus fs-2"></i>
+        Yeni Paket Oluştur
+    </a>
+    <!--end::Primary button-->
+</div>
+{% endblock %}
+
+{% block content %}
+    <!--begin::Pricing-->
+    <div class="card" id="kt_pricing">
+        <div class="card-body p-lg-17">
+            <!--begin::Plans-->
+            <div class="d-flex flex-column">
+                <!--begin::Heading-->
+                <div class="mb-13 text-center">
+                    <h1 class="fs-2hx fw-bold mb-5">Abonelik Paketleri</h1>
+                    <div class="text-gray-600 fw-semibold fs-5">
+                        İşletmeniz için en uygun paketi seçin veya 
+                        <a href="{{ path('admin_plans_create') }}" class="link-primary fw-bold">özel paket oluşturun</a>
+                    </div>
+                </div>
+                <!--end::Heading-->
+
+                <!--begin::Nav group-->
+                <div class="nav-group nav-group-outline mx-auto mb-15" data-kt-buttons="true">
+                    <button class="btn btn-color-gray-600 btn-active btn-active-secondary px-6 py-3 me-2 active" data-kt-plan="month">
+                        Aylık
+                    </button>
+                    <button class="btn btn-color-gray-600 btn-active btn-active-secondary px-6 py-3" data-kt-plan="annual">
+                        Yıllık
+                    </button>
+                </div>
+                <!--end::Nav group-->
+
+                {% if plans|length > 0 %}
+                <!--begin::Row-->
+                <div class="row g-10">
+                    {% for plan in plans %}
+                    <!--begin::Col-->
+                    <div class="col-xl-4" data-plan-card data-plan-active="{{ plan.isActive ? '1' : '0' }}" data-plan-popular="{{ plan.isPopular ? '1' : '0' }}">
+                        <div class="d-flex h-100 align-items-center">
+                            <!--begin::Option-->
+                            <div class="w-100 d-flex flex-column flex-center rounded-3 bg-light bg-opacity-75 py-15 px-10">
+                                <!--begin::Heading-->
+                                <div class="mb-7 text-center">
+                                    <!--begin::Title-->
+                                    <h1 class="text-gray-900 mb-5 fw-bolder">{{ plan.name }}</h1>
+                                    <!--end::Title-->
+
+                                    <!--begin::Description-->
+                                    <div class="text-gray-600 fw-semibold mb-5">
+                                        {{ plan.description ?: 'Paket açıklaması' }}
+                                    </div>
+                                    <!--end::Description-->
+
+                                    <!--begin::Price-->
+                                    <div class="text-center">
+                                        <span class="mb-2 text-primary">₺</span>
+                                        <span class="fs-3x fw-bold text-primary" data-kt-plan-price-month="{{ plan.monthlyPrice }}" data-kt-plan-price-annual="{{ plan.yearlyPrice }}">
+                                            {{ plan.monthlyPrice|number_format(0, ',', '.') }}
+                                        </span>
+                                        <span class="fs-7 fw-semibold opacity-50" data-kt-plan-price-month="Ay" data-kt-plan-price-annual="Yıl">/Ay</span>
+                                    </div>
+                                    <!--end::Price-->
+                                </div>
+                                <!--end::Heading-->
+
+                                <!--begin::Features-->
+                                <div class="w-100 mb-10">
+                                    <!--begin::Item-->
+                                    <div class="d-flex align-items-center mb-5">
+                                        <span class="fw-semibold fs-6 text-gray-800 flex-grow-1">{{ plan.maxShops }} Mağaza</span>
+                                        <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                    </div>
+                                    <!--end::Item-->
+
+                                    <!--begin::Item-->
+                                    <div class="d-flex align-items-center mb-5">
+                                        <span class="fw-semibold fs-6 text-gray-800 flex-grow-1">{{ plan.maxOrders|number_format(0, ',', '.') }} Sipariş/Ay</span>
+                                        <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                    </div>
+                                    <!--end::Item-->
+
+                                    <!--begin::Item-->
+                                    <div class="d-flex align-items-center mb-5">
+                                        <span class="fw-semibold fs-6 text-gray-800 flex-grow-1">{{ plan.maxUsers }} Kullanıcı</span>
+                                        <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                    </div>
+                                    <!--end::Item-->
+
+                                    {% if plan.hasApiAccess %}
+                                    <div class="d-flex align-items-center mb-5">
+                                        <span class="fw-semibold fs-6 text-gray-800 flex-grow-1">API Erişimi</span>
+                                        <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if plan.hasAdvancedReports %}
+                                    <div class="d-flex align-items-center mb-5">
+                                        <span class="fw-semibold fs-6 text-gray-800 flex-grow-1">Gelişmiş Raporlar</span>
+                                        <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if plan.hasBarcodeScanner %}
+                                    <div class="d-flex align-items-center mb-5">
+                                        <span class="fw-semibold fs-6 text-gray-800 flex-grow-1">Barkod Okuyucu</span>
+                                        <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if plan.hasAiFeatures %}
+                                    <div class="d-flex align-items-center mb-5">
+                                        <span class="fw-semibold fs-6 text-gray-800 flex-grow-1">AI Özellikleri</span>
+                                        <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if plan.hasPrioritySupport %}
+                                    <div class="d-flex align-items-center mb-5">
+                                        <span class="fw-semibold fs-6 text-gray-800 flex-grow-1">Öncelikli Destek</span>
+                                        <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <!--end::Features-->
+
+                                <!--begin::Actions-->
+                                <div class="d-flex flex-column gap-2">
+                                    <a href="{{ path('admin_plans_edit', {id: plan.id}) }}" class="btn btn-sm btn-light-primary">
+                                        <i class="ki-duotone ki-pencil fs-2"></i>
+                                        Düzenle
+                                    </a>
+                                    <div class="form-check form-switch form-check-custom form-check-solid justify-content-center">
+                                        <input class="form-check-input plan-toggle-active" type="checkbox" 
+                                               data-plan-id="{{ plan.id }}" 
+                                               {{ plan.isActive ? 'checked' : '' }}>
+                                        <label class="form-check-label ms-2">
+                                            {{ plan.isActive ? 'Aktif' : 'Pasif' }}
+                                        </label>
+                                    </div>
+                                </div>
+                                <!--end::Actions-->
+                            </div>
+                            <!--end::Option-->
+                        </div>
+                    </div>
+                    <!--end::Col-->
+                    {% endfor %}
+                </div>
+                <!--end::Row-->
+                {% else %}
+                <div class="text-center py-15">
+                    <i class="ki-duotone ki-information-5 fs-5x text-gray-400 mb-5">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                    </i>
+                    <h3 class="text-gray-800 fw-bold mb-3">Henüz abonelik paketi bulunmuyor</h3>
+                    <p class="text-gray-500 fw-semibold fs-6 mb-8">
+                        Yeni abonelik paketi eklemek için yukarıdaki butona tıklayın.
+                    </p>
+                    <a href="{{ path('admin_plans_create') }}" class="btn btn-primary">
+                        <i class="ki-duotone ki-plus fs-2"></i>
+                        İlk Paketi Oluştur
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <!--end::Pricing-->
+        </div>
+        <!--end::Container-->
+    </div>
+    <!--end::Content-->
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Monthly/Annual price toggle
+        document.querySelectorAll('[data-kt-plan]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const type = this.dataset.ktPlan;
+                
+                // Update button states
+                document.querySelectorAll('[data-kt-plan]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update prices
+                document.querySelectorAll('[data-kt-plan-price-month]').forEach(el => {
+                    const monthlyPrice = el.dataset.ktPlanPriceMonth;
+                    const annualPrice = el.dataset.ktPlanPriceAnnual;
+                    
+                    if (el.tagName === 'SPAN' && el.classList.contains('fs-3x')) {
+                        // Price number
+                        const price = type === 'month' ? monthlyPrice : annualPrice;
+                        el.textContent = parseInt(price).toLocaleString('tr-TR');
+                    } else if (el.tagName === 'SPAN') {
+                        // Period text (Ay/Yıl)
+                        el.textContent = type === 'month' ? '/Ay' : '/Yıl';
+                    }
+                });
+            });
+        });
+
+        // Toggle plan active status
+        document.querySelectorAll('.plan-toggle-active').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const planId = this.dataset.planId;
+                const isActive = this.checked;
+                const label = this.nextElementSibling;
+                
+                fetch(`/admin/plans/${planId}/toggle-active`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        label.textContent = isActive ? 'Aktif' : 'Pasif';
+                        toastr.success(isActive ? 'Paket aktif edildi' : 'Paket pasif edildi');
+                    } else {
+                        toastr.error('İşlem başarısız oldu');
+                        this.checked = !isActive;
+                    }
+                })
+                .catch(error => {
+                    toastr.error('Bir hata oluştu');
+                    this.checked = !isActive;
+                });
+            });
+        });
+
+        // Filter functionality
+        const filterCheckboxes = document.querySelectorAll('.plan-filter-checkbox');
+        filterCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                applyFilters();
+            });
+        });
+
+        // Reset filters
+        document.getElementById('filter-reset')?.addEventListener('click', function() {
+            filterCheckboxes.forEach(cb => cb.checked = false);
+            applyFilters();
+        });
+
+        function applyFilters() {
+            const activeFilter = document.getElementById('filter-active').checked;
+            const inactiveFilter = document.getElementById('filter-inactive').checked;
+            const popularFilter = document.getElementById('filter-popular').checked;
+
+            document.querySelectorAll('[data-plan-card]').forEach(card => {
+                const isActive = card.dataset.planActive === '1';
+                const isPopular = card.dataset.planPopular === '1';
+
+                let show = true;
+
+                // Status filters (if neither checked, show all)
+                if (activeFilter || inactiveFilter) {
+                    show = false;
+                    if (activeFilter && isActive) show = true;
+                    if (inactiveFilter && !isActive) show = true;
+                }
+                
+                // Popular filter
+                if (popularFilter && !isPopular) show = false;
+
+                card.style.display = show ? '' : 'none';
+            });
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,296 @@
+{% extends 'layout/master.html.twig' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!--begin::Row-->
+<div class="row g-5 g-xl-10 mb-5 mb-xl-10">
+    <!--begin::Col-->
+    <div class="col-md-6 col-xl-3">
+        <!--begin::Card widget-->
+        <div class="card card-flush h-md-50 mb-5 mb-xl-10">
+            <!--begin::Header-->
+            <div class="card-header pt-5">
+                <!--begin::Title-->
+                <div class="card-title d-flex flex-column">
+                    <!--begin::Amount-->
+                    <span class="fs-2hx fw-bold text-gray-900 me-2 lh-1 ls-n2">{{ shops|length }}</span>
+                    <!--end::Amount-->
+                    <!--begin::Subtitle-->
+                    <span class="text-gray-500 pt-1 fw-semibold fs-6">Mağazalarım</span>
+                    <!--end::Subtitle-->
+                </div>
+                <!--end::Title-->
+            </div>
+            <!--end::Header-->
+            <!--begin::Card body-->
+            <div class="card-body d-flex flex-column justify-content-end pe-0">
+                <!--begin::Progress-->
+                <span class="fs-6 fw-semibold text-gray-500">Bağlı Shopify mağazaları</span>
+                <!--end::Progress-->
+            </div>
+            <!--end::Card body-->
+        </div>
+        <!--end::Card widget-->
+    </div>
+    <!--end::Col-->
+
+    <!--begin::Col-->
+    <div class="col-md-6 col-xl-3">
+        <!--begin::Card widget-->
+        <div class="card card-flush h-md-50 mb-5 mb-xl-10">
+            <!--begin::Header-->
+            <div class="card-header pt-5">
+                <!--begin::Title-->
+                <div class="card-title d-flex flex-column">
+                    <!--begin::Amount-->
+                    <span class="fs-2hx fw-bold text-gray-900 me-2 lh-1 ls-n2">{{ recentOrders|length }}</span>
+                    <!--end::Amount-->
+                    <!--begin::Subtitle-->
+                    <span class="text-gray-500 pt-1 fw-semibold fs-6">Son Siparişler</span>
+                    <!--end::Subtitle-->
+                </div>
+                <!--end::Title-->
+            </div>
+            <!--end::Header-->
+            <!--begin::Card body-->
+            <div class="card-body d-flex flex-column justify-content-end pe-0">
+                <!--begin::Progress-->
+                <span class="fs-6 fw-semibold text-gray-500">Son 10 sipariş</span>
+                <!--end::Progress-->
+            </div>
+            <!--end::Card body-->
+        </div>
+        <!--end::Card widget-->
+    </div>
+    <!--end::Col-->
+
+    <!--begin::Col-->
+    <div class="col-md-6 col-xl-3">
+        <!--begin::Card widget-->
+        <div class="card card-flush h-md-50 mb-xl-10">
+            <!--begin::Header-->
+            <div class="card-header pt-5">
+                <!--begin::Title-->
+                <div class="card-title d-flex flex-column">
+                    <!--begin::Info-->
+                    <div class="d-flex align-items-center">
+                        <!--begin::Amount-->
+                        <span class="fs-2hx fw-bold text-gray-900 me-2 lh-1 ls-n2">{{ subscription ? subscription.plan.name : 'Yok' }}</span>
+                        <!--end::Amount-->
+                    </div>
+                    <!--end::Info-->
+                    <!--begin::Subtitle-->
+                    <span class="text-gray-500 pt-1 fw-semibold fs-6">Abonelik Planım</span>
+                    <!--end::Subtitle-->
+                </div>
+                <!--end::Title-->
+            </div>
+            <!--end::Header-->
+            <!--begin::Card body-->
+            <div class="card-body d-flex flex-column justify-content-end pe-0">
+                <!--begin::Progress-->
+                {% if subscription %}
+                <span class="fs-6 fw-semibold text-gray-500">{{ subscription.endDate|date('d.m.Y') }} tarihine kadar</span>
+                {% else %}
+                <span class="fs-6 fw-semibold text-gray-500">Aktif abonelik yok</span>
+                {% endif %}
+                <!--end::Progress-->
+            </div>
+            <!--end::Card body-->
+        </div>
+        <!--end::Card widget-->
+    </div>
+    <!--end::Col-->
+
+    <!--begin::Col-->
+    <div class="col-md-6 col-xl-3">
+        <!--begin::Card widget-->
+        <div class="card card-flush h-md-50 mb-xl-10">
+            <!--begin::Header-->
+            <div class="card-header pt-5">
+                <!--begin::Title-->
+                <div class="card-title d-flex flex-column">
+                    <!--begin::Amount-->
+                    {% if subscription %}
+                    <span class="fs-2hx fw-bold text-success me-2 lh-1 ls-n2">Aktif</span>
+                    {% else %}
+                    <span class="fs-2hx fw-bold text-danger me-2 lh-1 ls-n2">Pasif</span>
+                    {% endif %}
+                    <!--end::Amount-->
+                    <!--begin::Subtitle-->
+                    <span class="text-gray-500 pt-1 fw-semibold fs-6">Hesap Durumu</span>
+                    <!--end::Subtitle-->
+                </div>
+                <!--end::Title-->
+            </div>
+            <!--end::Header-->
+            <!--begin::Card body-->
+            <div class="card-body d-flex flex-column justify-content-end pe-0">
+                <!--begin::Progress-->
+                <span class="fs-6 fw-semibold text-gray-500">{{ app.user.email }}</span>
+                <!--end::Progress-->
+            </div>
+            <!--end::Card body-->
+        </div>
+        <!--end::Card widget-->
+    </div>
+    <!--end::Col-->
+</div>
+<!--end::Row-->
+
+<!--begin::Row-->
+<div class="row g-5 g-xl-10">
+    <!--begin::Col-->
+    <div class="col-xl-8 mb-5 mb-xl-10">
+        <!--begin::Card-->
+        <div class="card card-flush h-xl-100">
+            <!--begin::Card header-->
+            <div class="card-header pt-7">
+                <!--begin::Title-->
+                <h3 class="card-title align-items-start flex-column">
+                    <span class="card-label fw-bold text-gray-800">Mağazalarım</span>
+                    <span class="text-gray-500 mt-1 fw-semibold fs-6">Bağlı Shopify mağazaları</span>
+                </h3>
+                <!--end::Title-->
+                <!--begin::Toolbar-->
+                <div class="card-toolbar">
+                    <a href="{{ path('shopify_install') }}" class="btn btn-sm btn-light-primary">
+                        <i class="ki-duotone ki-plus fs-2"></i>
+                        Yeni Mağaza Ekle
+                    </a>
+                </div>
+                <!--end::Toolbar-->
+            </div>
+            <!--end::Card header-->
+            <!--begin::Card body-->
+            <div class="card-body pt-6">
+                {% if shops|length > 0 %}
+                <!--begin::Table-->
+                <table class="table table-row-dashed align-middle gs-0 gy-3 my-0">
+                    <!--begin::Table head-->
+                    <thead>
+                        <tr class="fs-7 fw-bold text-gray-500 border-bottom-0">
+                            <th class="p-0 pb-3 min-w-150px text-start">Mağaza</th>
+                            <th class="p-0 pb-3 min-w-100px text-end">Kayıt Tarihi</th>
+                            <th class="p-0 pb-3 min-w-100px text-end">Durum</th>
+                            <th class="p-0 pb-3 min-w-50px text-end">İşlem</th>
+                        </tr>
+                    </thead>
+                    <!--end::Table head-->
+                    <!--begin::Table body-->
+                    <tbody>
+                        {% for shop in shops %}
+                        <tr>
+                            <td class="text-start">
+                                <span class="text-gray-800 fw-bold text-hover-primary mb-1 fs-6">{{ shop.shopifyDomain }}</span>
+                            </td>
+                            <td class="text-end">
+                                <span class="text-gray-600 fw-bold">{{ shop.createdAt|date('d.m.Y') }}</span>
+                            </td>
+                            <td class="text-end">
+                                {% if shop.isActive %}
+                                <span class="badge badge-light-success">Aktif</span>
+                                {% else %}
+                                <span class="badge badge-light-danger">Pasif</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="#" class="btn btn-sm btn-light btn-active-light-primary">Ayarlar</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <!--end::Table body-->
+                </table>
+                <!--end::Table-->
+                {% else %}
+                <div class="text-center py-10">
+                    <img src="{{ asset('build/media/illustrations/sketchy-1/5.png') }}" class="mw-300px" alt="" />
+                    <h3 class="text-gray-800 fw-bold mt-5">Henüz mağaza eklemediniz</h3>
+                    <div class="text-gray-500 fw-semibold fs-6 mt-2">Shopify mağazanızı bağlayarak başlayın</div>
+                    <a href="{{ path('shopify_install') }}" class="btn btn-primary mt-5">Mağaza Ekle</a>
+                </div>
+                {% endif %}
+            </div>
+            <!--end::Card body-->
+        </div>
+        <!--end::Card-->
+    </div>
+    <!--end::Col-->
+
+    <!--begin::Col-->
+    <div class="col-xl-4 mb-5 mb-xl-10">
+        <!--begin::Card-->
+        <div class="card card-flush h-xl-100">
+            <!--begin::Card header-->
+            <div class="card-header pt-7">
+                <!--begin::Title-->
+                <h3 class="card-title align-items-start flex-column">
+                    <span class="card-label fw-bold text-gray-800">Hızlı Erişim</span>
+                    <span class="text-gray-500 mt-1 fw-semibold fs-6">Sık kullanılan işlemler</span>
+                </h3>
+                <!--end::Title-->
+            </div>
+            <!--end::Card header-->
+            <!--begin::Card body-->
+            <div class="card-body pt-5">
+                <!--begin::Item-->
+                <div class="d-flex flex-stack">
+                    <a href="{{ path('admin_shops') }}" class="text-primary fw-semibold fs-6 me-2">Mağazalarım</a>
+                    <button type="button" class="btn btn-icon btn-sm btn-light-primary">
+                        <i class="ki-duotone ki-arrow-right fs-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </button>
+                </div>
+                <div class="separator separator-dashed my-3"></div>
+                <!--end::Item-->
+
+                <!--begin::Item-->
+                <div class="d-flex flex-stack">
+                    <a href="#" class="text-primary fw-semibold fs-6 me-2">Siparişlerim</a>
+                    <button type="button" class="btn btn-icon btn-sm btn-light-primary">
+                        <i class="ki-duotone ki-arrow-right fs-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </button>
+                </div>
+                <div class="separator separator-dashed my-3"></div>
+                <!--end::Item-->
+
+                <!--begin::Item-->
+                <div class="d-flex flex-stack">
+                    <a href="#" class="text-primary fw-semibold fs-6 me-2">Kargo Ayarları</a>
+                    <button type="button" class="btn btn-icon btn-sm btn-light-primary">
+                        <i class="ki-duotone ki-arrow-right fs-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </button>
+                </div>
+                <div class="separator separator-dashed my-3"></div>
+                <!--end::Item-->
+
+                <!--begin::Item-->
+                <div class="d-flex flex-stack">
+                    <a href="#" class="text-primary fw-semibold fs-6 me-2">Hesap Ayarları</a>
+                    <button type="button" class="btn btn-icon btn-sm btn-light-primary">
+                        <i class="ki-duotone ki-arrow-right fs-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </button>
+                </div>
+                <!--end::Item-->
+            </div>
+            <!--end::Card body-->
+        </div>
+        <!--end::Card-->
+    </div>
+    <!--end::Col-->
+</div>
+<!--end::Row-->
+{% endblock %}

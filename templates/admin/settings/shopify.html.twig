@@ -1,0 +1,188 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Shopify Ayarları{% endblock %}
+
+{% block page_title %}Shopify Ayarları{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Ayarlar</li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Shopify</li>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        <div class="row g-5">
+            <div class="col-xl-9">
+                <div class="card mb-5">
+                    <div class="card-header">
+                        <h3 class="card-title">Mağaza Bilgileri</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-5">
+                            <label class="form-label required">Mağaza URL</label>
+                            <input type="url" name="shopify_store_url" class="form-control" 
+                                   value="{{ settings.shopify_store_url ?? '' }}" 
+                                   placeholder="https://mystore.myshopify.com" required />
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label required">Access Token</label>
+                            <input type="password" name="shopify_access_token" class="form-control" 
+                                   placeholder="Değiştirmek için yeni token girin" />
+                            {% if settings.shopify_access_token %}
+                            <div class="form-text text-success">
+                                <i class="ki-duotone ki-check-circle fs-6"></i>
+                                Token ayarlanmış
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-5">
+                    <div class="card-header">
+                        <h3 class="card-title">API Kimlik Bilgileri</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <label class="form-label">API Key</label>
+                                <input type="text" name="shopify_api_key" class="form-control" 
+                                       value="{{ settings.shopify_api_key ?? '' }}" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">API Secret</label>
+                                <input type="password" name="shopify_api_secret" class="form-control" 
+                                       placeholder="Değiştirmek için yeni secret girin" />
+                                {% if settings.shopify_api_secret %}
+                                <div class="form-text text-success">
+                                    <i class="ki-duotone ki-check-circle fs-6"></i>
+                                    Secret ayarlanmış
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label">Webhook Secret</label>
+                            <input type="password" name="shopify_webhook_secret" class="form-control" 
+                                   placeholder="Değiştirmek için yeni secret girin" />
+                            {% if settings.shopify_webhook_secret %}
+                            <div class="form-text text-success">
+                                <i class="ki-duotone ki-check-circle fs-6"></i>
+                                Webhook secret ayarlanmış
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Otomatik Senkronizasyon</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-5">
+                            <div class="form-check form-switch form-check-custom form-check-solid">
+                                <input class="form-check-input" type="checkbox" name="shopify_auto_sync" value="1" 
+                                       id="auto-sync" {{ settings.shopify_auto_sync ?? false ? 'checked' : '' }} />
+                                <label class="form-check-label" for="auto-sync">
+                                    Otomatik Senkronizasyonu Etkinleştir
+                                </label>
+                            </div>
+                            <div class="form-text">Siparişler otomatik olarak Shopify'dan çekilecek</div>
+                        </div>
+
+                        <div id="sync-interval-group" class="{{ settings.shopify_auto_sync ?? false ? '' : 'd-none' }}">
+                            <label class="form-label">Senkronizasyon Aralığı (dakika)</label>
+                            <input type="number" name="shopify_sync_interval" class="form-control" 
+                                   value="{{ settings.shopify_sync_interval ?? 15 }}" min="5" max="1440" />
+                            <div class="form-text">5 ile 1440 dakika (24 saat) arası değer giriniz</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3">
+                <div class="card card-flush mb-5">
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="ki-duotone ki-check fs-2"></i>
+                            Ayarları Kaydet
+                        </button>
+
+                        <button type="button" class="btn btn-light-primary w-100" id="test-shopify">
+                            <i class="ki-duotone ki-abstract-26 fs-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            Bağlantıyı Test Et
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card card-flush">
+                    <div class="card-header">
+                        <h3 class="card-title">Yardım</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="notice bg-light-info rounded border-info border border-dashed p-4">
+                            <div class="fs-7 text-gray-700">
+                                <strong>Shopify Admin → Uygulamalar → Geliştir</strong> 
+                                bölümünden API bilgilerinizi alabilirsiniz.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.getElementById('auto-sync')?.addEventListener('change', function() {
+            const intervalGroup = document.getElementById('sync-interval-group');
+            if (this.checked) {
+                intervalGroup.classList.remove('d-none');
+            } else {
+                intervalGroup.classList.add('d-none');
+            }
+        });
+
+        document.getElementById('test-shopify')?.addEventListener('click', function() {
+            const btn = this;
+            const originalHtml = btn.innerHTML;
+            
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Test ediliyor...';
+            btn.disabled = true;
+
+            fetch('{{ path('admin_settings_shopify_test') }}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success('Bağlantı başarılı! Mağaza: ' + data.store_name);
+                } else {
+                    toastr.error(data.message);
+                }
+            })
+            .catch(() => {
+                toastr.error('Bağlantı testi sırasında bir hata oluştu');
+            })
+            .finally(() => {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            });
+        });
+    </script>
+{% endblock %}

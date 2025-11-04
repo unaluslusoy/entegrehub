@@ -1,0 +1,36 @@
+<!--begin::Logo-->
+<div class="app-sidebar-logo px-6" id="kt_app_sidebar_logo">
+	<!--begin::Logo image-->
+	<a href="{{ path('admin_dashboard') }}" class="d-flex align-items-center">
+		<!--begin::Logo icon-->
+		<div class="d-flex align-items-center">
+			{{ theme.getIcon('connect', 'fs-2x text-white app-sidebar-logo-default') | raw }}
+			<span class="text-white fw-bolder fs-2x app-sidebar-logo-minimize">EH</span>
+		</div>
+		<!--end::Logo icon-->
+		<!--begin::Logo text-->
+		<span class="ms-2 app-sidebar-logo-default">
+			<span class="text-white fw-bold fs-3">Entegre</span><span class="text-gray-400 fw-bold fs-3">HUB</span>
+			<div class="text-gray-500 fs-8 fw-semibold">Shopify Entegrasyon Çözümleri</div>
+		</span>
+		<!--end::Logo text-->
+	</a>
+	<!--end::Logo image-->
+	<!--begin::Sidebar toggle-->
+	<div id="kt_app_sidebar_toggle" class="app-sidebar-toggle btn btn-icon btn-shadow btn-sm btn-color-muted btn-active-color-primary body-bg h-30px w-30px position-absolute top-50 start-100 translate-middle rotate" data-kt-toggle="true" data-kt-toggle-target="body" data-kt-toggle-name="app-sidebar-minimize">
+		<i class="ki-duotone ki-double-left fs-2 rotate-180">
+			<span class="path1"></span>
+			<span class="path2"></span>
+		</i>
+	</div>
+	<script type="text/javascript">
+		var sidebar_toggle = document.getElementById("kt_app_sidebar_toggle");
+		{% if app.request.cookies.has('sidebar_minimize_state') and app.request.cookies.get('sidebar_minimize_state') == 'on' %}
+		document.body.setAttribute("data-kt-app-sidebar-minimize", "on");
+		sidebar_toggle.setAttribute("data-kt-toggle-state", "active");
+		sidebar_toggle.classList.add("active");
+		{% endif %}
+	</script>
+	<!--end::Sidebar toggle-->
+</div>
+<!--end::Logo-->

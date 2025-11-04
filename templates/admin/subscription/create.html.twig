@@ -1,0 +1,237 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Yeni Abonelik Oluştur{% endblock %}
+
+{% block page_title %}Yeni Abonelik Oluştur{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">
+        <a href="{{ path('admin_subscriptions') }}" class="text-muted text-hover-primary">Abonelikler</a>
+    </li>
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Yeni Abonelik</li>
+{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <a href="{{ path('admin_subscriptions') }}" class="btn btn-sm btn-light">
+            <i class="ki-duotone ki-left fs-2"></i>
+            Geri Dön
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="row g-5">
+        <div class="col-xl-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Abonelik Bilgileri</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ path('admin_subscriptions_create') }}" id="subscription-form">
+                        <div class="mb-7">
+                            <label class="form-label fw-bold required">Kullanıcı</label>
+                            <select name="user_id" class="form-select form-select-solid" required>
+                                <option value="">Kullanıcı seçin</option>
+                                {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.fullName }} ({{ user.email }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-7">
+                            <label class="form-label fw-bold required">Abonelik Paketi</label>
+                            <select name="plan_id" class="form-select form-select-solid" required id="plan-select">
+                                <option value="">Paket seçin</option>
+                                {% for plan in plans %}
+                                <option value="{{ plan.id }}" 
+                                        data-monthly-price="{{ plan.monthlyPrice }}"
+                                        data-yearly-price="{{ plan.yearlyPrice }}"
+                                        data-shops="{{ plan.maxShops }}"
+                                        data-orders="{{ plan.maxOrders }}">
+                                    {{ plan.name }} - {{ plan.monthlyPrice }} TRY/Ay
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-7">
+                            <label class="form-label fw-bold required">Fatura Dönemi</label>
+                            <select name="billing_period" class="form-select form-select-solid" required id="billing-period">
+                                <option value="monthly" selected>Aylık</option>
+                                <option value="yearly">Yıllık</option>
+                            </select>
+                        </div>
+
+                        <div class="row mb-7">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold required">Başlangıç Tarihi</label>
+                                <input type="date" name="start_date" class="form-control form-control-solid" value="{{ 'now'|date('Y-m-d') }}" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Bitiş Tarihi</label>
+                                <input type="text" class="form-control form-control-solid" value="Otomatik hesaplanacak" readonly />
+                                <div class="form-text">Fatura dönemine göre otomatik hesaplanır</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-7">
+                            <label class="form-label fw-bold">Ödeme Yöntemi</label>
+                            <select name="payment_method" class="form-select form-select-solid">
+                                <option value="">Seçiniz</option>
+                                <option value="credit_card">Kredi Kartı</option>
+                                <option value="bank_transfer">Banka Transferi</option>
+                                <option value="paypal">PayPal</option>
+                                <option value="cash">Nakit</option>
+                            </select>
+                        </div>
+
+                        <div class="separator my-7"></div>
+
+                        <div class="mb-7">
+                            <div class="form-check form-switch form-check-custom form-check-solid mb-5">
+                                <input class="form-check-input" type="checkbox" name="is_trial" id="is-trial" />
+                                <label class="form-check-label fw-bold" for="is-trial">
+                                    Deneme Süresi Ekle
+                                </label>
+                            </div>
+                            
+                            <div id="trial-settings" style="display: none;" class="ms-10">
+                                <label class="form-label fw-bold">Deneme Süresi (Gün)</label>
+                                <input type="number" name="trial_days" class="form-control form-control-solid w-150px" value="14" min="1" />
+                            </div>
+                        </div>
+
+                        <div class="mb-7">
+                            <div class="form-check form-switch form-check-custom form-check-solid">
+                                <input class="form-check-input" type="checkbox" name="auto_renew" value="1" checked />
+                                <label class="form-check-label fw-bold">
+                                    Otomatik Yenileme
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-7">
+                            <label class="form-label fw-bold">Notlar</label>
+                            <textarea name="notes" class="form-control form-control-solid" rows="3" placeholder="Abonelikle ilgili notlar..."></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-3">
+                            <a href="{{ path('admin_subscriptions') }}" class="btn btn-light">İptal</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ki-duotone ki-check fs-2"></i>
+                                Abonelik Oluştur
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card bg-light">
+                <div class="card-header">
+                    <h3 class="card-title">Paket Özeti</h3>
+                </div>
+                <div class="card-body">
+                    <div id="plan-summary" style="display: none;">
+                        <div class="mb-5">
+                            <div class="text-center">
+                                <span class="fs-2x fw-bold text-primary" id="summary-price">0.00</span>
+                                <span class="text-gray-600 fw-semibold" id="summary-currency">TRY</span>
+                                <span class="text-gray-600 fw-semibold">/ <span id="summary-period">Ay</span></span>
+                            </div>
+                        </div>
+
+                        <div class="separator my-5"></div>
+
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="ki-duotone ki-shop fs-2 text-primary me-3">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <div>
+                                <span class="text-gray-600">Maksimum Mağaza</span>
+                                <div class="fw-bold text-gray-800" id="summary-shops">-</div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="ki-duotone ki-delivery fs-2 text-primary me-3">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <div>
+                                <span class="text-gray-600">Aylık Sipariş Limiti</span>
+                                <div class="fw-bold text-gray-800" id="summary-orders">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="no-plan-selected">
+                        <p class="text-gray-500 text-center">Paket seçimi yapılmadı</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-light-info border-info border border-dashed mt-5">
+                <div class="card-body">
+                    <i class="ki-duotone ki-information-5 fs-2x text-info mb-3">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                    </i>
+                    <h4 class="text-gray-800 fw-bold mb-2">Bilgilendirme</h4>
+                    <p class="text-gray-600 fs-7 mb-0">
+                        Abonelik oluşturulduktan sonra kullanıcı seçili paketin tüm özelliklerini kullanabilecektir.
+                        Deneme süresi tanımlanırsa, süre sonunda otomatik olarak ücretlendirme başlayacaktır.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Trial period toggle
+        document.getElementById('is-trial')?.addEventListener('change', function() {
+            document.getElementById('trial-settings').style.display = this.checked ? 'block' : 'none';
+        });
+
+        // Plan summary
+        const planSelect = document.getElementById('plan-select');
+        const billingPeriod = document.getElementById('billing-period');
+        
+        function updateSummary() {
+            const selectedOption = planSelect.options[planSelect.selectedIndex];
+            if (selectedOption.value) {
+                document.getElementById('plan-summary').style.display = 'block';
+                document.getElementById('no-plan-selected').style.display = 'none';
+                
+                const price = billingPeriod.value === 'yearly' 
+                    ? selectedOption.dataset.yearlyPrice 
+                    : selectedOption.dataset.monthlyPrice;
+                
+                document.getElementById('summary-price').textContent = price;
+                document.getElementById('summary-currency').textContent = 'TRY';
+                document.getElementById('summary-period').textContent = billingPeriod.value === 'yearly' ? 'Yıl' : 'Ay';
+                document.getElementById('summary-shops').textContent = selectedOption.dataset.shops;
+                document.getElementById('summary-orders').textContent = selectedOption.dataset.orders;
+            } else {
+                document.getElementById('plan-summary').style.display = 'none';
+                document.getElementById('no-plan-selected').style.display = 'block';
+            }
+        }
+        
+        planSelect?.addEventListener('change', updateSummary);
+        billingPeriod?.addEventListener('change', updateSummary);
+    </script>
+{% endblock %}

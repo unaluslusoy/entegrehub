@@ -1,0 +1,151 @@
+{% extends 'layout/_user.html.twig' %}
+
+{% block title %}Shopify OAuth Debug{% endblock %}
+
+{% block page_title %}Shopify OAuth Debug{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Shopify OAuth Ayarları</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-row-bordered">
+                <thead>
+                    <tr class="fw-bold fs-6 text-gray-800">
+                        <th>Parametre</th>
+                        <th>Değer</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>App URL</strong></td>
+                        <td><code>{{ app_url }}</code></td>
+                        <td>
+                            {% if app_url starts with 'https://' %}
+                                <span class="badge badge-light-success">✓ HTTPS</span>
+                            {% else %}
+                                <span class="badge badge-light-danger">✗ HTTP değil</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Redirect URI</strong></td>
+                        <td><code>{{ redirect_uri }}</code></td>
+                        <td>
+                            {% if redirect_uri == app_url ~ '/user/shopify/callback' %}
+                                <span class="badge badge-light-success">✓ Doğru</span>
+                            {% else %}
+                                <span class="badge badge-light-warning">⚠ Kontrol Et</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>API Key</strong></td>
+                        <td><code>{{ api_key }}</code></td>
+                        <td>
+                            {% if api_key %}
+                                <span class="badge badge-light-success">✓ Tanımlı</span>
+                            {% else %}
+                                <span class="badge badge-light-danger">✗ Eksik</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>API Secret</strong></td>
+                        <td><code>{{ api_secret|slice(0, 10) }}...</code></td>
+                        <td>
+                            {% if api_secret %}
+                                <span class="badge badge-light-success">✓ Tanımlı</span>
+                            {% else %}
+                                <span class="badge badge-light-danger">✗ Eksik</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Scopes</strong></td>
+                        <td><code>{{ scopes }}</code></td>
+                        <td>
+                            <span class="badge badge-light-info">{{ scopes|split(',')|length }} yetki</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="separator my-10"></div>
+
+        <h4 class="mb-5">Shopify Partner Dashboard Kontrol Listesi</h4>
+        <div class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-6 mb-5">
+            <i class="ki-duotone ki-information fs-2tx text-warning me-4">
+                <span class="path1"></span>
+                <span class="path2"></span>
+                <span class="path3"></span>
+            </i>
+            <div class="d-flex flex-stack flex-grow-1">
+                <div class="fw-semibold">
+                    <div class="fs-6 text-gray-700">
+                        Aşağıdaki ayarların Shopify Partner Dashboard'da doğru yapılandırıldığından emin olun:
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="list-group">
+            <div class="list-group-item d-flex align-items-center">
+                <i class="ki-duotone ki-check-circle fs-2 text-success me-3">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                </i>
+                <div>
+                    <div class="fw-bold">App URL</div>
+                    <div class="text-gray-600 fs-7">{{ app_url }}</div>
+                </div>
+            </div>
+            <div class="list-group-item d-flex align-items-center">
+                <i class="ki-duotone ki-check-circle fs-2 text-success me-3">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                </i>
+                <div>
+                    <div class="fw-bold">Allowed redirection URL(s)</div>
+                    <div class="text-gray-600 fs-7">{{ redirect_uri }}</div>
+                </div>
+            </div>
+            <div class="list-group-item d-flex align-items-center">
+                <i class="ki-duotone ki-check-circle fs-2 text-success me-3">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                </i>
+                <div>
+                    <div class="fw-bold">API Key Match</div>
+                    <div class="text-gray-600 fs-7">{{ api_key }}</div>
+                </div>
+            </div>
+            <div class="list-group-item d-flex align-items-center">
+                <i class="ki-duotone ki-check-circle fs-2 text-success me-3">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                </i>
+                <div>
+                    <div class="fw-bold">App Scopes</div>
+                    <div class="text-gray-600 fs-7">{{ scopes }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-10">
+            <a href="{{ path('user_shopify_index') }}" class="btn btn-light">
+                <i class="ki-duotone ki-left fs-2"></i>
+                Geri Dön
+            </a>
+            <a href="{{ path('user_shopify_install') }}" class="btn btn-primary">
+                Mağaza Bağla
+                <i class="ki-duotone ki-right fs-2"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

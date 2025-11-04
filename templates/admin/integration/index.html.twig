@@ -1,0 +1,166 @@
+{% extends 'layout/base.html.twig' %}
+
+{% block title %}Sistem Entegrasyonları{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <button type="button" class="btn btn-sm btn-light-primary" onclick="syncAll()">
+            <i class="ki-duotone ki-arrows-circle fs-3">
+                <span class="path1"></span>
+                <span class="path2"></span>
+            </i>
+            Tümünü Senkronize Et
+        </button>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header border-0 pt-6">
+            <h3 class="card-title align-items-start flex-column">
+                <span class="card-label fw-bold fs-3 mb-1">Sistem Entegrasyonları</span>
+                <span class="text-muted mt-1 fw-semibold fs-7">{{ integrations|length }} entegrasyon</span>
+            </h3>
+        </div>
+
+        <div class="card-body py-4">
+            <div class="table-responsive">
+                <table class="table align-middle table-row-dashed fs-6 gy-5">
+                    <thead>
+                        <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                            <th class="min-w-200px">Entegrasyon</th>
+                            <th class="min-w-125px">Kategori</th>
+                            <th class="min-w-100px">Durum</th>
+                            <th class="min-w-150px">Son Senkronizasyon</th>
+                            <th class="text-end min-w-150px">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600 fw-semibold">
+                        {% for integration in integrations %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="symbol symbol-50px me-4">
+                                        <span class="symbol-label bg-light">
+                                            <i class="ki-duotone ki-abstract-26 fs-2x text-primary">
+                                                <span class="path1"></span>
+                                                <span class="path2"></span>
+                                            </i>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-gray-800 fw-bold mb-1">{{ integration.name }}</span>
+                                        <span class="text-muted fs-7">{{ integration.description }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-light-info">{{ integration.category }}</span>
+                            </td>
+                            <td>
+                                {% if integration.isActive %}
+                                    <span class="badge badge-light-success">Aktif</span>
+                                {% else %}
+                                    <span class="badge badge-light-danger">Pasif</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if integration.lastSync %}
+                                    <span class="text-gray-800">{{ integration.lastSync|date('d.m.Y H:i') }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <button type="button" 
+                                        class="btn btn-sm btn-icon btn-light-primary me-1"
+                                        onclick="syncIntegration({{ integration.id }})"
+                                        title="Senkronize Et">
+                                    <i class="ki-duotone ki-arrows-circle fs-5">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                </button>
+
+                                <a href="{{ path('admin_integrations_configure', {id: integration.id}) }}" 
+                                   class="btn btn-sm btn-icon btn-light-primary me-1"
+                                   title="Yapılandır">
+                                    <i class="ki-duotone ki-setting-2 fs-5">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                </a>
+
+                                <a href="{{ path('admin_integrations_logs', {id: integration.id}) }}" 
+                                   class="btn btn-sm btn-icon btn-light-info me-1"
+                                   title="Loglar">
+                                    <i class="ki-duotone ki-note-2 fs-5">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                        <span class="path4"></span>
+                                    </i>
+                                </a>
+
+                                <button type="button" 
+                                        class="btn btn-sm btn-icon {{ integration.isActive ? 'btn-light-danger' : 'btn-light-success' }}"
+                                        onclick="toggleIntegration({{ integration.id }})"
+                                        title="{{ integration.isActive ? 'Pasif Yap' : 'Aktif Yap' }}">
+                                    <i class="ki-duotone ki-toggle-{{ integration.isActive ? 'off' : 'on' }} fs-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function toggleIntegration(id) {
+            fetch(`/admin/integrations/${id}/toggle`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(data.message);
+                    setTimeout(() => location.reload(), 1000);
+                }
+            });
+        }
+
+        function syncIntegration(id) {
+            toastr.info('Senkronizasyon başlatıldı...');
+            
+            fetch(`/admin/integrations/${id}/sync`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(data.message);
+                    setTimeout(() => location.reload(), 2000);
+                }
+            });
+        }
+
+        function syncAll() {
+            toastr.info('Tüm entegrasyonlar senkronize ediliyor...');
+            // TODO: Toplu senkronizasyon endpoint'i
+        }
+    </script>
+{% endblock %}

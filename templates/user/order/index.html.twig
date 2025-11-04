@@ -1,0 +1,345 @@
+{% extends 'layout/_user.html.twig' %}
+
+{% block title %}Siparişlerim{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+                    Siparişlerim
+                </h1>
+                <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                    <li class="breadcrumb-item text-muted">
+                        <a href="{{ path('user_dashboard') }}" class="text-muted text-hover-primary">Anasayfa</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <span class="bullet bg-gray-400 w-5px h-2px"></span>
+                    </li>
+                    <li class="breadcrumb-item text-muted">Siparişler</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-xxl">
+            
+            <!--begin::Statistics-->
+            <div class="row g-5 g-xl-8 mb-5">
+                <div class="col-xl-3">
+                    <div class="card card-flush h-xl-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div class="d-flex flex-stack">
+                                <div class="text-gray-700 fw-semibold fs-6 me-2">Toplam Sipariş</div>
+                            </div>
+                            <div class="d-flex align-items-center pt-3">
+                                <span class="fs-2hx fw-bold text-dark me-2 lh-1">{{ stats.total_orders }}</span>
+                            </div>
+                            <div class="d-flex flex-stack pt-3">
+                                <div class="text-gray-600 fw-semibold fs-7">Son 30 gün: {{ stats.last_30_days }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3">
+                    <div class="card card-flush h-xl-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div class="d-flex flex-stack">
+                                <div class="text-gray-700 fw-semibold fs-6 me-2">Toplam Ciro</div>
+                            </div>
+                            <div class="d-flex align-items-center pt-3">
+                                <span class="fs-2hx fw-bold text-dark me-2 lh-1">{{ stats.total_revenue|number_format(2) }} ₺</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% set pending_count = 0 %}
+                {% set processing_count = 0 %}
+                {% for status in stats.status_counts %}
+                    {% if status.status == 'pending' %}
+                        {% set pending_count = status.count %}
+                    {% elseif status.status == 'processing' %}
+                        {% set processing_count = status.count %}
+                    {% endif %}
+                {% endfor %}
+                
+                <div class="col-xl-3">
+                    <div class="card card-flush h-xl-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div class="d-flex flex-stack">
+                                <div class="text-gray-700 fw-semibold fs-6 me-2">Bekleyen</div>
+                            </div>
+                            <div class="d-flex align-items-center pt-3">
+                                <span class="fs-2hx fw-bold text-warning me-2 lh-1">{{ pending_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3">
+                    <div class="card card-flush h-xl-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div class="d-flex flex-stack">
+                                <div class="text-gray-700 fw-semibold fs-6 me-2">İşleniyor</div>
+                            </div>
+                            <div class="d-flex align-items-center pt-3">
+                                <span class="fs-2hx fw-bold text-info me-2 lh-1">{{ processing_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--end::Statistics-->
+
+            <!--begin::Card-->
+            <div class="card">
+                <!--begin::Card header-->
+                <div class="card-header border-0 pt-6">
+                    <div class="card-title">
+                        <div class="d-flex align-items-center position-relative my-1">
+                            <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <input type="text" id="search-input" class="form-control form-control-solid w-250px ps-13" placeholder="Sipariş ara..." />
+                        </div>
+                    </div>
+                    <div class="card-toolbar">
+                        <div class="d-flex justify-content-end gap-2" data-kt-order-table-toolbar="base">
+                            <!--begin::Filter-->
+                            <select id="shop-filter" class="form-select form-select-solid w-200px">
+                                <option value="">Tüm Mağazalar</option>
+                                {% for shop in shops %}
+                                    <option value="{{ shop.id }}">{{ shop.shopName }}</option>
+                                {% endfor %}
+                            </select>
+                            
+                            <select id="status-filter" class="form-select form-select-solid w-150px">
+                                <option value="">Tüm Durumlar</option>
+                                <option value="pending">Bekliyor</option>
+                                <option value="processing">İşleniyor</option>
+                                <option value="shipped">Kargoda</option>
+                                <option value="delivered">Teslim Edildi</option>
+                                <option value="cancelled">İptal</option>
+                                <option value="refunded">İade</option>
+                            </select>
+                            
+                            <button type="button" class="btn btn-light-primary" data-bs-toggle="modal" data-bs-target="#filter-modal">
+                                <i class="ki-duotone ki-filter fs-2"><span class="path1"></span><span class="path2"></span></i>
+                                Gelişmiş Filtre
+                            </button>
+                            
+                            <button type="button" id="export-csv" class="btn btn-light-success">
+                                <i class="ki-duotone ki-exit-up fs-2"><span class="path1"></span><span class="path2"></span></i>
+                                CSV İndir
+                            </button>
+                            <!--end::Filter-->
+                        </div>
+                    </div>
+                </div>
+                <!--end::Card header-->
+
+                <!--begin::Card body-->
+                <div class="card-body pt-0">
+                    <!--begin::Table-->
+                    <table id="orders-table" class="table align-middle table-row-dashed fs-6 gy-5">
+                        <thead>
+                            <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
+                                <th class="w-10px pe-2">
+                                    <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
+                                        <input class="form-check-input" type="checkbox" data-kt-check="true" data-kt-check-target="#orders-table .form-check-input" value="1" />
+                                    </div>
+                                </th>
+                                <th class="min-w-125px">Sipariş No</th>
+                                <th class="min-w-125px">Mağaza</th>
+                                <th class="min-w-150px">Müşteri</th>
+                                <th class="min-w-100px">Tutar</th>
+                                <th class="min-w-100px">Durum</th>
+                                <th class="min-w-100px">Ödeme</th>
+                                <th class="min-w-100px">Tarih</th>
+                                <th class="text-end min-w-70px">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody class="fw-semibold text-gray-600">
+                            <!-- Data loaded via AJAX -->
+                        </tbody>
+                    </table>
+                    <!--end::Table-->
+                </div>
+                <!--end::Card body-->
+            </div>
+            <!--end::Card-->
+        </div>
+    </div>
+    <!--end::Content-->
+</div>
+
+<!--begin::Filter Modal-->
+<div class="modal fade" id="filter-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="fw-bold">Gelişmiş Filtreler</h2>
+                <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+                    <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
+                </div>
+            </div>
+            <div class="modal-body scroll-y mx-5 mx-xl-15 my-7">
+                <form id="advanced-filter-form">
+                    <div class="row mb-5">
+                        <div class="col-md-6">
+                            <label class="form-label">Başlangıç Tarihi</label>
+                            <input type="date" class="form-control" name="date_from" id="filter-date-from">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Bitiş Tarihi</label>
+                            <input type="date" class="form-control" name="date_to" id="filter-date-to">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-5">
+                        <div class="col-md-6">
+                            <label class="form-label">Min. Tutar</label>
+                            <input type="number" class="form-control" name="min_amount" id="filter-min-amount" step="0.01">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Max. Tutar</label>
+                            <input type="number" class="form-control" name="max_amount" id="filter-max-amount" step="0.01">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <label class="form-label">Ödeme Durumu</label>
+                        <select class="form-select" name="payment_status" id="filter-payment-status">
+                            <option value="">Tümü</option>
+                            <option value="pending">Bekliyor</option>
+                            <option value="paid">Ödendi</option>
+                            <option value="failed">Başarısız</option>
+                            <option value="refunded">İade Edildi</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" id="apply-filters">Filtrele</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--end::Filter Modal-->
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+$(document).ready(function() {
+    let table = $('#orders-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '{{ path('user_orders_datatable') }}',
+            data: function(d) {
+                d.shop_id = $('#shop-filter').val();
+                d.status = $('#status-filter').val();
+                d.payment_status = $('#filter-payment-status').val();
+                d.date_from = $('#filter-date-from').val();
+                d.date_to = $('#filter-date-to').val();
+                d.min_amount = $('#filter-min-amount').val();
+                d.max_amount = $('#filter-max-amount').val();
+            }
+        },
+        columns: [
+            { data: 'id', orderable: false, render: function(data) {
+                return '<div class="form-check form-check-sm form-check-custom form-check-solid"><input class="form-check-input order-checkbox" type="checkbox" value="' + data + '" /></div>';
+            }},
+            { data: 'order_number', render: function(data, type, row) {
+                return '<a href="{{ path('user_order_detail', {id: 0}) }}'.replace('0', row.id) + '" class="text-gray-800 text-hover-primary fw-bold">' + data + '</a>';
+            }},
+            { data: 'shop_name' },
+            { data: 'customer_name', render: function(data, type, row) {
+                return '<div class="d-flex flex-column"><span class="fw-bold">' + data + '</span><span class="text-muted fs-7">' + row.customer_email + '</span></div>';
+            }},
+            { data: 'total_amount', render: function(data, type, row) {
+                return '<span class="fw-bold">' + data + ' ' + row.currency + '</span>';
+            }},
+            { data: 'status', render: function(data) {
+                const statusMap = {
+                    'pending': { label: 'Bekliyor', class: 'warning' },
+                    'processing': { label: 'İşleniyor', class: 'info' },
+                    'shipped': { label: 'Kargoda', class: 'primary' },
+                    'delivered': { label: 'Teslim Edildi', class: 'success' },
+                    'cancelled': { label: 'İptal', class: 'danger' },
+                    'refunded': { label: 'İade', class: 'dark' }
+                };
+                const status = statusMap[data] || { label: data, class: 'secondary' };
+                return '<span class="badge badge-light-' + status.class + '">' + status.label + '</span>';
+            }},
+            { data: 'payment_status', render: function(data) {
+                const statusMap = {
+                    'pending': { label: 'Bekliyor', class: 'warning' },
+                    'paid': { label: 'Ödendi', class: 'success' },
+                    'failed': { label: 'Başarısız', class: 'danger' },
+                    'refunded': { label: 'İade', class: 'dark' }
+                };
+                const status = statusMap[data] || { label: data, class: 'secondary' };
+                return '<span class="badge badge-light-' + status.class + '">' + status.label + '</span>';
+            }},
+            { data: 'order_date', render: function(data) {
+                return new Date(data).toLocaleDateString('tr-TR');
+            }},
+            { data: 'id', orderable: false, render: function(data) {
+                return `
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ path('user_order_detail', {id: 0}) }}".replace('0', data) class="btn btn-sm btn-light btn-active-light-primary">Detay</a>
+                    </div>
+                `;
+            }}
+        ],
+        order: [[7, 'desc']],
+        pageLength: 25,
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+        }
+    });
+
+    // Search functionality
+    let searchTimer;
+    $('#search-input').on('keyup', function() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function() {
+            table.search($('#search-input').val()).draw();
+        }, 500);
+    });
+
+    // Filter functionality
+    $('#shop-filter, #status-filter').on('change', function() {
+        table.ajax.reload();
+    });
+
+    $('#apply-filters').on('click', function() {
+        table.ajax.reload();
+        $('#filter-modal').modal('hide');
+    });
+
+    // CSV Export
+    $('#export-csv').on('click', function() {
+        const params = new URLSearchParams({
+            shop_id: $('#shop-filter').val(),
+            status: $('#status-filter').val(),
+            payment_status: $('#filter-payment-status').val(),
+            date_from: $('#filter-date-from').val(),
+            date_to: $('#filter-date-to').val()
+        });
+        window.location.href = '{{ path('user_orders_export_csv') }}?' + params.toString();
+    });
+});
+</script>
+{% endblock %}

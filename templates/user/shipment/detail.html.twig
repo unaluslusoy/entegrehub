@@ -1,0 +1,381 @@
+{% extends 'layout/_user.html.twig' %}
+
+{% block title %}Gönderi Detayı - {{ shipment.trackingNumber }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+                    Gönderi Detayı
+                </h1>
+                <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                    <li class="breadcrumb-item text-muted">
+                        <a href="{{ path('user_dashboard') }}" class="text-muted text-hover-primary">Anasayfa</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <span class="bullet bg-gray-400 w-5px h-2px"></span>
+                    </li>
+                    <li class="breadcrumb-item text-muted">
+                        <a href="{{ path('user_shipments') }}" class="text-muted text-hover-primary">Gönderiler</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <span class="bullet bg-gray-400 w-5px h-2px"></span>
+                    </li>
+                    <li class="breadcrumb-item text-muted">{{ shipment.trackingNumber }}</li>
+                </ul>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{{ path('user_shipment_print_label', {id: shipment.id}) }}" class="btn btn-sm btn-light-primary" target="_blank">
+                    <i class="ki-outline ki-printer fs-3"></i>
+                    Etiket Yazdır
+                </a>
+                {% if shipment.status not in ['delivered', 'cancelled'] %}
+                <button type="button" class="btn btn-sm btn-light-danger" id="btn-cancel-shipment">
+                    <i class="ki-outline ki-cross fs-3"></i>
+                    İptal Et
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-xxl">
+
+            <div class="row g-5 g-xl-8">
+                <!--begin::Col-->
+                <div class="col-xl-8">
+                    <!--begin::Shipment Info Card-->
+                    <div class="card mb-5">
+                        <div class="card-header">
+                            <h3 class="card-title">Gönderi Bilgileri</h3>
+                            <div class="card-toolbar">
+                                {% set statusMap = {
+                                    'created': { badge: 'light', text: 'Oluşturuldu' },
+                                    'picked_up': { badge: 'info', text: 'Teslim Alındı' },
+                                    'in_transit': { badge: 'primary', text: 'Yolda' },
+                                    'out_for_delivery': { badge: 'warning', text: 'Dağıtımda' },
+                                    'delivered': { badge: 'success', text: 'Teslim Edildi' },
+                                    'returned': { badge: 'danger', text: 'İade' },
+                                    'cancelled': { badge: 'dark', text: 'İptal' }
+                                } %}
+                                {% set currentStatus = statusMap[shipment.status] ?? { badge: 'light', text: shipment.status } %}
+                                <span class="badge badge-{{ currentStatus.badge }} fs-6">{{ currentStatus.text }}</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Takip Numarası</label>
+                                <div class="col-lg-8">
+                                    <span class="fw-bold fs-6 text-dark">{{ shipment.trackingNumber }}</span>
+                                    <button class="btn btn-sm btn-icon btn-light-primary ms-2" onclick="copyToClipboard('{{ shipment.trackingNumber }}')">
+                                        <i class="ki-outline ki-copy fs-5"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Sipariş Numarası</label>
+                                <div class="col-lg-8">
+                                    <a href="{{ path('user_order_detail', {id: shipment.order.id}) }}" class="fw-bold fs-6 text-primary">#{{ shipment.order.orderNumber }}</a>
+                                </div>
+                            </div>
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Kargo Firması</label>
+                                <div class="col-lg-8 fv-row">
+                                    <span class="fw-semibold fs-6">{{ shipment.cargoCompany.name }}</span>
+                                </div>
+                            </div>
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Hizmet Tipi</label>
+                                <div class="col-lg-8 fv-row">
+                                    <span class="badge badge-{{ shipment.serviceType == 'express' ? 'warning' : 'secondary' }}">
+                                        {{ shipment.serviceType == 'express' ? 'Ekspres' : 'Standart' }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Ağırlık / Desi</label>
+                                <div class="col-lg-8 fv-row">
+                                    <span class="fw-semibold fs-6">{{ shipment.weight ? shipment.weight ~ ' kg' : '-' }} / {{ shipment.desi ? shipment.desi : '-' }}</span>
+                                </div>
+                            </div>
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Paket Sayısı</label>
+                                <div class="col-lg-8 fv-row">
+                                    <span class="fw-semibold fs-6">{{ shipment.packageCount ?? 1 }}</span>
+                                </div>
+                            </div>
+                            {% if shipment.isCOD %}
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Kapıda Ödeme</label>
+                                <div class="col-lg-8 fv-row">
+                                    <span class="badge badge-light-warning fs-6">{{ shipment.codAmount|number_format(2) }} ₺</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Tahmini Teslimat</label>
+                                <div class="col-lg-8 fv-row">
+                                    <span class="fw-semibold fs-6">
+                                        {{ shipment.estimatedDeliveryDate ? shipment.estimatedDeliveryDate|date('d.m.Y') : '-' }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Oluşturulma Tarihi</label>
+                                <div class="col-lg-8 fv-row">
+                                    <span class="fw-semibold text-gray-800 fs-6">{{ shipment.createdAt|date('d.m.Y H:i') }}</span>
+                                </div>
+                            </div>
+                            {% if shipment.notes %}
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Notlar</label>
+                                <div class="col-lg-8">
+                                    <span class="fw-semibold fs-6 text-gray-800">{{ shipment.notes }}</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!--end::Shipment Info Card-->
+
+                    <!--begin::Tracking History Card-->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Kargo Takip Geçmişi</h3>
+                            <div class="card-toolbar">
+                                <button type="button" class="btn btn-sm btn-light-primary" id="btn-refresh-tracking">
+                                    <i class="ki-outline ki-arrows-circle fs-3"></i>
+                                    Güncelle
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% if shipment.trackingHistory %}
+                                <div class="timeline-label">
+                                    {% for event in shipment.trackingHistory %}
+                                    <div class="timeline-item">
+                                        <div class="timeline-label fw-bold text-gray-800 fs-6">{{ event.date|date('H:i') }}</div>
+                                        <div class="timeline-badge">
+                                            <i class="fa fa-circle text-primary fs-1"></i>
+                                        </div>
+                                        <div class="timeline-content d-flex">
+                                            <span class="fw-bold text-gray-800 ps-3">{{ event.description }}</span>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center py-10">
+                                    <i class="ki-outline ki-information-3 fs-5x text-gray-400 mb-5"></i>
+                                    <p class="text-gray-600 fs-5">Henüz takip bilgisi yok</p>
+                                    <button type="button" class="btn btn-sm btn-primary" id="btn-first-track">
+                                        İlk Takip Bilgisini Al
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!--end::Tracking History Card-->
+                </div>
+                <!--end::Col-->
+
+                <!--begin::Col-->
+                <div class="col-xl-4">
+                    <!--begin::Delivery Address Card-->
+                    <div class="card mb-5">
+                        <div class="card-header">
+                            <h3 class="card-title">Teslimat Adresi</h3>
+                        </div>
+                        <div class="card-body">
+                            {% set address = shipment.order.shippingAddress %}
+                            <div class="mb-3">
+                                <div class="fw-bold text-gray-600 fs-7">Alıcı</div>
+                                <div class="fw-bold text-gray-800 fs-6">{{ address.firstName }} {{ address.lastName }}</div>
+                            </div>
+                            {% if address.company %}
+                            <div class="mb-3">
+                                <div class="fw-bold text-gray-600 fs-7">Firma</div>
+                                <div class="fw-semibold text-gray-800 fs-6">{{ address.company }}</div>
+                            </div>
+                            {% endif %}
+                            <div class="mb-3">
+                                <div class="fw-bold text-gray-600 fs-7">Adres</div>
+                                <div class="fw-semibold text-gray-800 fs-6">
+                                    {{ address.address1 }}<br>
+                                    {% if address.address2 %}{{ address.address2 }}<br>{% endif %}
+                                    {{ address.city }}, {{ address.province }} {{ address.zip }}<br>
+                                    {{ address.country }}
+                                </div>
+                            </div>
+                            {% if address.phone %}
+                            <div class="mb-3">
+                                <div class="fw-bold text-gray-600 fs-7">Telefon</div>
+                                <div class="fw-semibold text-gray-800 fs-6">
+                                    <a href="tel:{{ address.phone }}">{{ address.phone }}</a>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!--end::Delivery Address Card-->
+
+                    <!--begin::Order Items Card-->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Sipariş Kalemleri</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-row-dashed">
+                                    <tbody>
+                                        {% for item in shipment.order.items %}
+                                        <tr>
+                                            <td class="p-0 pb-3">
+                                                <div class="d-flex align-items-center">
+                                                    {% if item.imageUrl %}
+                                                    <div class="symbol symbol-50px me-3">
+                                                        <img src="{{ item.imageUrl }}" alt="{{ item.productName }}" />
+                                                    </div>
+                                                    {% endif %}
+                                                    <div class="flex-grow-1">
+                                                        <div class="fw-bold text-gray-800 fs-7">{{ item.productName }}</div>
+                                                        <div class="text-muted fs-8">{{ item.quantity }} adet</div>
+                                                        {% if item.sku %}
+                                                        <div class="text-muted fs-8">SKU: {{ item.sku }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!--end::Order Items Card-->
+                </div>
+                <!--end::Col-->
+            </div>
+
+        </div>
+    </div>
+    <!--end::Content-->
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+"use strict";
+
+$(document).ready(function() {
+    initEventListeners();
+});
+
+function initEventListeners() {
+    // Refresh tracking
+    $('#btn-refresh-tracking, #btn-first-track').on('click', function() {
+        refreshTracking();
+    });
+
+    // Cancel shipment
+    $('#btn-cancel-shipment').on('click', function() {
+        cancelShipment();
+    });
+}
+
+function refreshTracking() {
+    const btn = event.target.closest('button');
+    const originalHtml = $(btn).html();
+
+    $(btn).prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Güncelleniyor...');
+
+    $.ajax({
+        url: '{{ path('user_shipment_track', {id: shipment.id}) }}',
+        type: 'POST',
+        success: function(response) {
+            if (response.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Başarılı',
+                    text: response.message,
+                    confirmButtonText: 'Tamam'
+                }).then(() => {
+                    location.reload();
+                });
+            }
+        },
+        error: function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Hata',
+                text: 'Kargo takip bilgileri güncellenirken hata oluştu.'
+            });
+        },
+        complete: function() {
+            $(btn).prop('disabled', false).html(originalHtml);
+        }
+    });
+}
+
+function cancelShipment() {
+    Swal.fire({
+        title: 'Gönderiyi İptal Et?',
+        text: 'Bu işlem geri alınamaz!',
+        icon: 'warning',
+        input: 'textarea',
+        inputLabel: 'İptal Nedeni',
+        inputPlaceholder: 'İptal nedenini yazın...',
+        showCancelButton: true,
+        confirmButtonText: 'Evet, İptal Et',
+        cancelButtonText: 'Vazgeç',
+        confirmButtonColor: '#d33',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'İptal nedeni yazmalısınız!';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '{{ path('user_shipment_cancel', {id: shipment.id}) }}',
+                type: 'POST',
+                data: { reason: result.value },
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Başarılı',
+                            text: response.message
+                        }).then(() => {
+                            location.reload();
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    const error = xhr.responseJSON || {};
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata',
+                        text: error.message || 'Gönderi iptal edilirken hata oluştu.'
+                    });
+                }
+            });
+        }
+    });
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        toastr.success('Takip numarası kopyalandı');
+    });
+}
+</script>
+{% endblock %}

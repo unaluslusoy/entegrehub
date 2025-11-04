@@ -1,0 +1,379 @@
+{% extends 'layout/_admin.html.twig' %}
+
+{% block title %}Gönderi Yönetimi{% endblock %}
+
+{% block page_title %}Gönderi Yönetimi{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item">
+        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+    </li>
+    <li class="breadcrumb-item text-muted">Gönderiler</li>
+{% endblock %}
+
+{% block toolbar %}
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <button type="button" id="bulk-update-btn" class="btn btn-sm btn-light-primary" disabled>
+            <i class="ki-duotone ki-check fs-2"></i>
+            Toplu Güncelle
+        </button>
+        <a href="{{ path('admin_shipments_create') }}" class="btn btn-sm btn-primary">
+            <i class="ki-duotone ki-plus fs-2"></i>
+            Yeni Gönderi
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    {# Stats Cards #}
+    <div class="row g-5 mb-5">
+        <div class="col-xl-3">
+            <div class="card card-flush">
+                <div class="card-body p-5">
+                    <div class="d-flex align-items-center">
+                        <i class="ki-duotone ki-package fs-3x text-info me-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                            <span class="path3"></span>
+                        </i>
+                        <div>
+                            <div class="fs-2x fw-bold text-gray-800">{{ status_counts.created }}</div>
+                            <div class="text-gray-600 fw-semibold">Oluşturuldu</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card card-flush">
+                <div class="card-body p-5">
+                    <div class="d-flex align-items-center">
+                        <i class="ki-duotone ki-delivery fs-3x text-warning me-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                            <span class="path3"></span>
+                            <span class="path4"></span>
+                            <span class="path5"></span>
+                        </i>
+                        <div>
+                            <div class="fs-2x fw-bold text-gray-800">{{ status_counts.in_transit }}</div>
+                            <div class="text-gray-600 fw-semibold">Yolda</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card card-flush">
+                <div class="card-body p-5">
+                    <div class="d-flex align-items-center">
+                        <i class="ki-duotone ki-geolocation fs-3x text-primary me-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                        <div>
+                            <div class="fs-2x fw-bold text-gray-800">{{ status_counts.out_for_delivery }}</div>
+                            <div class="text-gray-600 fw-semibold">Dağıtımda</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card card-flush">
+                <div class="card-body p-5">
+                    <div class="d-flex align-items-center">
+                        <i class="ki-duotone ki-verify fs-3x text-success me-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                        <div>
+                            <div class="fs-2x fw-bold text-gray-800">{{ status_counts.delivered }}</div>
+                            <div class="text-gray-600 fw-semibold">Teslim Edildi</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header border-0 pt-6">
+            <div class="card-title">
+                <div class="d-flex align-items-center gap-3">
+                    <input type="text" id="shipment-search" class="form-control form-control-solid w-250px" placeholder="Takip no veya müşteri ara..." />
+                    
+                    <select id="status-filter" class="form-select form-select-solid w-150px" onchange="filterByStatus(this.value)">
+                        <option value="all" {{ current_status == 'all' ? 'selected' : '' }}>Tüm Durumlar</option>
+                        <option value="created" {{ current_status == 'created' ? 'selected' : '' }}>Oluşturuldu</option>
+                        <option value="picked_up" {{ current_status == 'picked_up' ? 'selected' : '' }}>Kargoya Verildi</option>
+                        <option value="in_transit" {{ current_status == 'in_transit' ? 'selected' : '' }}>Yolda</option>
+                        <option value="out_for_delivery" {{ current_status == 'out_for_delivery' ? 'selected' : '' }}>Dağıtımda</option>
+                        <option value="delivered" {{ current_status == 'delivered' ? 'selected' : '' }}>Teslim Edildi</option>
+                        <option value="returned" {{ current_status == 'returned' ? 'selected' : '' }}>İade</option>
+                        <option value="cancelled" {{ current_status == 'cancelled' ? 'selected' : '' }}>İptal</option>
+                    </select>
+
+                    <select id="cargo-filter" class="form-select form-select-solid w-200px" onchange="filterByCargo(this.value)">
+                        <option value="">Tüm Kargo Firmaları</option>
+                        {% for cc in cargo_companies %}
+                        <option value="{{ cc.id }}" {{ current_cargo_company == cc.id ? 'selected' : '' }}>{{ cc.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body pt-0">
+            {% if shipments|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table align-middle table-row-dashed fs-6 gy-5">
+                        <thead>
+                            <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
+                                <th width="30px">
+                                    <input type="checkbox" id="select-all" class="form-check-input" />
+                                </th>
+                                <th class="min-w-150px">TAKİP NO</th>
+                                <th class="min-w-150px">SİPARİŞ</th>
+                                <th class="min-w-150px">KARGO FİRMASI</th>
+                                <th class="min-w-100px">DURUM</th>
+                                <th class="min-w-100px">OLUŞTURMA</th>
+                                <th class="text-end min-w-150px">İŞLEMLER</th>
+                            </tr>
+                        </thead>
+                        <tbody class="fw-semibold text-gray-600">
+                            {% for shipment in shipments %}
+                            <tr data-shipment-id="{{ shipment.id }}">
+                                <td>
+                                    <input type="checkbox" class="form-check-input shipment-checkbox" value="{{ shipment.id }}" />
+                                </td>
+                                <td>
+                                    <a href="{{ path('admin_shipment_detail', {id: shipment.id}) }}" class="text-gray-800 text-hover-primary fw-bold">
+                                        {{ shipment.trackingNumber }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-gray-800 fw-bold">{{ shipment.order.orderNumber }}</span>
+                                        <span class="text-gray-500 fs-7">{{ shipment.order.user.fullName }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if shipment.cargoCompany.logo %}
+                                        <img src="{{ shipment.cargoCompany.logo }}" class="me-2" style="height: 20px;" alt="{{ shipment.cargoCompany.name }}" />
+                                        {% endif %}
+                                        <span>{{ shipment.cargoCompany.name }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if shipment.status == 'delivered' %}
+                                        <span class="badge badge-light-success">Teslim Edildi</span>
+                                    {% elseif shipment.status == 'out_for_delivery' %}
+                                        <span class="badge badge-light-primary">Dağıtımda</span>
+                                    {% elseif shipment.status == 'in_transit' %}
+                                        <span class="badge badge-light-warning">Yolda</span>
+                                    {% elseif shipment.status == 'picked_up' %}
+                                        <span class="badge badge-light-info">Kargoya Verildi</span>
+                                    {% elseif shipment.status == 'cancelled' %}
+                                        <span class="badge badge-light-danger">İptal</span>
+                                    {% elseif shipment.status == 'returned' %}
+                                        <span class="badge badge-light-dark">İade</span>
+                                    {% else %}
+                                        <span class="badge badge-light">Oluşturuldu</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ shipment.createdAt|date('d.m.Y H:i') }}</td>
+                                <td class="text-end">
+                                    <a href="{{ path('admin_shipment_detail', {id: shipment.id}) }}" 
+                                       class="btn btn-sm btn-icon btn-light btn-active-light-primary me-1"
+                                       title="Detay">
+                                        <i class="ki-duotone ki-eye fs-2"></i>
+                                    </a>
+                                    <button type="button"
+                                            class="btn btn-sm btn-icon btn-light btn-active-light-info shipment-track"
+                                            data-shipment-id="{{ shipment.id }}"
+                                            title="Takip Et">
+                                        <i class="ki-duotone ki-geolocation fs-2"></i>
+                                    </button>
+                                    <a href="{{ path('admin_shipments_edit', {id: shipment.id}) }}" 
+                                       class="btn btn-sm btn-icon btn-light btn-active-light-primary me-1"
+                                       title="Düzenle">
+                                        <i class="ki-duotone ki-pencil fs-2"></i>
+                                    </a>
+                                    {% if shipment.status not in ['delivered', 'in_transit', 'out_for_delivery'] %}
+                                    <button type="button"
+                                            class="btn btn-sm btn-icon btn-light btn-active-light-danger shipment-delete"
+                                            data-shipment-id="{{ shipment.id }}"
+                                            title="Sil">
+                                        <i class="ki-duotone ki-trash fs-2"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if pages > 1 %}
+                <div class="d-flex justify-content-between align-items-center flex-wrap pt-5">
+                    <div class="fs-6 fw-bold text-gray-700">Sayfa {{ page }} / {{ pages }} ({{ total }} gönderi)</div>
+                    <ul class="pagination">
+                        {% if page > 1 %}
+                        <li class="page-item previous"><a href="?page={{ page - 1 }}&status={{ current_status }}&cargo_company={{ current_cargo_company }}" class="page-link">&laquo;</a></li>
+                        {% else %}
+                        <li class="page-item previous disabled"><span class="page-link">&laquo;</span></li>
+                        {% endif %}
+                        {% for i in 1..pages %}
+                            {% if i == page %}
+                            <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                            {% else %}
+                            <li class="page-item"><a href="?page={{ i }}&status={{ current_status }}&cargo_company={{ current_cargo_company }}" class="page-link">{{ i }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if page < pages %}
+                        <li class="page-item next"><a href="?page={{ page + 1 }}&status={{ current_status }}&cargo_company={{ current_cargo_company }}" class="page-link">&raquo;</a></li>
+                        {% else %}
+                        <li class="page-item next disabled"><span class="page-link">&raquo;</span></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-10">
+                    <i class="ki-duotone ki-information-5 fs-5x text-gray-400 mb-5">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                    </i>
+                    <h3 class="text-gray-800 fw-bold mb-3">Gönderi bulunmuyor</h3>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Bulk Update Modal #}
+    <div class="modal fade" id="bulk-update-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Toplu Durum Güncelle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p><span id="selected-count">0</span> gönderi seçildi.</p>
+                    <label class="form-label required">Yeni Durum</label>
+                    <select id="bulk-status" class="form-select">
+                        <option value="picked_up">Kargoya Verildi</option>
+                        <option value="in_transit">Yolda</option>
+                        <option value="out_for_delivery">Dağıtımda</option>
+                        <option value="delivered">Teslim Edildi</option>
+                        <option value="returned">İade</option>
+                        <option value="cancelled">İptal</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary" id="bulk-update-confirm">Güncelle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function filterByStatus(status) {
+            const cargoCompany = document.getElementById('cargo-filter').value;
+            window.location.href = '{{ path('admin_shipments') }}?status=' + status + '&cargo_company=' + cargoCompany;
+        }
+
+        function filterByCargo(cargoCompany) {
+            const status = document.getElementById('status-filter').value;
+            window.location.href = '{{ path('admin_shipments') }}?status=' + status + '&cargo_company=' + cargoCompany;
+        }
+
+        // Search
+        document.getElementById('shipment-search')?.addEventListener('input', function(e) {
+            const q = e.target.value.toLowerCase();
+            document.querySelectorAll('tbody tr[data-shipment-id]').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        });
+
+        // Checkbox selection
+        const selectAll = document.getElementById('select-all');
+        const checkboxes = document.querySelectorAll('.shipment-checkbox');
+        const bulkUpdateBtn = document.getElementById('bulk-update-btn');
+
+        selectAll?.addEventListener('change', function() {
+            checkboxes.forEach(cb => cb.checked = this.checked);
+            updateBulkButton();
+        });
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateBulkButton);
+        });
+
+        function updateBulkButton() {
+            const selected = document.querySelectorAll('.shipment-checkbox:checked').length;
+            bulkUpdateBtn.disabled = selected === 0;
+            document.getElementById('selected-count').textContent = selected;
+        }
+
+        // Bulk update
+        bulkUpdateBtn?.addEventListener('click', function() {
+            const modal = new bootstrap.Modal(document.getElementById('bulk-update-modal'));
+            modal.show();
+        });
+
+        document.getElementById('bulk-update-confirm')?.addEventListener('click', function() {
+            const selectedIds = Array.from(document.querySelectorAll('.shipment-checkbox:checked')).map(cb => cb.value);
+            const status = document.getElementById('bulk-status').value;
+
+            fetch('{{ path('admin_shipments_bulk_update') }}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ shipment_ids: selectedIds, status: status })
+            })
+            .then(r => r.json())
+            .then(data => {
+                toastr.success(data.message);
+                setTimeout(() => location.reload(), 1000);
+            });
+        });
+
+        // Track shipment
+        document.querySelectorAll('.shipment-track').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const shipmentId = this.dataset.shipmentId;
+                fetch(`/admin/shipments/${shipmentId}/track`, { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        toastr.success(data.message);
+                    });
+            });
+        });
+
+        // Delete shipment
+        document.querySelectorAll('.shipment-delete').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const shipmentId = this.dataset.shipmentId;
+                if (confirm('Gönderiyi silmek istediğinizden emin misiniz?')) {
+                    fetch(`/admin/shipments/${shipmentId}/delete`, { method: 'POST' })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                toastr.success(data.message);
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                toastr.error(data.message);
+                            }
+                        });
+                }
+            });
+        });
+    </script>
+{% endblock %}

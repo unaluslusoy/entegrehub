@@ -1,0 +1,248 @@
+{% extends 'layout/_user.html.twig' %}
+
+{% block title %}Shopify Entegrasyonları{% endblock %}
+
+{% block page_title %}Shopify Entegrasyonları{% endblock %}
+
+{% block content %}
+    <div class="container-xxl">
+        <!--begin::Toolbar-->
+        <div class="d-flex flex-wrap flex-stack pb-7">
+            <div class="d-flex flex-wrap align-items-center">
+                <h1 class="fw-bold me-3 my-1">Shopify Mağazalarım</h1>
+                <span class="badge badge-light-primary my-1">{{ stores|length }} Mağaza Bağlı</span>
+            </div>
+            <div class="d-flex flex-wrap my-1">
+                <a href="{{ path('user_shopify_install') }}" class="btn btn-primary">
+                    <i class="ki-duotone ki-plus fs-2"></i>
+                    Yeni Mağaza Bağla
+                </a>
+            </div>
+        </div>
+        <!--end::Toolbar-->
+
+        <!--begin::Stats-->
+        <div class="row g-6 g-xl-9 mb-10">
+            <div class="col-md-4">
+                <div class="card card-flush h-md-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <i class="ki-duotone ki-shop fs-3x text-primary me-5">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <div>
+                                <div class="fs-1 fw-bold text-gray-800">{{ stats.totalStores }}</div>
+                                <div class="fs-6 fw-semibold text-gray-500">Bağlı Mağaza</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-flush h-md-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <i class="ki-duotone ki-basket-ok fs-3x text-success me-5">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                                <span class="path3"></span>
+                            </i>
+                            <div>
+                                <div class="fs-1 fw-bold text-gray-800">{{ stats.totalOrders|number_format }}</div>
+                                <div class="fs-6 fw-semibold text-gray-500">Senkronize Sipariş</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-flush h-md-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <i class="ki-duotone ki-chart-line-up fs-3x text-info me-5">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <div>
+                                <div class="fs-1 fw-bold text-gray-800">{{ stats.avgProgress|round }}%</div>
+                                <div class="fs-6 fw-semibold text-gray-500">Ortalama İlerleme</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--end::Stats-->
+
+        <!--begin::Alert-->
+        {% if stores|length == 0 %}
+        <div class="alert alert-info d-flex align-items-center p-5 mb-10">
+            <i class="ki-duotone ki-information-5 fs-2hx text-info me-4">
+                <span class="path1"></span>
+                <span class="path2"></span>
+                <span class="path3"></span>
+            </i>
+            <div class="d-flex flex-column">
+                <h5 class="mb-1">Shopify Entegrasyonuna Hoş Geldiniz</h5>
+                <span>Shopify mağazanızı bağlayarak siparişlerinizi otomatik olarak senkronize edebilir ve kargo gönderimlerinizi yönetebilirsiniz.</span>
+            </div>
+        </div>
+        {% endif %}
+        <!--end::Alert-->
+
+        <!--begin::Stores-->
+        <div class="row g-6 g-xl-9">
+            {% for store in stores %}
+            <div class="col-md-6 col-xl-4">
+                <div class="card {{ store.isActive ? 'border-primary border-2' : 'border-secondary' }}">
+                    <div class="card-body d-flex flex-center flex-column py-9 px-5">
+                        <!--begin::Logo-->
+                        <div class="symbol symbol-75px symbol-circle mb-5 bg-light-primary">
+                            <i class="ki-duotone ki-shop fs-2tx text-primary">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                        </div>
+                        <!--end::Logo-->
+
+                        <!--begin::Name-->
+                        <a href="{{ path('user_shopify_store_detail', {id: store.id}) }}" 
+                           class="fs-4 text-gray-800 text-hover-primary fw-bold mb-0">
+                            {{ store.shopName ?? store.shopDomain }}
+                        </a>
+                        <!--end::Name-->
+
+                        <!--begin::Info-->
+                        <div class="fw-semibold text-gray-500 mb-3">{{ store.shopDomain }}</div>
+                        <!--end::Info-->
+
+                        <!--begin::Stats-->
+                        <div class="d-flex flex-center flex-wrap mb-5">
+                            <div class="border border-gray-300 border-dashed rounded min-w-80px py-3 px-4 mx-2 mb-3">
+                                <div class="fs-6 fw-bold text-gray-700">{{ store.totalOrdersSynced }}</div>
+                                <div class="fw-semibold text-gray-500 fs-8">Sipariş</div>
+                            </div>
+                            <div class="border border-gray-300 border-dashed rounded min-w-80px py-3 px-4 mx-2 mb-3">
+                                <div class="fs-6 fw-bold text-gray-700">{{ store.webhooks|length }}</div>
+                                <div class="fw-semibold text-gray-500 fs-8">Webhook</div>
+                            </div>
+                        </div>
+                        <!--end::Stats-->
+
+                        <!--begin::Status-->
+                        <div class="mb-5">
+                            {% if store.isActive %}
+                                <span class="badge badge-success fs-7 fw-semibold">Aktif</span>
+                            {% else %}
+                                <span class="badge badge-secondary fs-7 fw-semibold">Pasif</span>
+                            {% endif %}
+
+                            {% if store.syncStatus == 'syncing' %}
+                                <span class="badge badge-warning fs-7 fw-semibold ms-2">Senkronize Ediliyor</span>
+                            {% elseif store.syncStatus == 'completed' %}
+                                <span class="badge badge-light-success fs-7 fw-semibold ms-2">
+                                    <i class="ki-duotone ki-check-circle fs-6"></i>
+                                    Senkron
+                                </span>
+                            {% elseif store.syncStatus == 'failed' %}
+                                <span class="badge badge-light-danger fs-7 fw-semibold ms-2">
+                                    <i class="ki-duotone ki-cross-circle fs-6"></i>
+                                    Hata
+                                </span>
+                            {% endif %}
+                        </div>
+                        <!--end::Status-->
+
+                        <!--begin::Progress-->
+                        {% if store.syncStatus == 'syncing' %}
+                        <div class="w-100 mb-5">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted fs-7">Senkronizasyon İlerlemesi</span>
+                                <span class="fw-bold fs-7">{{ store.syncProgress }}%</span>
+                            </div>
+                            <div class="progress h-8px">
+                                <div class="progress-bar bg-primary" role="progressbar" 
+                                     style="width: {{ store.syncProgress }}%"></div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <!--end::Progress-->
+
+                        <!--begin::Last Sync-->
+                        {% if store.lastOrderSyncAt %}
+                        <div class="text-gray-600 fs-8 mb-5">
+                            Son Senkronizasyon: {{ store.lastOrderSyncAt|date('d.m.Y H:i') }}
+                        </div>
+                        {% endif %}
+                        <!--end::Last Sync-->
+
+                        <!--begin::Actions-->
+                        <div class="d-flex gap-2">
+                            <a href="{{ path('user_shopify_store_detail', {id: store.id}) }}" 
+                               class="btn btn-sm btn-light-primary">
+                                <i class="ki-duotone ki-eye fs-5">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                </i>
+                                Detay
+                            </a>
+                            <button type="button" 
+                                    class="btn btn-sm btn-light-success sync-orders-btn"
+                                    data-store-id="{{ store.id }}"
+                                    {{ store.syncStatus == 'syncing' ? 'disabled' : '' }}>
+                                <i class="ki-duotone ki-arrows-circle fs-5">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                Senkronize
+                            </button>
+                        </div>
+                        <!--end::Actions-->
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <!--end::Stores-->
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.querySelectorAll('.sync-orders-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const storeId = this.dataset.storeId;
+                const button = this;
+                
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Senkronize Ediliyor...';
+                
+                fetch(`/user/shopify/store/${storeId}/sync`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        toastr.success('Senkronizasyon başlatıldı!');
+                        setTimeout(() => location.reload(), 2000);
+                    } else {
+                        toastr.error(data.error || 'Senkronizasyon başlatılamadı');
+                        button.disabled = false;
+                        button.innerHTML = '<i class="ki-duotone ki-arrows-circle fs-5"><span class="path1"></span><span class="path2"></span></i> Senkronize';
+                    }
+                })
+                .catch(error => {
+                    toastr.error('Bir hata oluştu');
+                    button.disabled = false;
+                    button.innerHTML = '<i class="ki-duotone ki-arrows-circle fs-5"><span class="path1"></span><span class="path2"></span></i> Senkronize';
+                });
+            });
+        });
+    </script>
+{% endblock %}

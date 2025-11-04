@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html {{ theme.printHtmlAttributes('html') | raw }}>
+<!--begin::Head-->
+<head>
+    <base href=""/>
+    <title>{% block page_title %}{% endblock %} - EntegreHub Kargo</title>
+    <meta charset="utf-8"/>
+    <meta name="description" content="Shopify mağazanız için profesyonel kargo yönetim sistemi. Yurtiçi, MNG, Sürat, Aras ve daha fazla kargo firması entegrasyonu."/>
+    <meta name="keywords" content="shopify kargo, kargo yönetimi, entegrasyon, yurtiçi kargo, mng kargo, sürat kargo"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta property="og:locale" content="tr_TR"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:title" content="EntegreHub Kargo - Shopify Kargo Yönetim Sistemi"/>
+    <meta property="og:description" content="Shopify mağazanız için profesyonel kargo yönetim sistemi"/>
+    <link rel="canonical" href="https://kargo.entegrehub.com"/>
+
+    {{ theme.includeFavicon() | raw }}
+
+    <!--begin::Fonts-->
+    {{ theme.includeFonts() | raw }}
+    <!--end::Fonts-->
+
+    {% block stylesheets %}
+
+        {# {{ encore_entry_link_tags('app') }} #}
+
+        <!--begin::Global Stylesheets Bundle(used by all pages)-->
+        {% for path in theme.getGlobalAssets('css') %}
+            <link rel="stylesheet" href="{{ theme.asset(path) }}">
+        {% endfor %}
+        <!--end::Global Stylesheets Bundle-->
+
+        <!--begin::Vendor Stylesheets(used by this page)-->
+        {% for path in theme.getVendors('css') %}
+            <link rel="stylesheet" href="{{ theme.asset(path) }}">
+        {% endfor %}
+        <!--end::Vendor Stylesheets-->
+
+        <!--begin::Custom Stylesheets(optional)-->
+        {% for path in theme.getCustomCss() %}
+            <link rel="stylesheet" href="{{ theme.asset(path) }}">
+        {% endfor %}
+        <!--end::Custom Stylesheets-->
+
+    {% endblock %}
+
+</head>
+<!--end::Head-->
+
+<!--begin::Body-->
+<body id="kt_app_body" data-kt-app-layout="dark-sidebar" data-kt-app-header-fixed="true" data-kt-app-sidebar-enabled="true" data-kt-app-sidebar-fixed="true" data-kt-app-sidebar-push-header="true" data-kt-app-sidebar-push-toolbar="true" data-kt-app-sidebar-push-footer="true" data-kt-app-toolbar-enabled="true" class="app-default" {{ theme.printHtmlClasses('body') }} {{ theme.printHtmlAttributes('body') | raw }}>
+
+{% include 'partials/theme-mode/_init.html.twig' %}
+
+{% block layout %}{% endblock %}
+
+{% block javascripts %}
+
+    {# {{ encore_entry_script_tags('app') }} #}
+
+    <!--begin::Javascript-->
+    <!--begin::Global Javascript Bundle(mandatory for all pages)-->
+    {% for path in theme.getGlobalAssets() %}
+    <script src="{{ theme.asset(path) }}"></script>
+    {% endfor %}
+    <!--end::Global Javascript Bundle-->
+
+    <!--begin::Vendors Javascript(used by this page)-->
+    {% for path in theme.getVendors('js') %}
+    <script src="{{ theme.asset(path) }}"></script>
+    {% endfor %}
+    <!--end::Vendors Javascript-->
+
+    <!--begin::Custom Javascript(optional)-->
+    {% for path in theme.getCustomJs() %}
+    <script src="{{ theme.asset(path) }}"></script>
+    {% endfor %}
+    <!--end::Custom Javascript-->
+
+    <!--end::Javascript-->
+{% endblock %}
+
+</body>
+<!--end::Body-->
+
+</html>
