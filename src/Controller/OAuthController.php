@@ -74,7 +74,7 @@ class OAuthController extends AbstractController
                 $user->setPassword($hashedPassword);
                 
                 // Set default role
-                $user->setRoles(['ROLE_SUPER_ADMIN']);
+                $user->setRoles(['ROLE_USER']);
                 
                 // Enable the account
                 $user->setIsActive(true);

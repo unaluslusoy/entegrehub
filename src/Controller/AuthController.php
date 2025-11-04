@@ -39,14 +39,12 @@ class AuthController extends AbstractController
         if ($this->getUser()) {
             $roles = $this->getUser()->getRoles();
 
-            // Check for SUPER_ADMIN first, then ADMIN, then default to USER
+            // Check for SUPER_ADMIN, otherwise redirect to user dashboard
             if (in_array('ROLE_SUPER_ADMIN', $roles, true)) {
                 return $this->redirectToRoute('admin_dashboard');
-            } elseif (in_array('ROLE_SUPER_ADMIN', $roles, true)) {
-                return $this->redirectToRoute('admin_dashboard');
-            } else {
-                return $this->redirectToRoute('user_dashboard');
             }
+
+            return $this->redirectToRoute('user_dashboard');
         }
 
         // Get the login error if there is one
@@ -75,7 +73,7 @@ class AuthController extends AbstractController
         if ($this->getUser()) {
             $roles = $this->getUser()->getRoles();
 
-            if (in_array('ROLE_SUPER_ADMIN', $roles, true) || in_array('ROLE_SUPER_ADMIN', $roles, true)) {
+            if (in_array('ROLE_SUPER_ADMIN', $roles, true)) {
                 return $this->redirectToRoute('admin_dashboard');
             }
             return $this->redirectToRoute('user_dashboard');
@@ -302,7 +300,7 @@ class AuthController extends AbstractController
         if ($this->getUser()) {
             $roles = $this->getUser()->getRoles();
 
-            if (in_array('ROLE_SUPER_ADMIN', $roles, true) || in_array('ROLE_SUPER_ADMIN', $roles, true)) {
+            if (in_array('ROLE_SUPER_ADMIN', $roles, true)) {
                 return $this->redirectToRoute('admin_dashboard');
             }
             return $this->redirectToRoute('user_dashboard');
@@ -371,7 +369,7 @@ class AuthController extends AbstractController
         if ($this->getUser()) {
             $roles = $this->getUser()->getRoles();
 
-            if (in_array('ROLE_SUPER_ADMIN', $roles, true) || in_array('ROLE_SUPER_ADMIN', $roles, true)) {
+            if (in_array('ROLE_SUPER_ADMIN', $roles, true)) {
                 return $this->redirectToRoute('admin_dashboard');
             }
             return $this->redirectToRoute('user_dashboard');
