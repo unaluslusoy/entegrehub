@@ -112,7 +112,15 @@ class OAuthController extends AbstractController
             return $this->redirectToRoute('homepage');
             
         } catch (\Exception $e) {
-            $this->addFlash('error', 'Google ile giriş yapılırken bir hata oluştu: ' . $e->getMessage());
+            $errorMessage = $e->getMessage();
+
+            // Check for org_internal error
+            if (str_contains($errorMessage, 'org_internal') || str_contains($errorMessage, '403')) {
+                $this->addFlash('error', '❌ Google OAuth Erişim Hatası: Bu uygulama şu anda sadece organizasyon içi kullanıcılar için yapılandırılmış. Lütfen normal giriş yöntemini kullanın veya yönetici ile iletişime geçin.');
+            } else {
+                $this->addFlash('error', 'Google ile giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin veya normal giriş yöntemini kullanın.');
+            }
+
             return $this->redirectToRoute('app_login');
         }
     }
